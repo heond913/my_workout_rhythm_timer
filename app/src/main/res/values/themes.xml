@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MyApplication" parent="android:Theme.DeviceDefault.NoActionBar">
+        <!-- Disable the default OS starting preview window to prevent the system splash screen & icon from showing -->
+        <item name="android:windowDisablePreview">true</item>
+        <!-- Ensure window background matches our light theme color (VibrantSoftGreenBg) to avoid flashes -->
+        <item name="android:windowBackground">#FBFDF9</item>
+    </style>
+</resources>

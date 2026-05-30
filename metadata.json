@@ -1,0 +1,6 @@
+{
+  "name": "나만의 운동 타이머",
+  "description": "A polished workout logger and interval rhythm timer with a visual monthly calendar, active streaks, and beautiful statistics graphs for tracking squats, lunges, and planks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

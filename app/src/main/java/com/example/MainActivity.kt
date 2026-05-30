@@ -1,0 +1,317 @@
+package com.example
+
+import android.os.Bundle
+import android.media.AudioManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ui.screens.CalendarScreen
+import com.example.ui.screens.LogScreen
+import com.example.ui.screens.TimerScreen
+import com.example.ui.screens.StatsScreen
+import com.example.ui.theme.MyApplicationTheme
+import com.example.viewmodel.AppTab
+import com.example.viewmodel.WorkoutViewModel
+import kotlinx.coroutines.delay
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        volumeControlStream = AudioManager.STREAM_MUSIC
+        enableEdgeToEdge()
+        setContent {
+            MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
+                val viewModel: WorkoutViewModel = viewModel()
+                val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
+
+                var showSplash by remember { mutableStateOf(true) }
+                var splashAlpha by remember { mutableStateOf(1f) }
+
+                LaunchedEffect(Unit) {
+                    delay(2200) // Show splash screen elements cleanly
+                    animate(
+                        initialValue = 1f,
+                        targetValue = 0f,
+                        animationSpec = tween(durationMillis = 600) // Super smooth 600ms fadeout transition
+                    ) { value, _ ->
+                        splashAlpha = value
+                    }
+                    showSplash = false
+                }
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        bottomBar = {
+                            WorkoutBottomBar(
+                                currentTab = viewModel.currentTab,
+                                onTabSelected = { viewModel.setTab(it) }
+                            )
+                        },
+                        containerColor = Color(0xFFFBFDF9) // VibrantSoftGreenBg primary viewport color
+                    ) { innerPadding ->
+                        val listTabs = listOf(AppTab.Timer, AppTab.Log, AppTab.Calendar, AppTab.Stats)
+                        val pagerState = rememberPagerState(
+                            initialPage = listTabs.indexOf(viewModel.currentTab).coerceAtLeast(0),
+                            pageCount = { listTabs.size }
+                        )
+
+                        // Sync from ViewModel tab selection to Page
+                        LaunchedEffect(viewModel.currentTab) {
+                            val targetPage = listTabs.indexOf(viewModel.currentTab).coerceAtLeast(0)
+                            if (pagerState.currentPage != targetPage) {
+                                pagerState.animateScrollToPage(targetPage)
+                            }
+                        }
+
+                        // Sync from Page swipe to ViewModel when completely settled
+                        LaunchedEffect(pagerState) {
+                            snapshotFlow { pagerState.settledPage }.collect { settledPage ->
+                                val targetTab = listTabs[settledPage]
+                                if (viewModel.currentTab != targetTab) {
+                                    viewModel.setTab(targetTab)
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                        ) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize(),
+                                userScrollEnabled = true
+                            ) { page ->
+                                when (listTabs[page]) {
+                                    AppTab.Timer -> TimerScreen(viewModel = viewModel)
+                                    AppTab.Log -> LogScreen(viewModel = viewModel)
+                                    AppTab.Calendar -> CalendarScreen(viewModel = viewModel, workoutRecords = workoutRecords)
+                                    AppTab.Stats -> StatsScreen(viewModel = viewModel, workoutRecords = workoutRecords)
+                                }
+                            }
+                        }
+                    }
+
+                    // Floating Loading/Splash screen overlay
+                    if (showSplash) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(splashAlpha),
+                            color = Color(0xFFFBFDF9) // VibrantSoftGreenBg matching the app theme background
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.padding(24.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.home_training_loading_1780072263159),
+                                        contentDescription = "홈 트레이닝 로딩 이미지",
+                                        modifier = Modifier
+                                            .size(280.dp)
+                                            .padding(bottom = 24.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+
+                                    Text(
+                                        text = "나만의 운동 리듬 타이머",
+                                        fontSize = 28.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF006A60), // tealActive vibrant primary color
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    Text(
+                                        text = "일정한 템포와 건강한 습관",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF3F4947), // secondaryGray
+                                        modifier = Modifier.padding(bottom = 32.dp)
+                                    )
+
+                                    CircularProgressIndicator(
+                                        color = Color(0xFF006A60),
+                                        strokeWidth = 3.dp,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WorkoutBottomBar(
+    currentTab: AppTab,
+    onTabSelected: (AppTab) -> Unit
+) {
+    val barColor = Color(0xFFF1F5F2) // Vibrant light mint-grey
+    val inactiveColor = Color(0xFF3F4947) // VibrantSlateGrey
+    val activePillColor = Color(0xFFCCE8E3) // VibrantTealSoftBg
+    val activeTextColor = Color(0xFF00201C) // VibrantTealDeepContrast
+
+    NavigationBar(
+        modifier = Modifier
+            .testTag("workout_bottom_navigation_bar"),
+        containerColor = barColor,
+        tonalElevation = 8.dp
+    ) {
+        // Tab 1: Timer
+        NavigationBarItem(
+            selected = currentTab == AppTab.Timer,
+            onClick = { onTabSelected(AppTab.Timer) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Timer,
+                    contentDescription = "Rhythm Timer Tab"
+                )
+            },
+            label = {
+                Text(
+                    text = "리듬 타이머",
+                    fontWeight = if (currentTab == AppTab.Timer) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = activePillColor,
+                selectedIconColor = activeTextColor,
+                selectedTextColor = activeTextColor,
+                unselectedIconColor = inactiveColor,
+                unselectedTextColor = inactiveColor
+            ),
+            modifier = Modifier.testTag("tab_timer")
+        )
+
+        // Tab 2: Manual Log
+        NavigationBarItem(
+            selected = currentTab == AppTab.Log,
+            onClick = { onTabSelected(AppTab.Log) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.EditCalendar,
+                    contentDescription = "Log Workout Tab"
+                )
+            },
+            label = {
+                Text(
+                    text = "수동 기록",
+                    fontWeight = if (currentTab == AppTab.Log) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = activePillColor,
+                selectedIconColor = activeTextColor,
+                selectedTextColor = activeTextColor,
+                unselectedIconColor = inactiveColor,
+                unselectedTextColor = inactiveColor
+            ),
+            modifier = Modifier.testTag("tab_log")
+        )
+
+        // Tab 3: Calendar
+        NavigationBarItem(
+            selected = currentTab == AppTab.Calendar,
+            onClick = { onTabSelected(AppTab.Calendar) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = "Workout Calendar Tab"
+                )
+            },
+            label = {
+                Text(
+                    text = "진척 달력",
+                    fontWeight = if (currentTab == AppTab.Calendar) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = activePillColor,
+                selectedIconColor = activeTextColor,
+                selectedTextColor = activeTextColor,
+                unselectedIconColor = inactiveColor,
+                unselectedTextColor = inactiveColor
+            ),
+            modifier = Modifier.testTag("tab_calendar")
+        )
+
+        // Tab 4: Statistics
+        NavigationBarItem(
+            selected = currentTab == AppTab.Stats,
+            onClick = { onTabSelected(AppTab.Stats) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.BarChart,
+                    contentDescription = "Workout Statistics Tab"
+                )
+            },
+            label = {
+                Text(
+                    text = "성장 통계",
+                    fontWeight = if (currentTab == AppTab.Stats) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = activePillColor,
+                selectedIconColor = activeTextColor,
+                selectedTextColor = activeTextColor,
+                unselectedIconColor = inactiveColor,
+                unselectedTextColor = inactiveColor
+            ),
+            modifier = Modifier.testTag("tab_stats")
+        )
+    }
+}
