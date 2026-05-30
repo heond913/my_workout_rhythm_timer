@@ -91,13 +91,15 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
         // 1. Streak burning badge
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)), // VibrantStreakCardBg
+            colors = CardDefaults.cardColors(
+                containerColor = if (streak > 0) Color(0xFFE6F3F1) else Color(0xFFFCE8E6)
+            ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .border(
                     width = 1.5.dp,
-                    color = if (streak > 0) fireOrange else borderColor,
+                    color = if (streak > 0) fireOrange else Color(0xFFF1B0A9),
                     shape = RoundedCornerShape(16.dp)
                 )
                 .padding(4.dp)
@@ -112,7 +114,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     modifier = Modifier
                         .size(60.dp)
                         .background(
-                            color = if (streak > 0) Color(0xFFFFDAD6) else Color(0xFFDAE5E1),
+                            color = if (streak > 0) Color(0xFFFFDAD6) else Color(0xFFF5D6D6),
                             shape = RoundedCornerShape(12.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -161,8 +163,10 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             ) {
                 Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.Start
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.BarChart,
@@ -171,9 +175,20 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(text = "총 완료 세션", fontSize = 11.sp, color = secondaryGray)
+                    Text(
+                        text = "총 완료 세션",
+                        fontSize = 11.sp,
+                        color = secondaryGray,
+                        textAlign = TextAlign.Center
+                    )
                     Spacer(modifier = Modifier.height(3.dp))
-                    Text(text = "${totalSessions}회", fontSize = 18.sp, fontWeight = FontWeight.Black, color = tealActive)
+                    Text(
+                        text = "${totalSessions}회",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = tealActive,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
@@ -186,8 +201,10 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             ) {
                 Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.Start
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.FitnessCenter,
@@ -196,9 +213,20 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(text = "누적 횟수 (Reps)", fontSize = 11.sp, color = secondaryGray)
+                    Text(
+                        text = "누적 횟수",
+                        fontSize = 11.sp,
+                        color = secondaryGray,
+                        textAlign = TextAlign.Center
+                    )
                     Spacer(modifier = Modifier.height(3.dp))
-                    Text(text = "${totalReps}회", fontSize = 18.sp, fontWeight = FontWeight.Black, color = tealActive)
+                    Text(
+                        text = "${totalReps}회",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = tealActive,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
@@ -211,8 +239,10 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             ) {
                 Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.Start
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Timer,
@@ -221,10 +251,21 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(text = "누적 수행 시간", fontSize = 11.sp, color = secondaryGray)
+                    Text(
+                        text = "누적 수행 시간",
+                        fontSize = 11.sp,
+                        color = secondaryGray,
+                        textAlign = TextAlign.Center
+                    )
                     Spacer(modifier = Modifier.height(3.dp))
                     val textStr = if (totalMins > 0) "${totalMins}분" else "${totalSecsRemainder}초"
-                    Text(text = textStr, fontSize = 18.sp, fontWeight = FontWeight.Black, color = tealActive)
+                    Text(
+                        text = textStr,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = tealActive,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

@@ -36,6 +36,25 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     var selectedDayCal by remember { mutableStateOf(Calendar.getInstance()) }
     var recordToDelete by remember { mutableStateOf<WorkoutRecord?>(null) }
 
+    // Keep selectedDayCal in sync with currentMonthCal's month and year when month changes
+    LaunchedEffect(currentMonthCal) {
+        val selMonth = selectedDayCal.get(Calendar.MONTH)
+        val selYear = selectedDayCal.get(Calendar.YEAR)
+        val curMonth = currentMonthCal.get(Calendar.MONTH)
+        val curYear = currentMonthCal.get(Calendar.YEAR)
+
+        if (selMonth != curMonth || selYear != curYear) {
+            val today = Calendar.getInstance()
+            if (curMonth == today.get(Calendar.MONTH) && curYear == today.get(Calendar.YEAR)) {
+                selectedDayCal = today
+            } else {
+                selectedDayCal = (currentMonthCal.clone() as Calendar).apply {
+                    set(Calendar.DAY_OF_MONTH, 1)
+                }
+            }
+        }
+    }
+
     // Color Theme - Vibrant Palette
     val tealActive = Color(0xFF006A60)
     val darkBg = Color(0xFFFBFDF9) // Light theme background

@@ -177,8 +177,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                .padding(bottom = 12.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -251,8 +251,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                .padding(bottom = 12.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -325,8 +325,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                .padding(bottom = 12.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -378,8 +378,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                .padding(bottom = 16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

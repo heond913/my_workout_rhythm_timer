@@ -34,7 +34,7 @@ class SoundHelper(context: Context) {
         // Initialize ToneGenerator for zero-latency, highly stable system beep/tick tones
         try {
             // Using standard stream music so it respects volume slider perfectly
-            toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 85)
+            toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
         } catch (e: Exception) {
             e.printStackTrace()
         }
