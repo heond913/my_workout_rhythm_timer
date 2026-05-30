@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.AppDatabase
 import com.example.data.WorkoutRecord
+import com.example.data.WorkoutRepository
 import com.example.util.SoundHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -32,15 +33,19 @@ enum class TimerMode {
     Countdown
 }
 
-class WorkoutViewModel(application: Application) : AndroidViewModel(application) {
-    private val database = AppDatabase.getDatabase(application)
-    private val workoutDao = database.workoutDao()
+class WorkoutViewModel(
+    application: Application,
+    private val repository: WorkoutRepository = WorkoutRepository(
+        AppDatabase.getDatabase(application).workoutDao(),
+        application.getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE)
+    )
+) : AndroidViewModel(application) {
 
     // Sound and vibration assistant
     private val soundHelper = SoundHelper(application)
 
-    // Flow of workout records from database, exposed as StateFlow
-    val allRecords: StateFlow<List<WorkoutRecord>> = workoutDao.getAllRecords()
+    // Flow of workout records from repository, exposed as StateFlow
+    val allRecords: StateFlow<List<WorkoutRecord>> = repository.allRecords
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -56,18 +61,12 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     }
 
     // --- TIMER STATE MANIPULATION ---
-    private val prefs = application.getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE)
-
-    var timerPresetType by mutableStateOf(
-        prefs.getString("timer_preset_type", "스쿼트")?.let {
-            if (it == "없음") "기타" else it
-        } ?: "스쿼트"
-    )
+    var timerPresetType by mutableStateOf(repository.getTimerPresetType())
     
-    var squatIntervalSeconds by mutableIntStateOf(prefs.getInt("squat_interval", 4))
-    var lungeIntervalSeconds by mutableIntStateOf(prefs.getInt("lunge_interval", 5))
-    var plankIntervalSeconds by mutableIntStateOf(prefs.getInt("plank_interval", 10))
-    var otherIntervalSeconds by mutableIntStateOf(prefs.getInt("other_interval", 10))
+    var squatIntervalSeconds by mutableIntStateOf(repository.getSquatInterval())
+    var lungeIntervalSeconds by mutableIntStateOf(repository.getLungeInterval())
+    var plankIntervalSeconds by mutableIntStateOf(repository.getPlankInterval())
+    var otherIntervalSeconds by mutableIntStateOf(repository.getOtherInterval())
 
     var timerRunning by mutableStateOf(false)
         private set
@@ -80,10 +79,10 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
             _totalTargetSeconds.intValue = value
             if (timerPresetType == "플랭크") {
                 rhythmIntervalSeconds = value
-                prefs.edit { putInt("rhythm_interval_seconds", value) }
+                repository.saveRhythmInterval(value)
             }
         }
-    var rhythmIntervalSeconds by mutableIntStateOf(prefs.getInt("rhythm_interval_seconds", 4))  // Beep rhythm cue
+    var rhythmIntervalSeconds by mutableIntStateOf(repository.getRhythmInterval())  // Beep rhythm cue
     var elapsedSeconds by mutableIntStateOf(0)
     var remainingSeconds by mutableIntStateOf(60)
     var rhythmTickCount by mutableIntStateOf(0)
@@ -92,7 +91,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
 
     fun selectPreset(preset: String) {
         timerPresetType = preset
-        prefs.edit { putString("timer_preset_type", preset) }
+        repository.saveTimerPresetType(preset)
         val secs = when (preset) {
             "스쿼트" -> squatIntervalSeconds
             "런지" -> lungeIntervalSeconds
@@ -101,47 +100,47 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
             else -> 0
         }
         rhythmIntervalSeconds = secs
-        prefs.edit { putInt("rhythm_interval_seconds", secs) }
+        repository.saveRhythmInterval(secs)
         resetTimer()
     }
 
     fun updateSquatInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
         squatIntervalSeconds = safeSecs
-        prefs.edit { putInt("squat_interval", safeSecs) }
+        repository.saveSquatInterval(safeSecs)
         if (timerPresetType == "스쿼트") {
             rhythmIntervalSeconds = safeSecs
-            prefs.edit { putInt("rhythm_interval_seconds", safeSecs) }
+            repository.saveRhythmInterval(safeSecs)
         }
     }
 
     fun updateLungeInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
         lungeIntervalSeconds = safeSecs
-        prefs.edit { putInt("lunge_interval", safeSecs) }
+        repository.saveLungeInterval(safeSecs)
         if (timerPresetType == "런지") {
             rhythmIntervalSeconds = safeSecs
-            prefs.edit { putInt("rhythm_interval_seconds", safeSecs) }
+            repository.saveRhythmInterval(safeSecs)
         }
     }
 
     fun updatePlankInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
         plankIntervalSeconds = safeSecs
-        prefs.edit { putInt("plank_interval", safeSecs) }
+        repository.savePlankInterval(safeSecs)
         if (timerPresetType == "플랭크") {
             rhythmIntervalSeconds = safeSecs
-            prefs.edit { putInt("rhythm_interval_seconds", safeSecs) }
+            repository.saveRhythmInterval(safeSecs)
         }
     }
 
     fun updateOtherInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
         otherIntervalSeconds = safeSecs
-        prefs.edit { putInt("other_interval", safeSecs) }
+        repository.saveOtherInterval(safeSecs)
         if (timerPresetType == "기타") {
             rhythmIntervalSeconds = safeSecs
-            prefs.edit { putInt("rhythm_interval_seconds", safeSecs) }
+            repository.saveRhythmInterval(safeSecs)
         }
     }
 
@@ -238,7 +237,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
         }
         val duration = if (timerMode == TimerMode.Countdown) totalTargetSeconds else elapsedSeconds
         viewModelScope.launch {
-            workoutDao.insertRecord(
+            repository.insert(
                 WorkoutRecord(
                     exerciseName = exercise,
                     reps = if (workoutCount > 0) workoutCount else null,
@@ -272,7 +271,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
                 rating = rating,
                 note = note
             )
-            workoutDao.insertRecord(record)
+            repository.insert(record)
             
             // Clear or reset fields
             inputNote = ""
@@ -282,7 +281,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
 
     fun deleteWorkoutRecord(record: WorkoutRecord) {
         viewModelScope.launch {
-            workoutDao.deleteRecord(record)
+            repository.delete(record)
         }
     }
 
