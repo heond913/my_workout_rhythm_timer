@@ -178,12 +178,17 @@ class MainActivity : ComponentActivity() {
                                         contentScale = ContentScale.Fit
                                     )
 
+                                    val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+                                    val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
+                                    val isEn = currentLocale != "ko"
+
                                     Text(
                                         text = stringResource(id = R.string.splash_title),
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF006A60), // tealActive vibrant primary color
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        lineHeight = if (isEn) 40.sp else 34.sp,
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     )
 

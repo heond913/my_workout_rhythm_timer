@@ -193,7 +193,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = stringResource(id = R.string.workout_count_format, totalSessions),
+                        text = stringResource(id = R.string.sessions_count_format, totalSessions),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         color = tealActive,

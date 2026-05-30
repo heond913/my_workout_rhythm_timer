@@ -14,7 +14,7 @@
     <string name="title_timer">My Workout Rhythm Timer</string>
     <string name="subtitle_timer">Perform home workouts in sync with your rhythm</string>
     <string name="desc_timer_clock">Timer Clock</string>
-    <string name="workout_count_format">Total %1$d Reps</string>
+    <string name="workout_count_format">%1$d Reps</string>
     <string name="rhythm_interval_notifying">Notifying every %1$d seconds...</string>
     <string name="timer_in_progress">Timer in progress</string>
     <string name="ready">READY</string>
@@ -111,7 +111,7 @@
     <string name="streak_broken_sub">Complete a workout today to start your day 1 active streak!</string>
     <string name="desc_total_sessions">Total sessions</string>
     <string name="label_total_sessions">Total Sessions Completed</string>
-    <string name="sessions_count_format">%1$d times</string>
+    <string name="sessions_count_format">%1$d Reps</string>
     <string name="desc_total_reps">Total repetitions</string>
     <string name="label_accumulated_reps">Accumulated Reps</string>
     <string name="reps_count_format">%1$d reps</string>
