@@ -27,6 +27,17 @@ class TtsHelper(context: Context) : TextToSpeech.OnInitListener {
                 // Sightly higher pitch and normal/fast speech rate for energy and active workout tempo
                 tts?.setPitch(1.05f)
                 tts?.setSpeechRate(1.1f)
+
+                // Match STREAM_MUSIC (Media) volume controls
+                try {
+                    val audioAttributes = android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                    tts?.setAudioAttributes(audioAttributes)
+                } catch (e: Exception) {
+                    Log.e("TtsHelper", "Failed to set AudioAttributes for TTS", e)
+                }
             }
         } else {
             Log.e("TtsHelper", "TTS Initialization failed with status: $status")

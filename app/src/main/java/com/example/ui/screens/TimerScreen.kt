@@ -643,16 +643,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 // Reset Button
                 IconButton(
                     onClick = { viewModel.resetTimer() },
+                    enabled = !isRunning,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(Color(0xFFE6F3F1), CircleShape)
-                        .border(1.dp, Color(0xFFDCE5E2), CircleShape)
+                        .background(if (isRunning) Color(0xFFEAEAEA) else Color(0xFFE6F3F1), CircleShape)
+                        .border(1.dp, if (isRunning) Color(0xFFDDDDDD) else Color(0xFFDCE5E2), CircleShape)
                         .testTag("reset_timer_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "타이머 리셋",
-                        tint = tealActive,
+                        tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -695,15 +696,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         viewModel.inputDurationSeconds = totalSeconds.toString()
                         viewModel.setTab(com.example.viewmodel.AppTab.Log)
                     },
+                    enabled = !isRunning,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(Color(0xFFE6F3F1), CircleShape)
-                        .border(1.dp, Color(0xFFDCE5E2), CircleShape)
+                        .background(if (isRunning) Color(0xFFEAEAEA) else Color(0xFFE6F3F1), CircleShape)
+                        .border(1.dp, if (isRunning) Color(0xFFDDDDDD) else Color(0xFFDCE5E2), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "수동 기록 작성",
-                        tint = tealActive,
+                        tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
                 }
