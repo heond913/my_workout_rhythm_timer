@@ -33,7 +33,7 @@ enum class TimerMode {
     Countdown
 }
 
-class WorkoutViewModel(
+class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     application: Application,
     private val repository: WorkoutRepository = WorkoutRepository(
         AppDatabase.getDatabase(application).workoutDao(),
