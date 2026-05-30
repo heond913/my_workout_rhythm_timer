@@ -57,6 +57,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     val mode = uiState.timerMode
     val interval = uiState.rhythmIntervalSeconds
 
+    // Dynamic color matching based on currently active preset (with swapped Squat <-> Other colors)
+    val activePresetColor = when (uiState.timerPresetType) {
+        "스쿼트" -> Color(0xFFE65100) // Swapped to Orange
+        "런지" -> Color(0xFF3F5F90)
+        "플랭크" -> Color(0xFF93000A)
+        "기타" -> Color(0xFF006A60) // Swapped to Teal
+        else -> Color(0xFF006A60)
+    }
+
+    val activePresetBgColor = when (uiState.timerPresetType) {
+        "스쿼트" -> Color(0xFFFFECCC) // Swapped to Orange background
+        "런지" -> Color(0xFFD7E3FF)
+        "플랭크" -> Color(0xFFFFDAD6)
+        "기타" -> Color(0xFFCCE8E3) // Swapped to Teal background
+        else -> Color(0xFFCCE8E3)
+    }
+
     // Color Theme mappings - Vibrant Palette
     val tealActive = Color(0xFF006A60)
     val darkBg = Color(0xFFFBFDF9) // Light theme background
@@ -108,17 +125,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier
                 .size(240.dp)
                 .drawBehind {
-                    // Draw clean background ring
+                    // Draw clean background ring matching active preset color theme
                     drawArc(
-                        color = Color(0xFFCCE8E3),
+                        color = activePresetBgColor,
                         startAngle = -90f,
                         sweepAngle = 360f,
                         useCenter = false,
                         style = Stroke(width = 14.dp.toPx(), cap = StrokeCap.Round)
                     )
-                    // Draw progress arc in vibrant teal
+                    // Draw progress arc in active preset custom color
                     drawArc(
-                        color = tealActive,
+                        color = activePresetColor,
                         startAngle = -90f,
                         sweepAngle = animatedProgress * 360f,
                         useCenter = false,
@@ -131,7 +148,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 Icon(
                     imageVector = Icons.Default.Timer,
                     contentDescription = "Timer Clock",
-                    tint = tealActive,
+                    tint = activePresetColor,
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -151,14 +168,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     text = "총 ${uiState.workoutCount}회",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = tealActive
+                    color = activePresetColor
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 if (isRunning) {
                     Text(
                         text = if (interval > 0) "${interval}초 박자 알림 중..." else "타이머 진행 중",
-                        color = tealActive,
+                        color = activePresetColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -191,10 +208,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             presets.forEach { (label, secs, desc) ->
                 val isSelected = uiState.timerPresetType == label
                 val (itemBgColor, itemBorderColor, itemTextColor) = when (label) {
-                    "스쿼트" -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                    "스쿼트" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100)) // Swapped to Orange
                     "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
                     "플랭크" -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    "기타" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
+                    "기타" -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60)) // Swapped to Teal
                     else -> Triple(Color(0xFFE6F3F1), Color(0xFF3F4947), Color(0xFF3F4947))
                 }
 
@@ -450,16 +467,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Squat Config Column Block
+                            // Squat Config Column Block - Styled in Orange Theme (Swapped)
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .background(Color(0xFFE6F3F1), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFCCE8E3), RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFFFECCC).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                                    .border(1.dp, Color(0xFFFFECCC), RoundedCornerShape(12.dp))
                                     .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("스쿼트", color = Color(0xFF006A60), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text("스쿼트", color = Color(0xFFE65100), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -471,11 +488,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .weight(1f)
                                             .height(28.dp)
                                             .background(Color.White, CircleShape)
-                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                            .border(1.dp, Color(0xFFFFECCC), CircleShape)
                                             .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds - 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text("-", color = Color(0xFF006A60), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                        Text("-", color = Color(0xFFE65100), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
                                         text = "${uiState.squatIntervalSeconds}초",
@@ -489,7 +506,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         modifier = Modifier
                                             .weight(1f)
                                             .height(28.dp)
-                                            .background(Color(0xFF006A60), CircleShape)
+                                            .background(Color(0xFFE65100), CircleShape)
                                             .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds + 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -546,16 +563,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 }
                             }
 
-                            // Other/기타 Config Column Block
+                            // Other/기타 Config Column Block - Styled in Teal Theme (Swapped)
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .background(Color(0xFFFFECCC).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFFFECCC), RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFE6F3F1), RoundedCornerShape(12.dp))
+                                    .border(1.dp, Color(0xFFCCE8E3), RoundedCornerShape(12.dp))
                                     .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("기타", color = Color(0xFFE65100), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text("기타", color = Color(0xFF006A60), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -567,11 +584,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .weight(1f)
                                             .height(28.dp)
                                             .background(Color.White, CircleShape)
-                                            .border(1.dp, Color(0xFFFFECCC), CircleShape)
+                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
                                             .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds - 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text("-", color = Color(0xFFE65100), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                        Text("-", color = Color(0xFF006A60), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
                                         text = "${uiState.otherIntervalSeconds}초",
@@ -585,7 +602,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         modifier = Modifier
                                             .weight(1f)
                                             .height(28.dp)
-                                            .background(Color(0xFFE65100), CircleShape)
+                                            .background(Color(0xFF006A60), CircleShape)
                                             .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds + 1) },
                                         contentAlignment = Alignment.Center
                                     ) {

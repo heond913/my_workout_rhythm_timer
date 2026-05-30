@@ -414,7 +414,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .weight(squatPercent.toFloat())
-                                    .background(Color(0xFF006A60)) // Squat Teal
+                                    .background(Color(0xFFE65100)) // Squat Orange
                             )
                         }
                         if (lungePercent > 0) {
@@ -438,7 +438,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .weight(otherPercent.toFloat())
-                                    .background(Color(0xFF3F4947)) // Other Charcoal Grey
+                                    .background(Color(0xFF006A60)) // Other Teal
                             )
                         }
                     }
@@ -448,10 +448,10 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
                 // Breakdown list of Exercises with unified category tones including 기타
                 val breakdown = listOf(
-                    Triple("스쿼트 (Squats)", squatCount, Color(0xFF006A60)),
+                    Triple("스쿼트 (Squats)", squatCount, Color(0xFFE65100)),
                     Triple("런지 (Lunges)", lungeCount, Color(0xFF3F5F90)),
                     Triple("플랭크 (Planks)", plankCount, Color(0xFF93000A)),
-                    Triple("기타 (Others)", otherCount, Color(0xFF3F4947))
+                    Triple("기타 (Others)", otherCount, Color(0xFF006A60))
                 )
 
                 breakdown.forEach { (label, count, color) ->

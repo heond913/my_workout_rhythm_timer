@@ -25,6 +25,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.ui.platform.LocalContext
+import android.app.DatePickerDialog
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import com.example.viewmodel.WorkoutViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +42,10 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val secsVal = uiState.inputDurationSeconds
     val rating = uiState.inputRating
     val note = uiState.inputNote
+
+    val context = LocalContext.current
+    var logCalendar by remember { mutableStateOf(Calendar.getInstance()) }
+    val dateFormatter = remember { SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREAN) }
 
     // Color Theme - Vibrant Palette
     val tealActive = Color(0xFF006A60)
@@ -91,10 +101,10 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 
                 // Exercise-specific colorful styling matching Vibrant Palette HTML
                 val (itemBg, itemBorder, itemAccent) = when (exe) {
-                    "스쿼트" -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                    "스쿼트" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
                     "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
                     "플랭크" -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    else -> Triple(Color(0xFFE6F3F1), Color(0xFF3F4947), Color(0xFF3F4947))
+                    else -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
                 }
 
                 Card(
@@ -170,6 +180,89 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             )
         }
+
+        // Recording Date selection option
+        Text(
+            text = "기록 날짜 선택",
+            fontSize = 14.sp,
+            color = charcoalDark,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp, bottom = 8.dp),
+            textAlign = TextAlign.Start
+        )
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = cardSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                .clickable {
+                    val year = logCalendar.get(Calendar.YEAR)
+                    val month = logCalendar.get(Calendar.MONTH)
+                    val day = logCalendar.get(Calendar.DAY_OF_MONTH)
+
+                    DatePickerDialog(
+                        context,
+                        { _, selectedYear, selectedMonth, selectedDay ->
+                            val newCal = Calendar.getInstance().apply {
+                                set(Calendar.YEAR, selectedYear)
+                                set(Calendar.MONTH, selectedMonth)
+                                set(Calendar.DAY_OF_MONTH, selectedDay)
+                            }
+                            logCalendar = newCal
+                        },
+                        year,
+                        month,
+                        day
+                    ).show()
+                }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = "선택된 날짜",
+                        tint = tealActive,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "기록될 등록일",
+                            color = charcoalDark,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = dateFormatter.format(logCalendar.time),
+                            color = secondaryGray,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                Text(
+                    text = "날짜 변경",
+                    color = tealActive,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Repetitions input (Squats or Lunges highlight)
         Card(
@@ -412,7 +505,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         // Large Save Button
         Button(
             onClick = {
-                viewModel.saveWorkoutRecord()
+                viewModel.saveWorkoutRecord(timestamp = logCalendar.timeInMillis)
             },
             modifier = Modifier
                 .fillMaxWidth()

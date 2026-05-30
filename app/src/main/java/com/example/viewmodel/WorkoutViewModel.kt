@@ -402,7 +402,8 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         reps: Int? = inputReps.toIntOrNull(),
         duration: Int? = inputDurationSeconds.toIntOrNull(),
         rating: Int = inputRating,
-        note: String = inputNote
+        note: String = inputNote,
+        timestamp: Long = System.currentTimeMillis()
     ) {
         viewModelScope.launch {
             val record = WorkoutRecord(
@@ -410,7 +411,8 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
                 reps = reps,
                 durationSeconds = duration,
                 rating = rating,
-                note = note
+                note = note,
+                timestamp = timestamp
             )
             repository.insert(record)
             

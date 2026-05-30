@@ -320,10 +320,10 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                         ) {
                             // Circular icon wrapper - categorized to exercises!
                             val (taskIconBg, taskIconAccent) = when (workout.exerciseName) {
-                                "스쿼트" -> Pair(Color(0xFFCCE8E3), Color(0xFF006A60))
+                                "스쿼트" -> Pair(Color(0xFFFFECCC), Color(0xFFE65100))
                                 "런지" -> Pair(Color(0xFFD7E3FF), Color(0xFF3F5F90))
                                 "플랭크" -> Pair(Color(0xFFFFDAD6), Color(0xFF93000A))
-                                else -> Pair(Color(0xFFE6F3F1), Color(0xFF3F4947))
+                                else -> Pair(Color(0xFFCCE8E3), Color(0xFF006A60))
                             }
 
                             Box(
