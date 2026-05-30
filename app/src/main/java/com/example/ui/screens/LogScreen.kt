@@ -83,7 +83,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         ) {
             val exercises = listOf("스쿼트", "런지", "플랭크", "기타")
             exercises.forEach { exe ->
@@ -120,7 +120,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
@@ -423,7 +425,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
-                text = "운동 기록 저장하기 (완성)",
+                text = "운동 기록 저장하기",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Black
             )
