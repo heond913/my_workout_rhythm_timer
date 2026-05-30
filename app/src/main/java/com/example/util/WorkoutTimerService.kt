@@ -28,6 +28,7 @@ class WorkoutTimerService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var timerJob: Job? = null
+    private var shutdownJob: Job? = null
 
     private lateinit var soundHelper: SoundHelper
     private lateinit var ttsHelper: TtsHelper
@@ -75,6 +76,9 @@ class WorkoutTimerService : Service() {
     }
 
     private fun startTimerLoop() {
+        shutdownJob?.cancel()
+        shutdownJob = null
+
         val currentState = TimerRepository.timerState.value
         if (currentState.isRunning && timerJob?.isActive == true) return
 
@@ -193,9 +197,12 @@ class WorkoutTimerService : Service() {
                         updateNotification()
 
                         if (!newRunning) {
-                            // If countdown completed, stop service
-                            stopForeground(true)
-                            stopSelf()
+                            // If countdown completed, delay stopping service to allow TTS congratulations & applause to play fully
+                            shutdownJob = serviceScope.launch {
+                                delay(6000L) // 6 seconds is perfect to play both TTS and the SoundPool cheer
+                                stopForeground(true)
+                                stopSelf()
+                            }
                             break
                         }
                     }
@@ -213,6 +220,8 @@ class WorkoutTimerService : Service() {
     }
 
     private fun resetTimerLoop() {
+        shutdownJob?.cancel()
+        shutdownJob = null
         timerJob?.cancel()
         TimerRepository.updateState {
             it.copy(

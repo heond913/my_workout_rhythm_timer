@@ -57,6 +57,18 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     val mode = uiState.timerMode
     val interval = uiState.rhythmIntervalSeconds
 
+    // Dynamically request notification permission on entry
+    LaunchedEffect(Unit) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+            if (androidx.core.content.ContextCompat.checkSelfPermission(context, permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                (context as? androidx.activity.ComponentActivity)?.let { activity ->
+                    androidx.core.app.ActivityCompat.requestPermissions(activity, arrayOf(permission), 101)
+                }
+            }
+        }
+    }
+
     // Dynamic color matching based on currently active preset (with swapped Squat <-> Other colors)
     val activePresetColor = when (uiState.timerPresetType) {
         "스쿼트" -> Color(0xFFE65100) // Swapped to Orange

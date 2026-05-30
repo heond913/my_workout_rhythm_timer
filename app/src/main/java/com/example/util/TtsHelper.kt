@@ -8,6 +8,7 @@ import java.util.Locale
 class TtsHelper(context: Context) : TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var isInitialized = false
+    private var pendingSpeakText: Pair<String, Int>? = null
 
     init {
         try {
@@ -42,6 +43,11 @@ class TtsHelper(context: Context) : TextToSpeech.OnInitListener {
                     tts?.setAudioAttributes(audioAttributes)
                 } catch (e: Exception) {
                     Log.e("TtsHelper", "Failed to set AudioAttributes for TTS", e)
+                }
+
+                pendingSpeakText?.let { (text, mode) ->
+                    speak(text, mode)
+                    pendingSpeakText = null
                 }
             }
         } else {
@@ -78,6 +84,8 @@ class TtsHelper(context: Context) : TextToSpeech.OnInitListener {
             } catch (e: Exception) {
                 Log.e("TtsHelper", "Error speaking text: ${e.message}")
             }
+        } else {
+            pendingSpeakText = Pair(text, queueMode)
         }
     }
 
