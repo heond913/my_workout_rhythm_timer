@@ -10,6 +10,7 @@ import com.example.data.AppDatabase
 import com.example.data.WorkoutRecord
 import com.example.data.WorkoutRepository
 import com.example.util.SoundHelper
+import com.example.util.TtsHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,6 +71,9 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     // Sound and vibration assistant
     private val soundHelper = SoundHelper(application)
+
+    // TTS voice coach assistant
+    private val ttsHelper = TtsHelper(application)
 
     // Flow of workout records from repository, exposed as StateFlow
     val allRecords: StateFlow<List<WorkoutRecord>> = repository.allRecords
@@ -253,6 +257,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         if (timerRunning) return
         _uiState.value = _uiState.value.copy(timerRunning = true)
         soundHelper.playStrongBeep()
+        ttsHelper.speak("운동을 시작합니다.")
 
         val startTime = System.currentTimeMillis() - elapsedSeconds * 1000L
 
@@ -273,28 +278,47 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
                         var newRunning = _uiState.value.timerRunning
                         var newShowDialog = _uiState.value.showCompletionDialog
 
+                        var speakText: String? = null
+                        var shouldSpeakCompleted = false
+
                         if (_uiState.value.timerMode == TimerMode.Countdown) {
                             if (newRemaining > 0) {
                                 newRemaining--
                             }
                             
+                            // Check coaching alerts FIRST so they have proper priority
+                            val targetHalf = _uiState.value.totalTargetSeconds / 2
+                            if (newRemaining == targetHalf && targetHalf >= 10) {
+                                speakText = "절반 지났습니다!"
+                            } else if (newRemaining == 10 && _uiState.value.totalTargetSeconds > 15) {
+                                speakText = "마지막 10초!"
+                            }
+
                             // Periodic alarm/rhythm alert
                             val interval = _uiState.value.rhythmIntervalSeconds
+                            var repTriggered = false
                             if (interval > 0) {
                                 newRhythmTick++
                                 if (newRhythmTick >= interval) {
                                     if (newRemaining > 0) {
                                         soundHelper.playTick()
+                                        repTriggered = true
                                     }
                                     newWorkoutCount++
                                     newRhythmTick = 0
                                 }
                             }
 
+                            // If a rep was triggered and we don't have a half/10s alert, speak the count
+                            if (repTriggered && speakText == null) {
+                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
+                            }
+
                             // Complete condition
                             if (newRemaining <= 0) {
                                 newRunning = false
                                 soundHelper.playSetFinished()
+                                shouldSpeakCompleted = true
                                 // Automatically record styled logged placeholder workout
                                 logCurrentTimerWorkout()
                                 newShowDialog = true
@@ -302,13 +326,19 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
                         } else {
                             // Count-up mode
                             val interval = _uiState.value.rhythmIntervalSeconds
+                            var repTriggered = false
                             if (interval > 0) {
                                 newRhythmTick++
                                 if (newRhythmTick >= interval) {
                                     soundHelper.playTick()
+                                    repTriggered = true
                                     newWorkoutCount++
                                     newRhythmTick = 0
                                 }
+                            }
+
+                            if (repTriggered) {
+                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
                             }
                         }
 
@@ -321,6 +351,13 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
                             timerRunning = newRunning,
                             showCompletionDialog = newShowDialog
                         )
+
+                        // Speak TTS sounds in this tick
+                        if (shouldSpeakCompleted) {
+                            ttsHelper.speak("수고하셨습니다! 운동이 완료되었습니다.")
+                        } else if (speakText != null) {
+                            ttsHelper.speak(speakText)
+                        }
 
                         if (!newRunning) {
                             break
@@ -335,6 +372,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         _uiState.value = _uiState.value.copy(timerRunning = false)
         timerJob?.cancel()
         soundHelper.playDoubleBeep()
+        ttsHelper.speak("일시 정지되었습니다.")
     }
 
     fun resetTimer() {
@@ -346,6 +384,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
             rhythmTickCount = 0,
             workoutCount = 0
         )
+        ttsHelper.stop()
     }
 
     private fun logCurrentTimerWorkout() {
@@ -511,5 +550,6 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         super.onCleared()
         timerJob?.cancel()
         soundHelper.release()
+        ttsHelper.release()
     }
 }
