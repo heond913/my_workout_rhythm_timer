@@ -158,45 +158,54 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
         timerRunning = true
         soundHelper.playStrongBeep()
 
+        val startTime = System.currentTimeMillis() - elapsedSeconds * 1000L
+
         timerJob = viewModelScope.launch {
             while (timerRunning) {
-                delay(1000L)
-                elapsedSeconds++
+                delay(100L) // Poll frequently to ensure high responsiveness and alignment
+                val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+                val diff = targetTotalElapsed - elapsedSeconds
+                if (diff > 0) {
+                    for (i in 1..diff) {
+                        if (!timerRunning) break
+                        elapsedSeconds++
 
-                if (timerMode == TimerMode.Countdown) {
-                    if (remainingSeconds > 0) {
-                        remainingSeconds--
-                    }
-                    
-                    // Periodic alarm/rhythm alert
-                    if (rhythmIntervalSeconds > 0) {
-                        rhythmTickCount++
-                        if (rhythmTickCount >= rhythmIntervalSeconds) {
+                        if (timerMode == TimerMode.Countdown) {
                             if (remainingSeconds > 0) {
-                                soundHelper.playTick()
+                                remainingSeconds--
                             }
-                            workoutCount++
-                            rhythmTickCount = 0
-                        }
-                    }
+                            
+                            // Periodic alarm/rhythm alert
+                            if (rhythmIntervalSeconds > 0) {
+                                rhythmTickCount++
+                                if (rhythmTickCount >= rhythmIntervalSeconds) {
+                                    if (remainingSeconds > 0) {
+                                        soundHelper.playTick()
+                                    }
+                                    workoutCount++
+                                    rhythmTickCount = 0
+                                }
+                            }
 
-                    // Complete condition
-                    if (remainingSeconds <= 0) {
-                        timerRunning = false
-                        soundHelper.playSetFinished()
-                        // Automatically record styled logged placeholder workout
-                        logCurrentTimerWorkout()
-                        showCompletionDialog = true
-                        break
-                    }
-                } else {
-                    // Count-up mode
-                    if (rhythmIntervalSeconds > 0) {
-                        rhythmTickCount++
-                        if (rhythmTickCount >= rhythmIntervalSeconds) {
-                            soundHelper.playTick()
-                            workoutCount++
-                            rhythmTickCount = 0
+                            // Complete condition
+                            if (remainingSeconds <= 0) {
+                                timerRunning = false
+                                soundHelper.playSetFinished()
+                                // Automatically record styled logged placeholder workout
+                                logCurrentTimerWorkout()
+                                showCompletionDialog = true
+                                break
+                            }
+                        } else {
+                            // Count-up mode
+                            if (rhythmIntervalSeconds > 0) {
+                                rhythmTickCount++
+                                if (rhythmTickCount >= rhythmIntervalSeconds) {
+                                    soundHelper.playTick()
+                                    workoutCount++
+                                    rhythmTickCount = 0
+                                }
+                            }
                         }
                     }
                 }
