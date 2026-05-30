@@ -75,7 +75,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
     ) {
         // Stats Header Frame
         Text(
-            text = "성장 통계 대시보드",
+            text = "전체 통계 대시보드",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = tealActive,
@@ -129,14 +129,14 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
                 Column {
                     Text(
-                        text = if (streak > 0) "${streak}일 연속 목표 도달!" else "운동 스트릭이 끊겼어요",
+                        text = if (streak > 0) "${streak}일 연속 목표 도달!" else "연속 운동 흐름이 끊겼어요",
                         color = if (streak > 0) fireOrange else charcoalDark,
                         fontWeight = FontWeight.Black,
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = if (streak > 0) "매일 꾸준한 노력의 결실입니다. 계속 박자를 이어가세요!" else "오늘 운동을 완료해서 1일차 스트릭을 시작해보세요!",
+                        text = if (streak > 0) "매일 꾸준한 노력의 결실입니다. 계속 박자를 이어가세요!" else "오늘 운동을 완료해서 1일차 흐름을 시작해보세요!",
                         color = secondaryGray,
                         fontSize = 11.sp,
                         lineHeight = 15.sp

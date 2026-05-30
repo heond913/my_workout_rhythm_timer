@@ -301,7 +301,7 @@ fun WorkoutBottomBar(
             },
             label = {
                 Text(
-                    text = "성장 통계",
+                    text = "전체 통계",
                     fontWeight = if (currentTab == AppTab.Stats) FontWeight.Bold else FontWeight.Normal
                 )
             },
