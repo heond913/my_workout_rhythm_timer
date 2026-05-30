@@ -30,6 +30,7 @@ class WorkoutTimerService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var timerJob: Job? = null
     private var shutdownJob: Job? = null
+    private var sessionStartTime: Long = 0L
 
     private lateinit var soundHelper: SoundHelper
     private lateinit var ttsHelper: TtsHelper
@@ -37,7 +38,7 @@ class WorkoutTimerService : Service() {
     private lateinit var notificationManager: NotificationManager
 
     companion object {
-        const val CHANNEL_ID = "workout_timer_channel"
+        const val CHANNEL_ID = "workout_timer_channel_v2"
         const val NOTIFICATION_ID = 2026 // Custom unique id for the foreground notification
 
         const val ACTION_START = "com.example.ACTION_START"
@@ -87,6 +88,10 @@ class WorkoutTimerService : Service() {
 
         val currentState = TimerRepository.timerState.value
         if (currentState.isRunning && timerJob?.isActive == true) return
+
+        if (sessionStartTime == 0L) {
+            sessionStartTime = System.currentTimeMillis()
+        }
 
         // Set state running
         TimerRepository.updateState { it.copy(isRunning = true) }
@@ -229,6 +234,7 @@ class WorkoutTimerService : Service() {
         shutdownJob?.cancel()
         shutdownJob = null
         timerJob?.cancel()
+        sessionStartTime = 0L
         TimerRepository.updateState {
             it.copy(
                 isRunning = false,
@@ -274,9 +280,13 @@ class WorkoutTimerService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.notification_channel_name),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = getString(R.string.notification_channel_desc)
+                enableVibration(false)
+                vibrationPattern = null
+                setSound(null, null)
+                enableLights(false)
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -342,6 +352,13 @@ class WorkoutTimerService : Service() {
             .setContentIntent(openAppPendingIntent)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+
+        if (sessionStartTime != 0L) {
+            builder.setWhen(sessionStartTime)
+            builder.setShowWhen(false)
+        }
 
         if (state.isRunning) {
             builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.notification_action_pause), pausePendingIntent)
