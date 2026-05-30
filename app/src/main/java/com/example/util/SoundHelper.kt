@@ -6,13 +6,19 @@ import android.media.AudioManager
 import android.media.SoundPool
 import android.media.ToneGenerator
 import android.os.Vibrator
+import android.os.Build
 import com.example.R
 import java.util.Collections
 import java.util.concurrent.Executors
 
 class SoundHelper(context: Context) {
     @Suppress("DEPRECATION")
-    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val attributionContext = context.createAttributionContext("workout_timer_attribution")
+        attributionContext.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    } else {
+        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    }
     private val executor = Executors.newSingleThreadExecutor()
 
     private var toneGenerator: ToneGenerator? = null

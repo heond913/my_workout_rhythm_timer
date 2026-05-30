@@ -1,6 +1,11 @@
 package com.example
 
 import android.os.Bundle
+import android.os.Build
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import android.media.AudioManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,6 +67,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         volumeControlStream = AudioManager.STREAM_MUSIC
         enableEdgeToEdge()
+
+        // Prompt for POST_NOTIFICATIONS runtime permission on Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
         setContent {
             MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
                 val viewModel: WorkoutViewModel = viewModel()

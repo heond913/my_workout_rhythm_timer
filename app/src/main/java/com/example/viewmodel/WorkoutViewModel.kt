@@ -9,8 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.AppDatabase
 import com.example.data.WorkoutRecord
 import com.example.data.WorkoutRepository
+import com.example.data.TimerRepository
+import com.example.data.TimerState
 import com.example.util.SoundHelper
 import com.example.util.TtsHelper
+import com.example.util.WorkoutTimerService
+import android.content.Intent
+import android.os.Build
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,12 +74,6 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     )
 ) : AndroidViewModel(application) {
 
-    // Sound and vibration assistant
-    private val soundHelper = SoundHelper(application)
-
-    // TTS voice coach assistant
-    private val ttsHelper = TtsHelper(application)
-
     // Flow of workout records from repository, exposed as StateFlow
     val allRecords: StateFlow<List<WorkoutRecord>> = repository.allRecords
         .stateIn(
@@ -96,6 +95,36 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     )
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
 
+    init {
+        val initialPreset = repository.getTimerPresetType()
+        val initialRhythm = repository.getRhythmInterval()
+        TimerRepository.setState(
+            TimerState(
+                timerPresetType = initialPreset,
+                rhythmIntervalSeconds = initialRhythm,
+                remainingSeconds = 60,
+                totalTargetSeconds = 60
+            )
+        )
+
+        viewModelScope.launch {
+            TimerRepository.timerState.collect { timerState ->
+                _uiState.value = _uiState.value.copy(
+                    timerRunning = timerState.isRunning,
+                    timerMode = timerState.timerMode,
+                    timerPresetType = timerState.timerPresetType,
+                    totalTargetSeconds = timerState.totalTargetSeconds,
+                    rhythmIntervalSeconds = timerState.rhythmIntervalSeconds,
+                    elapsedSeconds = timerState.elapsedSeconds,
+                    remainingSeconds = timerState.remainingSeconds,
+                    rhythmTickCount = timerState.rhythmTickCount,
+                    workoutCount = timerState.workoutCount,
+                    showCompletionDialog = timerState.showCompletionDialog
+                )
+            }
+        }
+    }
+
     // Backwards compatibility property delegations via getters/setters (also used for direct updates)
     var currentTab: AppTab
         get() = _uiState.value.currentTab
@@ -111,7 +140,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     var timerPresetType: String
         get() = _uiState.value.timerPresetType
         set(value) {
-            _uiState.value = _uiState.value.copy(timerPresetType = value)
+            TimerRepository.updateState { it.copy(timerPresetType = value) }
         }
     
     var squatIntervalSeconds: Int
@@ -138,20 +167,25 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     var timerRunning: Boolean
         get() = _uiState.value.timerRunning
         private set(value) {
-            _uiState.value = _uiState.value.copy(timerRunning = value)
+            TimerRepository.updateState { it.copy(isRunning = value) }
         }
     var timerMode: TimerMode
         get() = _uiState.value.timerMode
         private set(value) {
-            _uiState.value = _uiState.value.copy(timerMode = value)
+            TimerRepository.updateState { it.copy(timerMode = value) }
         }
 
     var totalTargetSeconds: Int
         get() = _uiState.value.totalTargetSeconds
         set(value) {
-            _uiState.value = _uiState.value.copy(totalTargetSeconds = value)
+            TimerRepository.updateState {
+                it.copy(
+                    totalTargetSeconds = value,
+                    remainingSeconds = value
+                )
+            }
             if (timerPresetType == "플랭크") {
-                rhythmIntervalSeconds = value
+                TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
                 repository.saveRhythmInterval(value)
             }
         }
@@ -159,32 +193,32 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     var rhythmIntervalSeconds: Int
         get() = _uiState.value.rhythmIntervalSeconds
         set(value) {
-            _uiState.value = _uiState.value.copy(rhythmIntervalSeconds = value)
+            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
         }
     var elapsedSeconds: Int
         get() = _uiState.value.elapsedSeconds
         set(value) {
-            _uiState.value = _uiState.value.copy(elapsedSeconds = value)
+            TimerRepository.updateState { it.copy(elapsedSeconds = value) }
         }
     var remainingSeconds: Int
         get() = _uiState.value.remainingSeconds
         set(value) {
-            _uiState.value = _uiState.value.copy(remainingSeconds = value)
+            TimerRepository.updateState { it.copy(remainingSeconds = value) }
         }
     var rhythmTickCount: Int
         get() = _uiState.value.rhythmTickCount
         set(value) {
-            _uiState.value = _uiState.value.copy(rhythmTickCount = value)
+            TimerRepository.updateState { it.copy(rhythmTickCount = value) }
         }
     var workoutCount: Int
         get() = _uiState.value.workoutCount
         set(value) {
-            _uiState.value = _uiState.value.copy(workoutCount = value)
+            TimerRepository.updateState { it.copy(workoutCount = value) }
         }
     var showCompletionDialog: Boolean
         get() = _uiState.value.showCompletionDialog
         set(value) {
-            _uiState.value = _uiState.value.copy(showCompletionDialog = value)
+            TimerRepository.updateState { it.copy(showCompletionDialog = value) }
         }
 
     fun selectPreset(preset: String) {
@@ -196,10 +230,16 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
             "기타" -> otherIntervalSeconds
             else -> 0
         }
-        _uiState.value = _uiState.value.copy(
-            timerPresetType = updatedPreset,
-            rhythmIntervalSeconds = updatedRhythmInterval
-        )
+        TimerRepository.updateState {
+            it.copy(
+                timerPresetType = updatedPreset,
+                rhythmIntervalSeconds = updatedRhythmInterval,
+                elapsedSeconds = 0,
+                remainingSeconds = totalTargetSeconds,
+                rhythmTickCount = 0,
+                workoutCount = 0
+            )
+        }
         repository.saveTimerPresetType(updatedPreset)
         repository.saveRhythmInterval(updatedRhythmInterval)
         resetTimer()
@@ -210,7 +250,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         _uiState.value = _uiState.value.copy(squatIntervalSeconds = safeSecs)
         repository.saveSquatInterval(safeSecs)
         if (timerPresetType == "스쿼트") {
-            rhythmIntervalSeconds = safeSecs
+            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -220,7 +260,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         _uiState.value = _uiState.value.copy(lungeIntervalSeconds = safeSecs)
         repository.saveLungeInterval(safeSecs)
         if (timerPresetType == "런지") {
-            rhythmIntervalSeconds = safeSecs
+            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -230,7 +270,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         _uiState.value = _uiState.value.copy(plankIntervalSeconds = safeSecs)
         repository.savePlankInterval(safeSecs)
         if (timerPresetType == "플랭크") {
-            rhythmIntervalSeconds = safeSecs
+            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -240,172 +280,62 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         _uiState.value = _uiState.value.copy(otherIntervalSeconds = safeSecs)
         repository.saveOtherInterval(safeSecs)
         if (timerPresetType == "기타") {
-            rhythmIntervalSeconds = safeSecs
+            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
 
-    private var timerJob: Job? = null
-
     fun selectTimerMode(mode: TimerMode) {
         if (timerRunning) return
-        _uiState.value = _uiState.value.copy(timerMode = mode)
+        TimerRepository.updateState {
+            it.copy(
+                timerMode = mode,
+                elapsedSeconds = 0,
+                remainingSeconds = totalTargetSeconds,
+                rhythmTickCount = 0,
+                workoutCount = 0
+            )
+        }
         resetTimer()
     }
 
     fun startTimer() {
-        if (timerRunning) return
-        _uiState.value = _uiState.value.copy(timerRunning = true)
-        soundHelper.playStrongBeep()
-        ttsHelper.speak("운동을 시작합니다.")
-
-        val startTime = System.currentTimeMillis() - elapsedSeconds * 1000L
-
-        timerJob = viewModelScope.launch {
-            while (_uiState.value.timerRunning) {
-                delay(100L) // Poll frequently to ensure high responsiveness and alignment
-                val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
-                val diff = targetTotalElapsed - _uiState.value.elapsedSeconds
-                if (diff > 0) {
-                    for (i in 1..diff) {
-                        if (!_uiState.value.timerRunning) break
-                        
-                        // Grab current local variables from State to update atomically
-                        var newElapsed = _uiState.value.elapsedSeconds + 1
-                        var newRemaining = _uiState.value.remainingSeconds
-                        var newRhythmTick = _uiState.value.rhythmTickCount
-                        var newWorkoutCount = _uiState.value.workoutCount
-                        var newRunning = _uiState.value.timerRunning
-                        var newShowDialog = _uiState.value.showCompletionDialog
-
-                        var speakText: String? = null
-                        var shouldSpeakCompleted = false
-
-                        if (_uiState.value.timerMode == TimerMode.Countdown) {
-                            if (newRemaining > 0) {
-                                newRemaining--
-                            }
-                            
-                            // Check coaching alerts FIRST so they have proper priority
-                            val targetHalf = _uiState.value.totalTargetSeconds / 2
-                            if (newRemaining == targetHalf && targetHalf >= 10) {
-                                speakText = "절반 지났습니다!"
-                            } else if (newRemaining == 10 && _uiState.value.totalTargetSeconds > 15) {
-                                speakText = "마지막 10초!"
-                            }
-
-                            // Periodic alarm/rhythm alert
-                            val interval = _uiState.value.rhythmIntervalSeconds
-                            var repTriggered = false
-                            if (interval > 0) {
-                                newRhythmTick++
-                                if (newRhythmTick >= interval) {
-                                    if (newRemaining > 0) {
-                                        soundHelper.playTick()
-                                        repTriggered = true
-                                    }
-                                    newWorkoutCount++
-                                    newRhythmTick = 0
-                                }
-                            }
-
-                            // If a rep was triggered and we don't have a half/10s alert, speak the count
-                            if (repTriggered && speakText == null) {
-                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
-                            }
-
-                            // Complete condition
-                            if (newRemaining <= 0) {
-                                newRunning = false
-                                soundHelper.playSetFinished()
-                                shouldSpeakCompleted = true
-                                // Automatically record styled logged placeholder workout
-                                logCurrentTimerWorkout()
-                                newShowDialog = true
-                            }
-                        } else {
-                            // Count-up mode
-                            val interval = _uiState.value.rhythmIntervalSeconds
-                            var repTriggered = false
-                            if (interval > 0) {
-                                newRhythmTick++
-                                if (newRhythmTick >= interval) {
-                                    soundHelper.playTick()
-                                    repTriggered = true
-                                    newWorkoutCount++
-                                    newRhythmTick = 0
-                                }
-                            }
-
-                            if (repTriggered) {
-                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
-                            }
-                        }
-
-                        // Apply the grouped states in one single atomic atomic update
-                        _uiState.value = _uiState.value.copy(
-                            elapsedSeconds = newElapsed,
-                            remainingSeconds = newRemaining,
-                            rhythmTickCount = newRhythmTick,
-                            workoutCount = newWorkoutCount,
-                            timerRunning = newRunning,
-                            showCompletionDialog = newShowDialog
-                        )
-
-                        // Speak TTS sounds in this tick
-                        if (shouldSpeakCompleted) {
-                            ttsHelper.speak("수고하셨습니다! 운동이 완료되었습니다.")
-                        } else if (speakText != null) {
-                            ttsHelper.speak(speakText)
-                        }
-
-                        if (!newRunning) {
-                            break
-                        }
-                    }
-                }
+        val context = getApplication<Application>().applicationContext
+        val intent = Intent(context, WorkoutTimerService::class.java).apply {
+            action = WorkoutTimerService.ACTION_START
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     fun pauseTimer() {
-        _uiState.value = _uiState.value.copy(timerRunning = false)
-        timerJob?.cancel()
-        soundHelper.playDoubleBeep()
-        ttsHelper.speak("일시 정지되었습니다.")
+        val context = getApplication<Application>().applicationContext
+        val intent = Intent(context, WorkoutTimerService::class.java).apply {
+            action = WorkoutTimerService.ACTION_PAUSE
+        }
+        try {
+            context.startService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun resetTimer() {
-        timerJob?.cancel()
-        _uiState.value = _uiState.value.copy(
-            timerRunning = false,
-            elapsedSeconds = 0,
-            remainingSeconds = _uiState.value.totalTargetSeconds,
-            rhythmTickCount = 0,
-            workoutCount = 0
-        )
-        ttsHelper.stop()
-    }
-
-    private fun logCurrentTimerWorkout() {
-        // Quick auto-record from finished timer if workout context matches
-        val exercise = when (timerPresetType) {
-            "스쿼트" -> "스쿼트"
-            "런지" -> "런지"
-            "플랭크" -> "플랭크"
-            else -> "기타"
+        val context = getApplication<Application>().applicationContext
+        val intent = Intent(context, WorkoutTimerService::class.java).apply {
+            action = WorkoutTimerService.ACTION_RESET
         }
-        val duration = if (timerMode == TimerMode.Countdown) totalTargetSeconds else elapsedSeconds
-        viewModelScope.launch {
-            repository.insert(
-                WorkoutRecord(
-                    exerciseName = exercise,
-                    reps = if (workoutCount > 0) workoutCount else null,
-                    durationSeconds = duration,
-                    note = "리듬 타이머 자동 완료",
-                    rating = 4
-                )
-            )
+        try {
+            context.startService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -548,8 +478,5 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     override fun onCleared() {
         super.onCleared()
-        timerJob?.cancel()
-        soundHelper.release()
-        ttsHelper.release()
     }
 }

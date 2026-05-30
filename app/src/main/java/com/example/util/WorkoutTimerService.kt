@@ -1,0 +1,344 @@
+package com.example.util
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.MainActivity
+import com.example.data.AppDatabase
+import com.example.data.TimerRepository
+import com.example.data.TimerState
+import com.example.data.WorkoutRecord
+import com.example.data.WorkoutRepository
+import com.example.viewmodel.TimerMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+class WorkoutTimerService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var timerJob: Job? = null
+
+    private lateinit var soundHelper: SoundHelper
+    private lateinit var ttsHelper: TtsHelper
+    private lateinit var repository: WorkoutRepository
+    private lateinit var notificationManager: NotificationManager
+
+    companion object {
+        const val CHANNEL_ID = "workout_timer_channel"
+        const val NOTIFICATION_ID = 2026 // Custom unique id for the foreground notification
+
+        const val ACTION_START = "com.example.ACTION_START"
+        const val ACTION_PAUSE = "com.example.ACTION_PAUSE"
+        const val ACTION_RESET = "com.example.ACTION_RESET"
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        soundHelper = SoundHelper(application)
+        ttsHelper = TtsHelper(application)
+        repository = WorkoutRepository(
+            AppDatabase.getDatabase(applicationContext).workoutDao(),
+            applicationContext.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
+        )
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val action = intent?.action ?: ACTION_START
+        Log.d("WorkoutTimerService", "onStartCommand action: $action")
+
+        when (action) {
+            ACTION_START -> {
+                startTimerLoop()
+            }
+            ACTION_PAUSE -> {
+                pauseTimerLoop()
+            }
+            ACTION_RESET -> {
+                resetTimerLoop()
+            }
+        }
+
+        return START_NOT_STICKY
+    }
+
+    private fun startTimerLoop() {
+        val currentState = TimerRepository.timerState.value
+        if (currentState.isRunning && timerJob?.isActive == true) return
+
+        // Set state running
+        TimerRepository.updateState { it.copy(isRunning = true) }
+
+        // Start Foreground Service immediately to satisfy system mandates
+        val notification = buildNotification()
+        startForeground(NOTIFICATION_ID, notification)
+
+        soundHelper.playStrongBeep()
+        ttsHelper.speak("운동을 시작합니다.")
+
+        val startTime = System.currentTimeMillis() - currentState.elapsedSeconds * 1000L
+
+        timerJob = serviceScope.launch {
+            while (TimerRepository.timerState.value.isRunning) {
+                delay(100L) // Poll atomic timestamp for high precision
+                val state = TimerRepository.timerState.value
+                val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+                val diff = targetTotalElapsed - state.elapsedSeconds
+                if (diff > 0) {
+                    for (i in 1..diff) {
+                        val currentLoopState = TimerRepository.timerState.value
+                        if (!currentLoopState.isRunning) break
+
+                        var newElapsed = currentLoopState.elapsedSeconds + 1
+                        var newRemaining = currentLoopState.remainingSeconds
+                        var newRhythmTick = currentLoopState.rhythmTickCount
+                        var newWorkoutCount = currentLoopState.workoutCount
+                        var newRunning = currentLoopState.isRunning
+                        var newShowDialog = currentLoopState.showCompletionDialog
+
+                        var speakText: String? = null
+                        var shouldSpeakCompleted = false
+
+                        if (currentLoopState.timerMode == TimerMode.Countdown) {
+                            if (newRemaining > 0) {
+                                newRemaining--
+                            }
+
+                            // Check coaching alerts
+                            val targetHalf = currentLoopState.totalTargetSeconds / 2
+                            if (newRemaining == targetHalf && targetHalf >= 10) {
+                                speakText = "절반 지났습니다!"
+                            } else if (newRemaining == 10 && currentLoopState.totalTargetSeconds > 15) {
+                                speakText = "마지막 10초!"
+                            }
+
+                            // Rhythm counts
+                            val interval = currentLoopState.rhythmIntervalSeconds
+                            var repTriggered = false
+                            if (interval > 0) {
+                                newRhythmTick++
+                                if (newRhythmTick >= interval) {
+                                    if (newRemaining > 0) {
+                                        soundHelper.playTick()
+                                        repTriggered = true
+                                    }
+                                    newWorkoutCount++
+                                    newRhythmTick = 0
+                                }
+                            }
+
+                            if (repTriggered && speakText == null) {
+                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
+                            }
+
+                            // Completed Countdown Condition
+                            if (newRemaining <= 0) {
+                                newRunning = false
+                                soundHelper.playSetFinished()
+                                shouldSpeakCompleted = true
+                                logCurrentTimerWorkout()
+                                newShowDialog = true
+                            }
+                        } else {
+                            // Count-up Mode
+                            val interval = currentLoopState.rhythmIntervalSeconds
+                            var repTriggered = false
+                            if (interval > 0) {
+                                newRhythmTick++
+                                if (newRhythmTick >= interval) {
+                                    soundHelper.playTick()
+                                    repTriggered = true
+                                    newWorkoutCount++
+                                    newRhythmTick = 0
+                                }
+                            }
+
+                            if (repTriggered) {
+                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
+                            }
+                        }
+
+                        // Update State atomically
+                        TimerRepository.updateState {
+                            it.copy(
+                                elapsedSeconds = newElapsed,
+                                remainingSeconds = newRemaining,
+                                rhythmTickCount = newRhythmTick,
+                                workoutCount = newWorkoutCount,
+                                isRunning = newRunning,
+                                showCompletionDialog = newShowDialog
+                            )
+                        }
+
+                        // Speech Audio trigger
+                        if (shouldSpeakCompleted) {
+                            ttsHelper.speak("수고하셨습니다! 운동이 완료되었습니다.")
+                        } else if (speakText != null) {
+                            ttsHelper.speak(speakText)
+                        }
+
+                        // Dynamically update notification text every second
+                        updateNotification()
+
+                        if (!newRunning) {
+                            // If countdown completed, stop service
+                            stopForeground(true)
+                            stopSelf()
+                            break
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun pauseTimerLoop() {
+        TimerRepository.updateState { it.copy(isRunning = false) }
+        timerJob?.cancel()
+        soundHelper.playDoubleBeep()
+        ttsHelper.speak("일시 정지되었습니다.")
+        updateNotification()
+    }
+
+    private fun resetTimerLoop() {
+        timerJob?.cancel()
+        TimerRepository.updateState {
+            it.copy(
+                isRunning = false,
+                elapsedSeconds = 0,
+                remainingSeconds = it.totalTargetSeconds,
+                rhythmTickCount = 0,
+                workoutCount = 0
+            )
+        }
+        ttsHelper.stop()
+        stopForeground(true)
+        stopSelf()
+    }
+
+    private fun logCurrentTimerWorkout() {
+        val state = TimerRepository.timerState.value
+        val exercise = when (state.timerPresetType) {
+            "스쿼트" -> "스쿼트"
+            "런지" -> "런지"
+            "플랭크" -> "플랭크"
+            else -> "기타"
+        }
+        val duration = if (state.timerMode == TimerMode.Countdown) state.totalTargetSeconds else state.elapsedSeconds
+        serviceScope.launch {
+            try {
+                repository.insert(
+                    WorkoutRecord(
+                        exerciseName = exercise,
+                        reps = if (state.workoutCount > 0) state.workoutCount else null,
+                        durationSeconds = duration,
+                        note = "리듬 타이머 자동 완료",
+                        rating = 4
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("WorkoutTimerService", "Error logging workout", e)
+            }
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "운동 리듬 타이머",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "백그라운드 운동 타이머 및 알림 기능을 제공합니다."
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun updateNotification() {
+        try {
+            val notification = buildNotification()
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            Log.e("WorkoutTimerService", "Failed to update notification", e)
+        }
+    }
+
+    private fun buildNotification(): android.app.Notification {
+        val state = TimerRepository.timerState.value
+        val titleText = "${state.timerPresetType} 운동 중"
+        
+        val contentText = if (state.timerMode == TimerMode.Countdown) {
+            "남은 시간: ${state.remainingSeconds}초 | 횟수: ${state.workoutCount}회"
+        } else {
+            "진행 시간: ${state.elapsedSeconds}초 | 횟수: ${state.workoutCount}회"
+        }
+
+        // Open MainActivity when user clicks the notification card
+        val openAppIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Pending Intents for Action buttons
+        val pauseIntent = Intent(this, WorkoutTimerService::class.java).apply { action = ACTION_PAUSE }
+        val pausePendingIntent = PendingIntent.getService(
+            this, 1, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val startIntent = Intent(this, WorkoutTimerService::class.java).apply { action = ACTION_START }
+        val startPendingIntent = PendingIntent.getService(
+            this, 2, startIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val resetIntent = Intent(this, WorkoutTimerService::class.java).apply { action = ACTION_RESET }
+        val resetPendingIntent = PendingIntent.getService(
+            this, 3, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(titleText)
+            .setContentText(contentText)
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentIntent(openAppPendingIntent)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+
+        if (state.isRunning) {
+            builder.addAction(android.R.drawable.ic_media_pause, "일시 정지", pausePendingIntent)
+        } else {
+            builder.addAction(android.R.drawable.ic_media_play, "다시 시작", startPendingIntent)
+        }
+        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "초기화", resetPendingIntent)
+
+        return builder.build()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        timerJob?.cancel()
+        soundHelper.release()
+        ttsHelper.release()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+}

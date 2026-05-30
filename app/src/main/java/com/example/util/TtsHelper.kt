@@ -11,7 +11,12 @@ class TtsHelper(context: Context) : TextToSpeech.OnInitListener {
 
     init {
         try {
-            tts = TextToSpeech(context.applicationContext, this)
+            val resolvedContext = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                context.applicationContext.createAttributionContext("workout_timer_attribution")
+            } else {
+                context.applicationContext
+            }
+            tts = TextToSpeech(resolvedContext, this)
         } catch (e: Exception) {
             Log.e("TtsHelper", "Failed to initialize TextToSpeech", e)
         }
