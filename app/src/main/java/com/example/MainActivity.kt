@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
                         // Sync from ViewModel tab selection to Page
                         LaunchedEffect(uiState.currentTab) {
                             val targetPage = listTabs.indexOf(uiState.currentTab).coerceAtLeast(0)
-                            if (pagerState.currentPage != targetPage) {
+                            if (pagerState.currentPage != targetPage && !pagerState.isScrollInProgress) {
                                 pagerState.animateScrollToPage(targetPage)
                             }
                         }
