@@ -1,3 +1,154 @@
 <resources>
-    <string name="app_name">나만의 운동 타이머</string>
+    <string name="app_name">My Workout Rhythm</string>
+
+    <!-- Navigation Tab Labels in BottomBar -->
+    <string name="tab_timer">Timer</string>
+    <string name="tab_log">Log</string>
+    <string name="tab_calendar">Calendar</string>
+    <string name="tab_stats">Stats</string>
+
+    <string name="splash_subtitle">Consistent tempo, healthy habits</string>
+    <string name="splash_title">My Workout\nRhythm Timer</string>
+
+    <!-- Timer Screen -->
+    <string name="title_timer">My Workout Rhythm Timer</string>
+    <string name="subtitle_timer">Perform home workouts in sync with your rhythm</string>
+    <string name="desc_timer_clock">Timer Clock</string>
+    <string name="workout_count_format">Total %1$d Reps</string>
+    <string name="rhythm_interval_notifying">Notifying every %1$d seconds...</string>
+    <string name="timer_in_progress">Timer in progress</string>
+    <string name="ready">READY</string>
+    <string name="target_workout_time">Target Workout Time</string>
+    <string name="target_time_format">%1$d sec (%2$d min %3$d sec)</string>
+    <string name="target_time_format_minute_only">%1$d sec (%2$d min)</string>
+    <string name="target_time_format_seconds_only">%1$d sec</string>
+    <string name="desc_decrease_5_sec">Decrease 5 seconds</string>
+    <string name="desc_increase_5_sec">Increase 5 seconds</string>
+    <string name="desc_system_volume">System Volume</string>
+    <string name="timer_sound_volume">Timer Sound Volume</string>
+    <string name="desc_decrease_volume">Decrease Volume</string>
+    <string name="desc_increase_volume">Increase Volume</string>
+    <string name="rhythm_individ_config_title">Individual Rhythm Speed (sec)</string>
+    <string name="desc_reset_timer">Reset Timer</string>
+    <string name="desc_pause">Pause</string>
+    <string name="desc_start">Start</string>
+    <string name="desc_manual_log_write">Write Manual Log</string>
+    <string name="goal_completed_title">🎉 Workout Goal Completed!</string>
+    <string name="goal_completed_msg">Target time reached! Your customized exercise reps have been securely saved.</string>
+    <string name="label_exercise_category">Exercise</string>
+    <string name="label_total_count">Total Reps</string>
+    <string name="label_target_duration">Target Duration</string>
+    <string name="confirm">OK</string>
+
+    <!-- Common Preset Names (Used in Timer and Log and List display) -->
+    <string name="preset_squat">Squat</string>
+    <string name="preset_lunge">Lunge</string>
+    <string name="preset_plank">Plank</string>
+    <string name="preset_other">Other</string>
+    <string name="preset_interval_format">%1$d sec Rhythm</string>
+    <string name="preset_check_format">%1$d sec Check</string>
+
+    <!-- Log Screen -->
+    <string name="title_log">Log Your Workout</string>
+    <string name="subtitle_log">Submit your session\'s details and fatigue levels easily</string>
+    <string name="select_exercise">Select Exercise Category</string>
+    <string name="lbl_custom_exercise">Enter custom exercise name</string>
+    <string name="select_date">Select Date</string>
+    <string name="lbl_record_date">Date to be Recorded</string>
+    <string name="change_date">Change Date</string>
+    <string name="label_reps">Repetitions (Reps)</string>
+    <string name="sub_reps">Enter the number of completed repetitions</string>
+    <string name="desc_decrease_reps">Decrease reps</string>
+    <string name="desc_increase_reps">Increase reps</string>
+    <string name="label_duration_secs">Duration (Seconds)</string>
+    <string name="sub_duration_secs">Enter the duration in seconds (e.g. 60s = 1m)</string>
+    <string name="desc_decrease_duration">Decrease duration</string>
+    <string name="desc_increase_duration">Increase duration</string>
+    <string name="label_fatigue_satisfaction">Fatigue &amp; Satisfaction Rate</string>
+    <string name="intensity_score_format">Intensity: %1$s</string>
+    <string name="intensity_very_light">Very light exercise (warm-up)</string>
+    <string name="intensity_moderate">Moderate exercise (fairly easy)</string>
+    <string name="intensity_perfect">Perfect rhythm (satisfactory trigger)</string>
+    <string name="intensity_hard">Heavy hard training (lots of sweat)</string>
+    <string name="intensity_extreme">Peak extreme training (total exhaustion)</string>
+    <string name="intensity_general">General</string>
+    <string name="label_memo">Workout Feedback Comments (Optional)</string>
+    <string name="placeholder_memo">Write down your posture, condition, or future targets...</string>
+    <string name="save_workout_log">Submit Workout Record</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_calendar">Workout Completion Calendar</string>
+    <string name="subtitle_calendar">Dates highlighted in mint have recorded workouts from timers or logs.</string>
+    <string name="desc_prev_month">Previous Month</string>
+    <string name="desc_next_month">Next Month</string>
+    <string name="sun">Sun</string>
+    <string name="mon">Mon</string>
+    <string name="tue">Tue</string>
+    <string name="wed">Wed</string>
+    <string name="thu">Thu</string>
+    <string name="fri">Fri</string>
+    <string name="sat">Sat</string>
+    <string name="day_selected_format">MMM d, yyyy</string>
+    <string name="month_format">MMMM yyyy</string>
+    <string name="selected_day_record_title">%1$s Workout Records</string>
+    <string name="completed_count_format">%1$d Completed</string>
+    <string name="no_records">No records</string>
+    <string name="desc_selected_date">Selected date</string>
+    <string name="empty_calendar_msg">No workouts recorded for this day</string>
+    <string name="empty_calendar_sub">Fill your calendar by completing workouts or writing manual logs!</string>
+    <string name="desc_delete_record">Delete record</string>
+    <string name="delete_confirm_msg">Are you sure you want to delete this workout record?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Stats Screen -->
+    <string name="title_stats">Total Statistics Dashboard</string>
+    <string name="subtitle_stats">Monitor your ongoing fitness progress with detailed statistics</string>
+    <string name="desc_streak_fire">Streak fire indicator</string>
+    <string name="streak_reached_format">%1$d Days Streak Reached!</string>
+    <string name="streak_broken">Streak broken</string>
+    <string name="streak_reached_sub">Fruit of your daily consistent effort. Keep maintaining your rhythm!</string>
+    <string name="streak_broken_sub">Complete a workout today to start your day 1 active streak!</string>
+    <string name="desc_total_sessions">Total sessions</string>
+    <string name="label_total_sessions">Total Sessions Completed</string>
+    <string name="sessions_count_format">%1$d times</string>
+    <string name="desc_total_reps">Total repetitions</string>
+    <string name="label_accumulated_reps">Accumulated Reps</string>
+    <string name="reps_count_format">%1$d reps</string>
+    <string name="desc_total_duration">Total duration</string>
+    <string name="label_accumulated_duration">Accumulated Duration</string>
+    <string name="minutes_format">%1$d mins</string>
+    <string name="seconds_format">%1$d secs</string>
+    <string name="minutes_seconds_format">%1$d mins %2$d secs</string>
+    <string name="title_7days_consistency">7-Day Workout Consistency</string>
+    <string name="count_format">%1$d times</string>
+    <string name="title_exercise_proportion">Workout Proportion Analysis</string>
+    <string name="legend_squats">Squats (Squats)</string>
+    <string name="legend_lunges">Lunges (Lunges)</string>
+    <string name="legend_planks">Planks (Planks)</string>
+    <string name="legend_others">Others (Others)</string>
+    <string name="records_count_format">%1$d records</string>
+
+    <!-- TTS Messages (TtsHelper / TimerService) -->
+    <string name="tts_workout_start">Workout starts.</string>
+    <string name="tts_workout_paused">Workout paused.</string>
+    <string name="tts_workout_completed">Great job! Workout completed.</string>
+    <string name="tts_workout_half">Half is passed!</string>
+    <string name="tts_workout_last10">Last 10 seconds!</string>
+    <string name="log_timer_auto_completed">Rhythm Timer Auto Completed</string>
+
+    <!-- Language Settings -->
+    <string name="language_settings_title">Language Settings</string>
+    <string name="language_korean">한국어</string>
+    <string name="language_english">English</string>
+
+    <!-- Notification Service -->
+    <string name="notification_channel_name">Workout Rhythm Timer</string>
+    <string name="notification_channel_desc">Provides background workout timer and Notification feature.</string>
+    <string name="notification_training_prefix">Workout</string>
+    <string name="notification_content_countdown">Remaining: %1$d sec | Reps: %2$d</string>
+    <string name="notification_content_countup">Elapsed: %1$d sec | Reps: %2$d</string>
+    <string name="notification_action_pause">Pause</string>
+    <string name="notification_action_resume">Resume</string>
+    <string name="notification_action_reset">Reset</string>
 </resources>

@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import com.example.data.WorkoutRecord
 import com.example.viewmodel.WorkoutViewModel
 import java.text.SimpleDateFormat
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import java.util.*
 
 @Composable
@@ -81,7 +83,8 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     }
 
     // Selected day formatted string helper
-    val daySelectedFormatter = SimpleDateFormat("yyyy년 M월 d일", Locale.getDefault())
+    val daySelectedFormat = stringResource(id = R.string.day_selected_format)
+    val daySelectedFormatter = remember(daySelectedFormat) { SimpleDateFormat(daySelectedFormat, Locale.getDefault()) }
     val selectedDayWorkouts = viewModel.getWorkoutsForDay(selectedDayCal, workoutRecords)
 
     Column(
@@ -94,14 +97,14 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     ) {
         // Title Screen block
         Text(
-            text = "운동 완주 달력",
+            text = stringResource(id = R.string.title_calendar),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = tealActive,
             modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
         )
         Text(
-            text = "초록색으로 표시된 날짜는 타이머 또는 수동 기록이 저장된 날입니다",
+            text = stringResource(id = R.string.subtitle_calendar),
             fontSize = 11.sp,
             color = secondaryGray,
             textAlign = TextAlign.Center,
@@ -121,12 +124,13 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             IconButton(onClick = { viewModel.changeMonth(-1) }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "이전달",
+                    contentDescription = stringResource(id = R.string.desc_prev_month),
                     tint = tealActive
                 )
             }
 
-            val monthSdf = SimpleDateFormat("yyyy년 M월", Locale.getDefault())
+            val monthFormatString = stringResource(id = R.string.month_format)
+            val monthSdf = remember(monthFormatString) { SimpleDateFormat(monthFormatString, Locale.getDefault()) }
             Text(
                 text = monthSdf.format(currentMonthCal.time),
                 fontSize = 16.sp,
@@ -137,7 +141,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             IconButton(onClick = { viewModel.changeMonth(1) }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "다음달",
+                    contentDescription = stringResource(id = R.string.desc_next_month),
                     tint = tealActive
                 )
             }
@@ -147,15 +151,23 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
         // Weekday Label Grid Row (Sun - Sat)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            val weekdays = listOf("일", "월", "화", "수", "목", "금", "토")
-            weekdays.forEach { dayLabel ->
+            val weekdays = listOf(
+                stringResource(id = R.string.sun),
+                stringResource(id = R.string.mon),
+                stringResource(id = R.string.tue),
+                stringResource(id = R.string.wed),
+                stringResource(id = R.string.thu),
+                stringResource(id = R.string.fri),
+                stringResource(id = R.string.sat)
+            )
+            weekdays.forEachIndexed { index, dayLabel ->
                 Text(
                     text = dayLabel,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
-                    color = if (dayLabel == "일") Color(0xFF93000A) else if (dayLabel == "토") Color(0xFF3F5F90) else secondaryGray
+                    color = if (index == 0) Color(0xFF93000A) else if (index == 6) Color(0xFF3F5F90) else secondaryGray
                 )
             }
         }
@@ -249,12 +261,16 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "${daySelectedFormatter.format(selectedDayCal.time)} 운동 기록",
+                text = stringResource(id = R.string.selected_day_record_title, daySelectedFormatter.format(selectedDayCal.time)),
                 color = charcoalDark,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp
             )
-            val countStr = if (selectedDayWorkouts.isNotEmpty()) "${selectedDayWorkouts.size}개 완료" else "기록 없음"
+            val countStr = if (selectedDayWorkouts.isNotEmpty()) {
+                stringResource(id = R.string.completed_count_format, selectedDayWorkouts.size)
+            } else {
+                stringResource(id = R.string.no_records)
+            }
             Text(
                 text = countStr,
                 color = tealActive,
@@ -285,7 +301,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "이날 기록된 운동이 없습니다",
+                        text = stringResource(id = R.string.empty_calendar_msg),
                         color = charcoalDark,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -293,7 +309,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "타이머를 완주하거나 수동으로 로그를 기록하여 달력을 채워보세요!",
+                        text = stringResource(id = R.string.empty_calendar_sub),
                         color = secondaryGray,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center
@@ -344,8 +360,14 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
                             // Details text
                             Column(modifier = Modifier.weight(1f)) {
+                                val workoutExerciseDisplay = when (workout.exerciseName) {
+                                    "스쿼트" -> stringResource(id = R.string.preset_squat)
+                                    "런지" -> stringResource(id = R.string.preset_lunge)
+                                    "플랭크" -> stringResource(id = R.string.preset_plank)
+                                    else -> workout.exerciseName
+                                }
                                 Text(
-                                    text = workout.exerciseName,
+                                    text = workoutExerciseDisplay,
                                     fontWeight = FontWeight.Bold,
                                     color = charcoalDark,
                                     fontSize = 14.sp
@@ -354,7 +376,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                 Row {
                                     if (workout.reps != null && workout.reps > 0) {
                                         Text(
-                                            text = "${workout.reps}회",
+                                            text = stringResource(id = R.string.workout_count_format, workout.reps),
                                             fontSize = 12.sp,
                                             color = charcoalDark,
                                             fontWeight = FontWeight.SemiBold
@@ -364,7 +386,11 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                     if (workout.durationSeconds != null && workout.durationSeconds > 0) {
                                         val m = workout.durationSeconds / 60
                                         val s = workout.durationSeconds % 60
-                                        val displayStr = if (m > 0) "${m}분 ${s}초" else "${s}초"
+                                        val displayStr = if (m > 0) {
+                                            stringResource(id = R.string.minutes_seconds_format, m, s)
+                                        } else {
+                                            stringResource(id = R.string.seconds_format, s)
+                                        }
                                         Text(
                                             text = displayStr,
                                             fontSize = 12.sp,
@@ -406,7 +432,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "기록 삭제",
+                                        contentDescription = stringResource(id = R.string.desc_delete_record),
                                         tint = Color(0xFF93000A), // Red Plank outline crimson
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -430,19 +456,19 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF93000A))
                 ) {
-                    Text("삭제", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { recordToDelete = null }) {
-                    Text("취소", color = secondaryGray)
+                    Text(stringResource(id = R.string.cancel), color = secondaryGray)
                 }
             },
             title = {
-                Text("기록 삭제", fontWeight = FontWeight.Bold, color = charcoalDark)
+                Text(stringResource(id = R.string.desc_delete_record), fontWeight = FontWeight.Bold, color = charcoalDark)
             },
             text = {
-                Text("정말 이 운동 기록을 삭제하시겠습니까?", color = charcoalDark)
+                Text(stringResource(id = R.string.delete_confirm_msg), color = charcoalDark)
             },
             containerColor = Color.White,
             shape = RoundedCornerShape(16.dp)

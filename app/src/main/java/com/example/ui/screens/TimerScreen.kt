@@ -23,6 +23,8 @@ import java.util.Locale
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +47,14 @@ import com.example.viewmodel.WorkoutViewModel
 @Composable
 fun TimerScreen(viewModel: WorkoutViewModel) {
     val context = LocalContext.current
-    val audioManager = remember(context) { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+    val audioManager = remember(context) {
+        val resolvedContext = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            context.createAttributionContext("timer")
+        } else {
+            context
+        }
+        resolvedContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    }
     var systemVolume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
 
@@ -107,16 +116,63 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 140.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+        // Language Toggle Panel
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
+            val isKo = currentLocale == "ko"
+            
+            TextButton(
+                onClick = {
+                    val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("ko")
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = if (isKo) tealActive else secondaryGray
+                ),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text(
+                    text = "한국어",
+                    fontWeight = if (isKo) FontWeight.Bold else FontWeight.Normal,
+                    fontSize = 11.sp
+                )
+            }
+            Text(text = "|", color = secondaryGray.copy(alpha = 0.5f), fontSize = 11.sp)
+            TextButton(
+                onClick = {
+                    val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("en")
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = if (!isKo) tealActive else secondaryGray
+                ),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text(
+                    text = "English",
+                    fontWeight = if (!isKo) FontWeight.Bold else FontWeight.Normal,
+                    fontSize = 11.sp
+                )
+            }
+        }
+
         // Upper Title block
         Text(
-            text = "나만의 운동 리듬 타이머",
+            text = stringResource(id = R.string.title_timer),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = tealActive,
-            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
         )
         Text(
-            text = "홈 트레이닝 운동들을 설정한 리듬에 맞춰 해보세요",
+            text = stringResource(id = R.string.subtitle_timer),
             fontSize = 12.sp,
             color = secondaryGray,
             textAlign = TextAlign.Center,
@@ -159,7 +215,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     imageVector = Icons.Default.Timer,
-                    contentDescription = "Timer Clock",
+                    contentDescription = stringResource(id = R.string.desc_timer_clock),
                     tint = activePresetColor,
                     modifier = Modifier.size(32.dp)
                 )
@@ -177,7 +233,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "총 ${uiState.workoutCount}회",
+                    text = stringResource(id = R.string.workout_count_format, uiState.workoutCount),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = activePresetColor
@@ -186,14 +242,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 Spacer(modifier = Modifier.height(4.dp))
                 if (isRunning) {
                     Text(
-                        text = if (interval > 0) "${interval}초 박자 알림 중..." else "타이머 진행 중",
+                        text = if (interval > 0) stringResource(id = R.string.rhythm_interval_notifying, interval) else stringResource(id = R.string.timer_in_progress),
                         color = activePresetColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 } else {
                     Text(
-                        text = "READY",
+                        text = stringResource(id = R.string.ready),
                         color = secondaryGray,
                         fontSize = 12.sp,
                         letterSpacing = 2.sp,
@@ -211,10 +267,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val presets = listOf(
-                Triple("스쿼트", uiState.squatIntervalSeconds, "${uiState.squatIntervalSeconds}초 박자"),
-                Triple("런지", uiState.lungeIntervalSeconds, "${uiState.lungeIntervalSeconds}초 박자"),
-                Triple("플랭크", totalSeconds, "${totalSeconds}초 체크"),
-                Triple("기타", uiState.otherIntervalSeconds, "${uiState.otherIntervalSeconds}초 체크")
+                Triple("스쿼트", uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
+                Triple("런지", uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
+                Triple("플랭크", totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
+                Triple("기타", uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
             )
 
             presets.forEach { (label, secs, desc) ->
@@ -245,8 +301,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         .padding(vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    val labelDisplay = when (label) {
+                        "스쿼트" -> stringResource(id = R.string.preset_squat)
+                        "런지" -> stringResource(id = R.string.preset_lunge)
+                        "플랭크" -> stringResource(id = R.string.preset_plank)
+                        else -> stringResource(id = R.string.preset_other)
+                    }
                     Text(
-                        text = label,
+                        text = labelDisplay,
                         color = if (isSelected) itemTextColor else charcoalDark,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -278,8 +340,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("목표 운동 시간", color = charcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        Text("${totalSeconds}초 (${totalSeconds / 60}분 ${totalSeconds % 60}초)", color = tealActive, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.target_workout_time), color = charcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        val targetTimeDisplay = if (totalSeconds >= 60) {
+                            if (totalSeconds % 60 == 0) {
+                                stringResource(id = R.string.target_time_format_minute_only, totalSeconds, totalSeconds / 60)
+                            } else {
+                                stringResource(id = R.string.target_time_format, totalSeconds, totalSeconds / 60, totalSeconds % 60)
+                            }
+                        } else {
+                            stringResource(id = R.string.target_time_format_seconds_only, totalSeconds)
+                        }
+                        Text(targetTimeDisplay, color = tealActive, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -303,7 +374,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Remove,
-                                contentDescription = "5초 감소",
+                                contentDescription = stringResource(id = R.string.desc_decrease_5_sec),
                                 tint = tealActive,
                                 modifier = Modifier.size(14.dp) // 버튼 크기에 맞게 내부 대시 기호 크기 조정
                             )
@@ -342,7 +413,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "5초 증가",
+                                contentDescription = stringResource(id = R.string.desc_increase_5_sec),
                                 tint = Color.White,
                                 modifier = Modifier.size(14.dp) // 마이너스 아이콘과 동일하게 14.dp로 조절하여 밸런스 매칭
                             )
@@ -370,12 +441,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = "시스템 볼륨 조절",
+                                contentDescription = stringResource(id = R.string.desc_system_volume),
                                 tint = tealActive,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("타이머 효과음 볼륨", color = charcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.timer_sound_volume), color = charcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                         Text(
                             text = "${(systemVolume * 100 / maxVolume)}%",
@@ -405,7 +476,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Remove,
-                                contentDescription = "볼륨 감소",
+                                contentDescription = stringResource(id = R.string.desc_decrease_volume),
                                 tint = tealActive,
                                 modifier = Modifier.size(14.dp) // 버튼 크기에 맞게 내부 대시 기호 크기 조정
                             )
@@ -443,7 +514,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "볼륨 증가",
+                                contentDescription = stringResource(id = R.string.desc_increase_volume),
                                 tint = Color.White,
                                 modifier = Modifier.size(14.dp) // 마이너스 아이콘과 동일하게 14.dp로 조절하여 밸런스 매칭
                             )
@@ -464,7 +535,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "운동별 리듬 박자 개별 설정 (초)",
+                        text = stringResource(id = R.string.rhythm_individ_config_title),
                         color = charcoalDark,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -488,7 +559,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("스쿼트", color = Color(0xFFE65100), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.preset_squat), color = Color(0xFFE65100), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -507,7 +578,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         Text("-", color = Color(0xFFE65100), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${uiState.squatIntervalSeconds}초",
+                                        text = stringResource(id = R.string.seconds_format, uiState.squatIntervalSeconds),
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -536,7 +607,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("런지", color = Color(0xFF3F5F90), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.preset_lunge), color = Color(0xFF3F5F90), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -555,7 +626,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         Text("-", color = Color(0xFF3F5F90), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${uiState.lungeIntervalSeconds}초",
+                                        text = stringResource(id = R.string.seconds_format, uiState.lungeIntervalSeconds),
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -584,7 +655,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("기타", color = Color(0xFF006A60), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.preset_other), color = Color(0xFF006A60), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -603,7 +674,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         Text("-", color = Color(0xFF006A60), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${uiState.otherIntervalSeconds}초",
+                                        text = stringResource(id = R.string.seconds_format, uiState.otherIntervalSeconds),
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -664,7 +735,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "타이머 리셋",
+                        contentDescription = stringResource(id = R.string.desc_reset_timer),
                         tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
@@ -694,7 +765,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 ) {
                     Icon(
                         imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (isRunning) "일시정지" else "시작",
+                        contentDescription = if (isRunning) stringResource(id = R.string.desc_pause) else stringResource(id = R.string.desc_start),
                         tint = Color.White,
                         modifier = Modifier.size(36.dp)
                     )
@@ -716,7 +787,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "수동 기록 작성",
+                        contentDescription = stringResource(id = R.string.desc_manual_log_write),
                         tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
@@ -730,7 +801,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             onDismissRequest = { viewModel.showCompletionDialog = false },
             title = {
                 Text(
-                    text = "🎉 목표 운동 완료!",
+                    text = stringResource(id = R.string.goal_completed_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = tealActive
@@ -739,17 +810,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             text = {
                 Column {
                     Text(
-                        text = "설정한 목표 시간이 종료되었습니다. 박자에 맞춰 수행한 운동 기록이 안전하게 자동으로 저장되었습니다!",
+                        text = stringResource(id = R.string.goal_completed_msg),
                         fontSize = 14.sp,
                         color = charcoalDark,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     val exercise = when (uiState.timerPresetType) {
-                        "스쿼트" -> "스쿼트"
-                        "런지" -> "런지"
-                        "플랭크" -> "플랭크"
-                        else -> "기타"
+                        "스쿼트" -> stringResource(id = R.string.preset_squat)
+                        "런지" -> stringResource(id = R.string.preset_lunge)
+                        "플랭크" -> stringResource(id = R.string.preset_plank)
+                        else -> stringResource(id = R.string.preset_other)
                     }
 
                     Card(
@@ -762,7 +833,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = "종목", color = secondaryGray, fontSize = 13.sp)
+                                Text(text = stringResource(id = R.string.label_exercise_category), color = secondaryGray, fontSize = 13.sp)
                                 Text(text = exercise, fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -771,16 +842,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "총 수행 횟수", color = secondaryGray, fontSize = 13.sp)
-                                Text(text = "${uiState.workoutCount}회", fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
+                                Text(text = stringResource(id = R.string.label_total_count), color = secondaryGray, fontSize = 13.sp)
+                                Text(text = stringResource(id = R.string.workout_count_format, uiState.workoutCount), fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = "목표 수행 시간", color = secondaryGray, fontSize = 13.sp)
-                                Text(text = "${uiState.totalTargetSeconds}초", fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                Text(text = stringResource(id = R.string.label_target_duration), color = secondaryGray, fontSize = 13.sp)
+                                Text(text = stringResource(id = R.string.seconds_format, uiState.totalTargetSeconds), fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
                             }
                         }
                     }
@@ -792,7 +863,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = tealActive),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("확인", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.confirm), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             shape = RoundedCornerShape(16.dp),

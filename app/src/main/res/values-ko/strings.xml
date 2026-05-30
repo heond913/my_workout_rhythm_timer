@@ -1,0 +1,154 @@
+<resources>
+    <string name="app_name">나만의 운동 타이머</string>
+
+    <!-- Navigation Tab Labels in BottomBar -->
+    <string name="tab_timer">타이머</string>
+    <string name="tab_log">기록 작성</string>
+    <string name="tab_calendar">달력</string>
+    <string name="tab_stats">통계</string>
+
+    <string name="splash_subtitle">일정한 템포와 건강한 습관</string>
+    <string name="splash_title">나만의 운동 리듬 타이머</string>
+
+    <!-- Timer Screen -->
+    <string name="title_timer">나만의 운동 리듬 타이머</string>
+    <string name="subtitle_timer">홈 트레이닝 운동들을 설정한 리듬에 맞춰 해보세요</string>
+    <string name="desc_timer_clock">타이머 시계</string>
+    <string name="workout_count_format">총 %1$d회</string>
+    <string name="rhythm_interval_notifying">%1$d초 박자 알림 중...</string>
+    <string name="timer_in_progress">타이머 진행 중</string>
+    <string name="ready">READY</string>
+    <string name="target_workout_time">목표 운동 시간</string>
+    <string name="target_time_format">%1$d초 (%2$d분 %3$d초)</string>
+    <string name="target_time_format_minute_only">%1$d초 (%2$d분)</string>
+    <string name="target_time_format_seconds_only">%1$d초</string>
+    <string name="desc_decrease_5_sec">5초 감소</string>
+    <string name="desc_increase_5_sec">5초 증가</string>
+    <string name="desc_system_volume">시스템 볼륨 조절</string>
+    <string name="timer_sound_volume">타이머 효과음 볼륨</string>
+    <string name="desc_decrease_volume">볼륨 감소</string>
+    <string name="desc_increase_volume">볼륨 증가</string>
+    <string name="rhythm_individ_config_title">운동별 리듬 박자 개별 설정 (초)</string>
+    <string name="desc_reset_timer">타이머 리셋</string>
+    <string name="desc_pause">일시정지</string>
+    <string name="desc_start">시작</string>
+    <string name="desc_manual_log_write">수동 기록 작성</string>
+    <string name="goal_completed_title">🎉 목표 운동 완료!</string>
+    <string name="goal_completed_msg">설정한 목표 시간이 종료되었습니다. 박자에 맞춰 수행한 운동 기록이 안전하게 자동으로 저장되었습니다!</string>
+    <string name="label_exercise_category">종목</string>
+    <string name="label_total_count">총 수행 횟수</string>
+    <string name="label_target_duration">목표 수행 시간</string>
+    <string name="confirm">확인</string>
+
+    <!-- Common Preset Names (Used in Timer and Log and List display) -->
+    <string name="preset_squat">스쿼트</string>
+    <string name="preset_lunge">런지</string>
+    <string name="preset_plank">플랭크</string>
+    <string name="preset_other">기타</string>
+    <string name="preset_interval_format">%1$d초 박자</string>
+    <string name="preset_check_format">%1$d초 체크</string>
+
+    <!-- Log Screen -->
+    <string name="title_log">운동 완료 기록</string>
+    <string name="subtitle_log">완료한 세션의 세부 수치와 컨디션을 간편하게 제출하세요</string>
+    <string name="select_exercise">운동 종목 선택</string>
+    <string name="lbl_custom_exercise">운동 이름 직접 입력</string>
+    <string name="select_date">기록 날짜 선택</string>
+    <string name="lbl_record_date">기록될 등록일</string>
+    <string name="change_date">날짜 변경</string>
+    <string name="label_reps">수행 횟수 (Reps)</string>
+    <string name="sub_reps">회 단위로 수행한 횟수를 입력하세요</string>
+    <string name="desc_decrease_reps">수행 횟수 감소</string>
+    <string name="desc_increase_reps">수행 횟수 증가</string>
+    <string name="label_duration_secs">수행 시간 (Seconds)</string>
+    <string name="sub_duration_secs">초 단위로 수행한 시간을 입력하세요 (예: 60초 = 1분)</string>
+    <string name="desc_decrease_duration">수행 시간 감소</string>
+    <string name="desc_increase_duration">수행 시간 증가</string>
+    <string name="label_fatigue_satisfaction">운동 만족도 및 운동 피로도</string>
+    <string name="intensity_score_format">강도 점수: %1$s</string>
+    <string name="intensity_very_light">아주 가벼운 운동 (가볍게 몸풀기)</string>
+    <string name="intensity_moderate">적당한 운동 (수월했음)</string>
+    <string name="intensity_perfect">안성맞춤 리듬 (자극이 충분했음)</string>
+    <string name="intensity_hard">매우 무거운 하드 트레이닝 (땀 한바가지)</string>
+    <string name="intensity_extreme">한계돌파 극한 트레이닝 (탈진 수준)</string>
+    <string name="intensity_general">일반</string>
+    <string name="label_memo">운동 피드백 메모 (선택)</string>
+    <string name="placeholder_memo">자세, 컨디션, 다음 목표 등의 일지를 남기세요</string>
+    <string name="save_workout_log">운동 기록 저장하기</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_calendar">운동 완주 달력</string>
+    <string name="subtitle_calendar">초록색으로 표시된 날짜는 타이머 또는 수동 기록이 저장된 날입니다</string>
+    <string name="desc_prev_month">이전달</string>
+    <string name="desc_next_month">다음달</string>
+    <string name="sun">일</string>
+    <string name="mon">월</string>
+    <string name="tue">화</string>
+    <string name="wed">수</string>
+    <string name="thu">목</string>
+    <string name="fri">금</string>
+    <string name="sat">토</string>
+    <string name="day_selected_format">yyyy년 M월 d일</string>
+    <string name="month_format">yyyy년 M월</string>
+    <string name="selected_day_record_title">%1$s 운동 기록</string>
+    <string name="completed_count_format">%1$d개 완료</string>
+    <string name="no_records">기록 없음</string>
+    <string name="desc_selected_date">선택된 날짜</string>
+    <string name="empty_calendar_msg">이날 기록된 운동이 없습니다</string>
+    <string name="empty_calendar_sub">타이머를 완주하거나 수동으로 로그를 기록하여 달력을 채워보세요!</string>
+    <string name="desc_delete_record">기록 삭제</string>
+    <string name="delete_confirm_msg">정말 이 운동 기록을 삭제하시겠습니까?</string>
+    <string name="delete">삭제</string>
+    <string name="cancel">취소</string>
+
+    <!-- Stats Screen -->
+    <string name="title_stats">전체 통계 대시보드</string>
+    <string name="subtitle_stats">지속적으로 이어지고 있는 건강 기록을 통계로 확인하세요</string>
+    <string name="desc_streak_fire">연속 도출 불꽃</string>
+    <string name="streak_reached_format">%1$d일 연속 목표 도달!</string>
+    <string name="streak_broken">연속 운동 흐름이 끊겼어요</string>
+    <string name="streak_reached_sub">매일 꾸준한 노력의 결실입니다. 계속 박자를 이어가세요!</string>
+    <string name="streak_broken_sub">오늘 운동을 완료해서 1일차 흐름을 시작해보세요!</string>
+    <string name="desc_total_sessions">전체 세션 횟수</string>
+    <string name="label_total_sessions">총 완료 세션</string>
+    <string name="sessions_count_format">%1$d회</string>
+    <string name="desc_total_reps">누적 횟수</string>
+    <string name="label_accumulated_reps">누적 횟수</string>
+    <string name="reps_count_format">%1$d회</string>
+    <string name="desc_total_duration">누적 시간</string>
+    <string name="label_accumulated_duration">누적 수행 시간</string>
+    <string name="minutes_format">%1$d분</string>
+    <string name="seconds_format">%1$d초</string>
+    <string name="minutes_seconds_format">%1$d분 %2$d초</string>
+    <string name="title_7days_consistency">최근 7일간의 운동 일관성</string>
+    <string name="count_format">%1$d회</string>
+    <string name="title_exercise_proportion">피트니스 종목별 비중 분석</string>
+    <string name="legend_squats">스쿼트 (Squats)</string>
+    <string name="legend_lunges">런지 (Lunges)</string>
+    <string name="legend_planks">플랭크 (Planks)</string>
+    <string name="legend_others">기타 (Others)</string>
+    <string name="records_count_format">%1$d회 기록</string>
+
+    <!-- TTS Messages (TtsHelper / TimerService) -->
+    <string name="tts_workout_start">운동을 시작합니다.</string>
+    <string name="tts_workout_paused">일시 정지되었습니다.</string>
+    <string name="tts_workout_completed">수고하셨습니다! 운동이 완료되었습니다.</string>
+    <string name="tts_workout_half">절반 지났습니다!</string>
+    <string name="tts_workout_last10">마지막 10초!</string>
+    <string name="log_timer_auto_completed">리듬 타이머 자동 완료</string>
+
+    <!-- Language Settings -->
+    <string name="language_settings_title">언어 설정</string>
+    <string name="language_korean">한국어</string>
+    <string name="language_english">English</string>
+
+    <!-- Notification Service -->
+    <string name="notification_channel_name">운동 리듬 타이머</string>
+    <string name="notification_channel_desc">백그라운드 운동 타이머 및 알림 기능을 제공합니다.</string>
+    <string name="notification_training_prefix">운동</string>
+    <string name="notification_content_countdown">남은 시간: %1$d초 | 횟수: %2$d회</string>
+    <string name="notification_content_countup">진행 시간: %1$d초 | 횟수: %2$d회</string>
+    <string name="notification_action_pause">일시 정지</string>
+    <string name="notification_action_resume">다시 시작</string>
+    <string name="notification_action_reset">초기화</string>
+</resources>

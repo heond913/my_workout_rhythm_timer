@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import com.example.data.WorkoutRecord
 import com.example.viewmodel.WorkoutViewModel
 import java.text.SimpleDateFormat
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import java.util.*
 
 @Composable
@@ -75,14 +77,14 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
     ) {
         // Stats Header Frame
         Text(
-            text = "전체 통계 대시보드",
+            text = stringResource(id = R.string.title_stats),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = tealActive,
             modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
         )
         Text(
-            text = "지속적으로 이어지고 있는 건강 기록을 통계로 확인하세요",
+            text = stringResource(id = R.string.subtitle_stats),
             fontSize = 12.sp,
             color = secondaryGray,
             textAlign = TextAlign.Center,
@@ -131,14 +133,22 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
                 Column {
                     Text(
-                        text = if (streak > 0) "${streak}일 연속 목표 도달!" else "연속 운동 흐름이 끊겼어요",
+                        text = if (streak > 0) {
+                            stringResource(id = R.string.streak_reached_format, streak)
+                        } else {
+                            stringResource(id = R.string.streak_broken)
+                        },
                         color = if (streak > 0) fireOrange else charcoalDark,
                         fontWeight = FontWeight.Black,
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = if (streak > 0) "매일 꾸준한 노력의 결실입니다. 계속 박자를 이어가세요!" else "오늘 운동을 완료해서 1일차 흐름을 시작해보세요!",
+                        text = if (streak > 0) {
+                            stringResource(id = R.string.streak_reached_sub)
+                        } else {
+                            stringResource(id = R.string.streak_broken_sub)
+                        },
                         color = secondaryGray,
                         fontSize = 11.sp,
                         lineHeight = 15.sp
@@ -176,14 +186,14 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "총 완료 세션",
+                        text = stringResource(id = R.string.label_total_sessions),
                         fontSize = 11.sp,
                         color = secondaryGray,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "${totalSessions}회",
+                        text = stringResource(id = R.string.workout_count_format, totalSessions),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         color = tealActive,
@@ -214,14 +224,14 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "누적 횟수",
+                        text = stringResource(id = R.string.label_accumulated_reps),
                         fontSize = 11.sp,
                         color = secondaryGray,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "${totalReps}회",
+                        text = stringResource(id = R.string.workout_count_format, totalReps),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         color = tealActive,
@@ -252,13 +262,17 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "누적 수행 시간",
+                        text = stringResource(id = R.string.label_accumulated_duration),
                         fontSize = 11.sp,
                         color = secondaryGray,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(3.dp))
-                    val textStr = if (totalMins > 0) "${totalMins}분" else "${totalSecsRemainder}초"
+                    val textStr = if (totalMins > 0) {
+                        stringResource(id = R.string.minutes_format, totalMins)
+                    } else {
+                        stringResource(id = R.string.seconds_format, totalSecsRemainder)
+                    }
                     Text(
                         text = textStr,
                         fontSize = 18.sp,
@@ -274,7 +288,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
         // 3. Custom Canvas rendering 7-Day Consistency Bar Graph
         Text(
-            text = "최근 7일간의 운동 일관성",
+            text = stringResource(id = R.string.title_7days_consistency),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = charcoalDark,
@@ -361,7 +375,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                                 fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal
                             )
                             Text(
-                                text = "${count}회",
+                                text = stringResource(id = R.string.workout_count_format, count),
                                 fontSize = 9.sp,
                                 color = if (count > 0) charcoalDark else secondaryGray.copy(alpha = 0.6f)
                             )
@@ -375,7 +389,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
         // 4. Exercise type allocation percentages
         Text(
-            text = "피트니스 종목별 비중 분석",
+            text = stringResource(id = R.string.title_exercise_proportion),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = charcoalDark,
@@ -447,11 +461,16 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Breakdown list of Exercises with unified category tones including 기타
+                val squatLabel = stringResource(id = R.string.preset_squat)
+                val lungeLabel = stringResource(id = R.string.preset_lunge)
+                val plankLabel = stringResource(id = R.string.preset_plank)
+                val otherLabel = stringResource(id = R.string.preset_other)
+
                 val breakdown = listOf(
-                    Triple("스쿼트 (Squats)", squatCount, Color(0xFFE65100)),
-                    Triple("런지 (Lunges)", lungeCount, Color(0xFF3F5F90)),
-                    Triple("플랭크 (Planks)", plankCount, Color(0xFF93000A)),
-                    Triple("기타 (Others)", otherCount, Color(0xFF006A60))
+                    Triple("$squatLabel (Squats)", squatCount, Color(0xFFE65100)),
+                    Triple("$lungeLabel (Lunges)", lungeCount, Color(0xFF3F5F90)),
+                    Triple("$plankLabel (Planks)", plankCount, Color(0xFF93000A)),
+                    Triple("$otherLabel (Others)", otherCount, Color(0xFF006A60))
                 )
 
                 breakdown.forEach { (label, count, color) ->
@@ -472,7 +491,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                             Text(text = label, color = charcoalDark, fontSize = 12.sp)
                         }
                         Text(
-                            text = "${count}회 기록",
+                            text = stringResource(id = R.string.records_count_format, count),
                             color = tealActive,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

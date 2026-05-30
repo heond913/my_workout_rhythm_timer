@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.MainActivity
+import com.example.R
 import com.example.data.AppDatabase
 import com.example.data.TimerRepository
 import com.example.data.TimerState
@@ -52,7 +53,12 @@ class WorkoutTimerService : Service() {
             AppDatabase.getDatabase(applicationContext).workoutDao(),
             applicationContext.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
         )
-        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            createAttributionContext("notification")
+        } else {
+            this
+        }
+        notificationManager = notificationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
     }
 
@@ -90,7 +96,7 @@ class WorkoutTimerService : Service() {
         startForeground(NOTIFICATION_ID, notification)
 
         soundHelper.playStrongBeep()
-        ttsHelper.speak("운동을 시작합니다.")
+        ttsHelper.speak(getString(R.string.tts_workout_start))
 
         val startTime = System.currentTimeMillis() - currentState.elapsedSeconds * 1000L
 
@@ -123,9 +129,9 @@ class WorkoutTimerService : Service() {
                             // Check coaching alerts
                             val targetHalf = currentLoopState.totalTargetSeconds / 2
                             if (newRemaining == targetHalf && targetHalf >= 10) {
-                                speakText = "절반 지났습니다!"
+                                speakText = getString(R.string.tts_workout_half)
                             } else if (newRemaining == 10 && currentLoopState.totalTargetSeconds > 15) {
-                                speakText = "마지막 10초!"
+                                speakText = getString(R.string.tts_workout_last10)
                             }
 
                             // Rhythm counts
@@ -144,7 +150,7 @@ class WorkoutTimerService : Service() {
                             }
 
                             if (repTriggered && speakText == null) {
-                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
+                                speakText = ttsHelper.getNumberWord(newWorkoutCount)
                             }
 
                             // Completed Countdown Condition
@@ -170,7 +176,7 @@ class WorkoutTimerService : Service() {
                             }
 
                             if (repTriggered) {
-                                speakText = ttsHelper.getKoreanNumberWord(newWorkoutCount)
+                                speakText = ttsHelper.getNumberWord(newWorkoutCount)
                             }
                         }
 
@@ -188,7 +194,7 @@ class WorkoutTimerService : Service() {
 
                         // Speech Audio trigger
                         if (shouldSpeakCompleted) {
-                            ttsHelper.speak("수고하셨습니다! 운동이 완료되었습니다.")
+                            ttsHelper.speak(getString(R.string.tts_workout_completed))
                         } else if (speakText != null) {
                             ttsHelper.speak(speakText)
                         }
@@ -215,7 +221,7 @@ class WorkoutTimerService : Service() {
         TimerRepository.updateState { it.copy(isRunning = false) }
         timerJob?.cancel()
         soundHelper.playDoubleBeep()
-        ttsHelper.speak("일시 정지되었습니다.")
+        ttsHelper.speak(getString(R.string.tts_workout_paused))
         updateNotification()
     }
 
@@ -253,7 +259,7 @@ class WorkoutTimerService : Service() {
                         exerciseName = exercise,
                         reps = if (state.workoutCount > 0) state.workoutCount else null,
                         durationSeconds = duration,
-                        note = "리듬 타이머 자동 완료",
+                        note = getString(R.string.log_timer_auto_completed),
                         rating = 4
                     )
                 )
@@ -267,10 +273,10 @@ class WorkoutTimerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "운동 리듬 타이머",
+                getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "백그라운드 운동 타이머 및 알림 기능을 제공합니다."
+                description = getString(R.string.notification_channel_desc)
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -287,12 +293,19 @@ class WorkoutTimerService : Service() {
 
     private fun buildNotification(): android.app.Notification {
         val state = TimerRepository.timerState.value
-        val titleText = "${state.timerPresetType} 운동 중"
+        val exerciseDisplay = when (state.timerPresetType) {
+            "스쿼트" -> getString(R.string.preset_squat)
+            "런지" -> getString(R.string.preset_lunge)
+            "플랭크" -> getString(R.string.preset_plank)
+            "기타" -> getString(R.string.preset_other)
+            else -> state.timerPresetType
+        }
+        val titleText = "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
         
         val contentText = if (state.timerMode == TimerMode.Countdown) {
-            "남은 시간: ${state.remainingSeconds}초 | 횟수: ${state.workoutCount}회"
+            getString(R.string.notification_content_countdown, state.remainingSeconds, state.workoutCount)
         } else {
-            "진행 시간: ${state.elapsedSeconds}초 | 횟수: ${state.workoutCount}회"
+            getString(R.string.notification_content_countup, state.elapsedSeconds, state.workoutCount)
         }
 
         // Open MainActivity when user clicks the notification card
@@ -331,11 +344,11 @@ class WorkoutTimerService : Service() {
             .setOngoing(true)
 
         if (state.isRunning) {
-            builder.addAction(android.R.drawable.ic_media_pause, "일시 정지", pausePendingIntent)
+            builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.notification_action_pause), pausePendingIntent)
         } else {
-            builder.addAction(android.R.drawable.ic_media_play, "다시 시작", startPendingIntent)
+            builder.addAction(android.R.drawable.ic_media_play, getString(R.string.notification_action_resume), startPendingIntent)
         }
-        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "초기화", resetPendingIntent)
+        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notification_action_reset), resetPendingIntent)
 
         return builder.build()
     }

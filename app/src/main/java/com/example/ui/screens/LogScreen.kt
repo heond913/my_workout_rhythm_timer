@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.example.viewmodel.WorkoutViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +47,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
     val context = LocalContext.current
     var logCalendar by remember { mutableStateOf(Calendar.getInstance()) }
-    val dateFormatter = remember { SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREAN) }
+    val daySelectedFormat = stringResource(id = R.string.day_selected_format)
+    val dateFormatter = remember(daySelectedFormat) { SimpleDateFormat(daySelectedFormat, Locale.getDefault()) }
 
     // Color Theme - Vibrant Palette
     val tealActive = Color(0xFF006A60)
@@ -67,14 +70,14 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     ) {
         // App title header
         Text(
-            text = "운동 완료 기록",
+            text = stringResource(id = R.string.title_log),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = tealActive,
             modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
         )
         Text(
-            text = "완료한 세션의 세부 수치와 컨디션을 간편하게 제출하세요",
+            text = stringResource(id = R.string.subtitle_log),
             fontSize = 12.sp,
             color = secondaryGray,
             textAlign = TextAlign.Center,
@@ -83,7 +86,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
         // Exercise selector cards (Squat, Lunge, Plank, Custom)
         Text(
-            text = "운동 종목 선택",
+            text = stringResource(id = R.string.select_exercise),
             fontSize = 14.sp,
             color = charcoalDark,
             fontWeight = FontWeight.Bold,
@@ -142,8 +145,14 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+                        val exeDisplay = when (exe) {
+                            "스쿼트" -> stringResource(id = R.string.preset_squat)
+                            "런지" -> stringResource(id = R.string.preset_lunge)
+                            "플랭크" -> stringResource(id = R.string.preset_plank)
+                            else -> stringResource(id = R.string.preset_other)
+                        }
                         Text(
-                            text = exe,
+                            text = exeDisplay,
                             color = if (isSelected) charcoalDark else secondaryGray,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
@@ -165,7 +174,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     customName = it
                     viewModel.inputExerciseName = it
                 },
-                label = { Text("운동 이름 직접 입력", color = secondaryGray) },
+                label = { Text(stringResource(id = R.string.lbl_custom_exercise), color = secondaryGray) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = tealActive,
                     unfocusedBorderColor = borderColor,
@@ -183,7 +192,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
         // Recording Date selection option
         Text(
-            text = "기록 날짜 선택",
+            text = stringResource(id = R.string.select_date),
             fontSize = 14.sp,
             color = charcoalDark,
             fontWeight = FontWeight.Bold,
@@ -231,14 +240,14 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "선택된 날짜",
+                        contentDescription = stringResource(id = R.string.desc_selected_date),
                         tint = tealActive,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "기록될 등록일",
+                            text = stringResource(id = R.string.lbl_record_date),
                             color = charcoalDark,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
@@ -253,7 +262,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     }
                 }
                 Text(
-                    text = "날짜 변경",
+                    text = stringResource(id = R.string.change_date),
                     color = tealActive,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -275,14 +284,14 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "수행 횟수 (Reps)",
+                    text = stringResource(id = R.string.label_reps),
                     color = if (selectedExercise == "스쿼트" || selectedExercise == "런지") tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "회 단위로 수행한 횟수를 입력하세요",
+                    text = stringResource(id = R.string.sub_reps),
                     color = secondaryGray,
                     fontSize = 11.sp
                 )
@@ -301,7 +310,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease reps", tint = tealActive)
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_reps), tint = tealActive)
                     }
 
                     OutlinedTextField(
@@ -332,7 +341,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Increase reps", tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_reps), tint = Color.White)
                     }
                 }
             }
@@ -349,14 +358,14 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "수행 시간 (Seconds)",
+                    text = stringResource(id = R.string.label_duration_secs),
                     color = if (selectedExercise == "플랭크" || selectedExercise == "기타") tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "초 단위로 수행한 시간을 입력하세요 (예: 60초 = 1분)",
+                    text = stringResource(id = R.string.sub_duration_secs),
                     color = secondaryGray,
                     fontSize = 11.sp
                 )
@@ -375,7 +384,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease duration", tint = tealActive)
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_duration), tint = tealActive)
                     }
 
                     OutlinedTextField(
@@ -406,7 +415,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Increase duration", tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_duration), tint = Color.White)
                     }
                 }
             }
@@ -423,22 +432,22 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "운동 만족도 및 운동 피로도",
+                    text = stringResource(id = R.string.label_fatigue_satisfaction),
                     color = charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 val intensityLabel = when (rating) {
-                    1 -> "아주 가벼운 운동 (가볍게 몸풀기)"
-                    2 -> "적당한 운동 (수월했음)"
-                    3 -> "안성맞춤 리듬 (자극이 충분했음)"
-                    4 -> "매우 무거운 하드 트레이닝 (땀 한바가지)"
-                    5 -> "한계돌파 극한 트레이닝 (탈진 수준)"
-                    else -> "일반"
+                    1 -> stringResource(id = R.string.intensity_very_light)
+                    2 -> stringResource(id = R.string.intensity_moderate)
+                    3 -> stringResource(id = R.string.intensity_perfect)
+                    4 -> stringResource(id = R.string.intensity_hard)
+                    5 -> stringResource(id = R.string.intensity_extreme)
+                    else -> stringResource(id = R.string.intensity_general)
                 }
                 Text(
-                    text = "강도 점수: $intensityLabel",
+                    text = stringResource(id = R.string.intensity_score_format, intensityLabel),
                     color = tealActive,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -476,7 +485,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "운동 피드백 메모 (선택)",
+                    text = stringResource(id = R.string.label_memo),
                     color = charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -485,7 +494,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 OutlinedTextField(
                     value = note,
                     onValueChange = { viewModel.inputNote = it },
-                    placeholder = { Text("자세, 컨디션, 다음 목표 등의 일지를 남기세요", color = secondaryGray, fontSize = 12.sp) },
+                    placeholder = { Text(stringResource(id = R.string.placeholder_memo), color = secondaryGray, fontSize = 12.sp) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = charcoalDark,
                         unfocusedTextColor = charcoalDark,
@@ -518,7 +527,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
-                text = "운동 기록 저장하기",
+                text = stringResource(id = R.string.save_workout_log),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Black
             )

@@ -51,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.screens.CalendarScreen
@@ -178,15 +179,16 @@ class MainActivity : ComponentActivity() {
                                     )
 
                                     Text(
-                                        text = "나만의 운동 리듬 타이머",
+                                        text = stringResource(id = R.string.splash_title),
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF006A60), // tealActive vibrant primary color
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     )
 
                                     Text(
-                                        text = "일정한 템포와 건강한 습관",
+                                        text = stringResource(id = R.string.splash_subtitle),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = Color(0xFF3F4947), // secondaryGray
@@ -236,7 +238,7 @@ fun WorkoutBottomBar(
             },
             label = {
                 Text(
-                    text = "리듬 타이머",
+                    text = stringResource(id = R.string.tab_timer),
                     fontWeight = if (currentTab == AppTab.Timer) FontWeight.Bold else FontWeight.Normal
                 )
             },
@@ -262,7 +264,7 @@ fun WorkoutBottomBar(
             },
             label = {
                 Text(
-                    text = "수동 기록",
+                    text = stringResource(id = R.string.tab_log),
                     fontWeight = if (currentTab == AppTab.Log) FontWeight.Bold else FontWeight.Normal
                 )
             },
@@ -288,7 +290,7 @@ fun WorkoutBottomBar(
             },
             label = {
                 Text(
-                    text = "진척 달력",
+                    text = stringResource(id = R.string.tab_calendar),
                     fontWeight = if (currentTab == AppTab.Calendar) FontWeight.Bold else FontWeight.Normal
                 )
             },
@@ -314,7 +316,7 @@ fun WorkoutBottomBar(
             },
             label = {
                 Text(
-                    text = "전체 통계",
+                    text = stringResource(id = R.string.tab_stats),
                     fontWeight = if (currentTab == AppTab.Stats) FontWeight.Bold else FontWeight.Normal
                 )
             },
