@@ -2,7 +2,6 @@ package com.example.viewmodel
 
 import android.app.Application
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
@@ -13,11 +12,12 @@ import com.example.data.WorkoutRepository
 import com.example.util.SoundHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import androidx.core.content.edit
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,6 +32,33 @@ enum class TimerMode {
     CountUp,
     Countdown
 }
+
+data class WorkoutUiState(
+    val currentTab: AppTab = AppTab.Timer,
+    val timerPresetType: String = "스쿼트",
+    val squatIntervalSeconds: Int = 4,
+    val lungeIntervalSeconds: Int = 5,
+    val plankIntervalSeconds: Int = 10,
+    val otherIntervalSeconds: Int = 10,
+    val timerRunning: Boolean = false,
+    val timerMode: TimerMode = TimerMode.Countdown,
+    val totalTargetSeconds: Int = 60,
+    val rhythmIntervalSeconds: Int = 4,
+    val elapsedSeconds: Int = 0,
+    val remainingSeconds: Int = 60,
+    val rhythmTickCount: Int = 0,
+    val workoutCount: Int = 0,
+    val showCompletionDialog: Boolean = false,
+    val calendarYearMonth: Calendar = Calendar.getInstance().apply {
+        set(Calendar.YEAR, 2026)
+        set(Calendar.MONTH, Calendar.MAY)
+    },
+    val inputExerciseName: String = "스쿼트",
+    val inputReps: String = "15",
+    val inputDurationSeconds: String = "60",
+    val inputRating: Int = 3,
+    val inputNote: String = ""
+)
 
 class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     application: Application,
@@ -52,61 +79,131 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
             initialValue = emptyList()
         )
 
-    // Current navigation tab
-    var currentTab by mutableStateOf(AppTab.Timer)
-        private set
+    // Unified UI and Timer State
+    private val _uiState = MutableStateFlow(
+        WorkoutUiState(
+            timerPresetType = repository.getTimerPresetType(),
+            squatIntervalSeconds = repository.getSquatInterval(),
+            lungeIntervalSeconds = repository.getLungeInterval(),
+            plankIntervalSeconds = repository.getPlankInterval(),
+            otherIntervalSeconds = repository.getOtherInterval(),
+            rhythmIntervalSeconds = repository.getRhythmInterval()
+        )
+    )
+    val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
+
+    // Backwards compatibility property delegations via getters/setters (also used for direct updates)
+    var currentTab: AppTab
+        get() = _uiState.value.currentTab
+        private set(value) {
+            _uiState.value = _uiState.value.copy(currentTab = value)
+        }
 
     fun setTab(tab: AppTab) {
-        currentTab = tab
+        _uiState.value = _uiState.value.copy(currentTab = tab)
     }
 
     // --- TIMER STATE MANIPULATION ---
-    var timerPresetType by mutableStateOf(repository.getTimerPresetType())
-    
-    var squatIntervalSeconds by mutableIntStateOf(repository.getSquatInterval())
-    var lungeIntervalSeconds by mutableIntStateOf(repository.getLungeInterval())
-    var plankIntervalSeconds by mutableIntStateOf(repository.getPlankInterval())
-    var otherIntervalSeconds by mutableIntStateOf(repository.getOtherInterval())
-
-    var timerRunning by mutableStateOf(false)
-        private set
-    var timerMode by mutableStateOf(TimerMode.Countdown)
-        private set
-    private var _totalTargetSeconds = mutableIntStateOf(60)
-    var totalTargetSeconds: Int
-        get() = _totalTargetSeconds.intValue
+    var timerPresetType: String
+        get() = _uiState.value.timerPresetType
         set(value) {
-            _totalTargetSeconds.intValue = value
+            _uiState.value = _uiState.value.copy(timerPresetType = value)
+        }
+    
+    var squatIntervalSeconds: Int
+        get() = _uiState.value.squatIntervalSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(squatIntervalSeconds = value)
+        }
+    var lungeIntervalSeconds: Int
+        get() = _uiState.value.lungeIntervalSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(lungeIntervalSeconds = value)
+        }
+    var plankIntervalSeconds: Int
+        get() = _uiState.value.plankIntervalSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(plankIntervalSeconds = value)
+        }
+    var otherIntervalSeconds: Int
+        get() = _uiState.value.otherIntervalSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(otherIntervalSeconds = value)
+        }
+
+    var timerRunning: Boolean
+        get() = _uiState.value.timerRunning
+        private set(value) {
+            _uiState.value = _uiState.value.copy(timerRunning = value)
+        }
+    var timerMode: TimerMode
+        get() = _uiState.value.timerMode
+        private set(value) {
+            _uiState.value = _uiState.value.copy(timerMode = value)
+        }
+
+    var totalTargetSeconds: Int
+        get() = _uiState.value.totalTargetSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(totalTargetSeconds = value)
             if (timerPresetType == "플랭크") {
                 rhythmIntervalSeconds = value
                 repository.saveRhythmInterval(value)
             }
         }
-    var rhythmIntervalSeconds by mutableIntStateOf(repository.getRhythmInterval())  // Beep rhythm cue
-    var elapsedSeconds by mutableIntStateOf(0)
-    var remainingSeconds by mutableIntStateOf(60)
-    var rhythmTickCount by mutableIntStateOf(0)
-    var workoutCount by mutableIntStateOf(0)
-    var showCompletionDialog by mutableStateOf(false)
+
+    var rhythmIntervalSeconds: Int
+        get() = _uiState.value.rhythmIntervalSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(rhythmIntervalSeconds = value)
+        }
+    var elapsedSeconds: Int
+        get() = _uiState.value.elapsedSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(elapsedSeconds = value)
+        }
+    var remainingSeconds: Int
+        get() = _uiState.value.remainingSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(remainingSeconds = value)
+        }
+    var rhythmTickCount: Int
+        get() = _uiState.value.rhythmTickCount
+        set(value) {
+            _uiState.value = _uiState.value.copy(rhythmTickCount = value)
+        }
+    var workoutCount: Int
+        get() = _uiState.value.workoutCount
+        set(value) {
+            _uiState.value = _uiState.value.copy(workoutCount = value)
+        }
+    var showCompletionDialog: Boolean
+        get() = _uiState.value.showCompletionDialog
+        set(value) {
+            _uiState.value = _uiState.value.copy(showCompletionDialog = value)
+        }
 
     fun selectPreset(preset: String) {
-        timerPresetType = preset
-        repository.saveTimerPresetType(preset)
-        val secs = when (preset) {
+        val updatedPreset = preset
+        val updatedRhythmInterval = when (preset) {
             "스쿼트" -> squatIntervalSeconds
             "런지" -> lungeIntervalSeconds
             "플랭크" -> totalTargetSeconds
             "기타" -> otherIntervalSeconds
             else -> 0
         }
-        rhythmIntervalSeconds = secs
-        repository.saveRhythmInterval(secs)
+        _uiState.value = _uiState.value.copy(
+            timerPresetType = updatedPreset,
+            rhythmIntervalSeconds = updatedRhythmInterval
+        )
+        repository.saveTimerPresetType(updatedPreset)
+        repository.saveRhythmInterval(updatedRhythmInterval)
         resetTimer()
     }
 
     fun updateSquatInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        squatIntervalSeconds = safeSecs
+        _uiState.value = _uiState.value.copy(squatIntervalSeconds = safeSecs)
         repository.saveSquatInterval(safeSecs)
         if (timerPresetType == "스쿼트") {
             rhythmIntervalSeconds = safeSecs
@@ -116,7 +213,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     fun updateLungeInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        lungeIntervalSeconds = safeSecs
+        _uiState.value = _uiState.value.copy(lungeIntervalSeconds = safeSecs)
         repository.saveLungeInterval(safeSecs)
         if (timerPresetType == "런지") {
             rhythmIntervalSeconds = safeSecs
@@ -126,7 +223,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     fun updatePlankInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        plankIntervalSeconds = safeSecs
+        _uiState.value = _uiState.value.copy(plankIntervalSeconds = safeSecs)
         repository.savePlankInterval(safeSecs)
         if (timerPresetType == "플랭크") {
             rhythmIntervalSeconds = safeSecs
@@ -136,7 +233,7 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     fun updateOtherInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        otherIntervalSeconds = safeSecs
+        _uiState.value = _uiState.value.copy(otherIntervalSeconds = safeSecs)
         repository.saveOtherInterval(safeSecs)
         if (timerPresetType == "기타") {
             rhythmIntervalSeconds = safeSecs
@@ -148,63 +245,85 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
 
     fun selectTimerMode(mode: TimerMode) {
         if (timerRunning) return
-        timerMode = mode
+        _uiState.value = _uiState.value.copy(timerMode = mode)
         resetTimer()
     }
 
     fun startTimer() {
         if (timerRunning) return
-        timerRunning = true
+        _uiState.value = _uiState.value.copy(timerRunning = true)
         soundHelper.playStrongBeep()
 
         val startTime = System.currentTimeMillis() - elapsedSeconds * 1000L
 
         timerJob = viewModelScope.launch {
-            while (timerRunning) {
+            while (_uiState.value.timerRunning) {
                 delay(100L) // Poll frequently to ensure high responsiveness and alignment
                 val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
-                val diff = targetTotalElapsed - elapsedSeconds
+                val diff = targetTotalElapsed - _uiState.value.elapsedSeconds
                 if (diff > 0) {
                     for (i in 1..diff) {
-                        if (!timerRunning) break
-                        elapsedSeconds++
+                        if (!_uiState.value.timerRunning) break
+                        
+                        // Grab current local variables from State to update atomically
+                        var newElapsed = _uiState.value.elapsedSeconds + 1
+                        var newRemaining = _uiState.value.remainingSeconds
+                        var newRhythmTick = _uiState.value.rhythmTickCount
+                        var newWorkoutCount = _uiState.value.workoutCount
+                        var newRunning = _uiState.value.timerRunning
+                        var newShowDialog = _uiState.value.showCompletionDialog
 
-                        if (timerMode == TimerMode.Countdown) {
-                            if (remainingSeconds > 0) {
-                                remainingSeconds--
+                        if (_uiState.value.timerMode == TimerMode.Countdown) {
+                            if (newRemaining > 0) {
+                                newRemaining--
                             }
                             
                             // Periodic alarm/rhythm alert
-                            if (rhythmIntervalSeconds > 0) {
-                                rhythmTickCount++
-                                if (rhythmTickCount >= rhythmIntervalSeconds) {
-                                    if (remainingSeconds > 0) {
+                            val interval = _uiState.value.rhythmIntervalSeconds
+                            if (interval > 0) {
+                                newRhythmTick++
+                                if (newRhythmTick >= interval) {
+                                    if (newRemaining > 0) {
                                         soundHelper.playTick()
                                     }
-                                    workoutCount++
-                                    rhythmTickCount = 0
+                                    newWorkoutCount++
+                                    newRhythmTick = 0
                                 }
                             }
 
                             // Complete condition
-                            if (remainingSeconds <= 0) {
-                                timerRunning = false
+                            if (newRemaining <= 0) {
+                                newRunning = false
                                 soundHelper.playSetFinished()
                                 // Automatically record styled logged placeholder workout
                                 logCurrentTimerWorkout()
-                                showCompletionDialog = true
-                                break
+                                newShowDialog = true
                             }
                         } else {
                             // Count-up mode
-                            if (rhythmIntervalSeconds > 0) {
-                                rhythmTickCount++
-                                if (rhythmTickCount >= rhythmIntervalSeconds) {
+                            val interval = _uiState.value.rhythmIntervalSeconds
+                            if (interval > 0) {
+                                newRhythmTick++
+                                if (newRhythmTick >= interval) {
                                     soundHelper.playTick()
-                                    workoutCount++
-                                    rhythmTickCount = 0
+                                    newWorkoutCount++
+                                    newRhythmTick = 0
                                 }
                             }
+                        }
+
+                        // Apply the grouped states in one single atomic atomic update
+                        _uiState.value = _uiState.value.copy(
+                            elapsedSeconds = newElapsed,
+                            remainingSeconds = newRemaining,
+                            rhythmTickCount = newRhythmTick,
+                            workoutCount = newWorkoutCount,
+                            timerRunning = newRunning,
+                            showCompletionDialog = newShowDialog
+                        )
+
+                        if (!newRunning) {
+                            break
                         }
                     }
                 }
@@ -213,18 +332,20 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     }
 
     fun pauseTimer() {
-        timerRunning = false
+        _uiState.value = _uiState.value.copy(timerRunning = false)
         timerJob?.cancel()
         soundHelper.playDoubleBeep()
     }
 
     fun resetTimer() {
-        timerRunning = false
         timerJob?.cancel()
-        elapsedSeconds = 0
-        remainingSeconds = totalTargetSeconds
-        rhythmTickCount = 0
-        workoutCount = 0
+        _uiState.value = _uiState.value.copy(
+            timerRunning = false,
+            elapsedSeconds = 0,
+            remainingSeconds = _uiState.value.totalTargetSeconds,
+            rhythmTickCount = 0,
+            workoutCount = 0
+        )
     }
 
     private fun logCurrentTimerWorkout() {
@@ -250,11 +371,31 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     }
 
     // --- RECORD FORM INPUT STATE ---
-    var inputExerciseName by mutableStateOf("스쿼트")
-    var inputReps by mutableStateOf("15")
-    var inputDurationSeconds by mutableStateOf("60")
-    var inputRating by mutableIntStateOf(3)
-    var inputNote by mutableStateOf("")
+    var inputExerciseName: String
+        get() = _uiState.value.inputExerciseName
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputExerciseName = value)
+        }
+    var inputReps: String
+        get() = _uiState.value.inputReps
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputReps = value)
+        }
+    var inputDurationSeconds: String
+        get() = _uiState.value.inputDurationSeconds
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputDurationSeconds = value)
+        }
+    var inputRating: Int
+        get() = _uiState.value.inputRating
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputRating = value)
+        }
+    var inputNote: String
+        get() = _uiState.value.inputNote
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputNote = value)
+        }
 
     fun saveWorkoutRecord(
         exercise: String = inputExerciseName,
@@ -274,8 +415,10 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
             repository.insert(record)
             
             // Clear or reset fields
-            inputNote = ""
-            currentTab = AppTab.Calendar // Automatically redirect to Calendar section to feel the progress!
+            _uiState.value = _uiState.value.copy(
+                inputNote = "",
+                currentTab = AppTab.Calendar
+            )
         }
     }
 
@@ -286,18 +429,18 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
     }
 
     // --- CALENDAR HELPERS & STATISTICS CALCULATOR ---
-    var calendarYearMonth by mutableStateOf(Calendar.getInstance().apply {
-        // Set to local time anchor: May 2026
-        set(Calendar.YEAR, 2026)
-        set(Calendar.MONTH, Calendar.MAY)
-    })
+    var calendarYearMonth: Calendar
+        get() = _uiState.value.calendarYearMonth
+        set(value) {
+            _uiState.value = _uiState.value.copy(calendarYearMonth = value)
+        }
 
     fun changeMonth(amount: Int) {
         val newCal = Calendar.getInstance().apply {
             timeInMillis = calendarYearMonth.timeInMillis
             add(Calendar.MONTH, amount)
         }
-        calendarYearMonth = newCal
+        _uiState.value = _uiState.value.copy(calendarYearMonth = newCal)
     }
 
     fun getWorkoutsForDay(day: Calendar, records: List<WorkoutRecord>): List<WorkoutRecord> {

@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
                 val viewModel: WorkoutViewModel = viewModel()
                 val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 var showSplash by remember { mutableStateOf(true) }
                 var splashAlpha by remember { mutableStateOf(1f) }
@@ -87,7 +88,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         bottomBar = {
                             WorkoutBottomBar(
-                                currentTab = viewModel.currentTab,
+                                currentTab = uiState.currentTab,
                                 onTabSelected = { viewModel.setTab(it) }
                             )
                         },
@@ -95,13 +96,13 @@ class MainActivity : ComponentActivity() {
                     ) { innerPadding ->
                         val listTabs = listOf(AppTab.Timer, AppTab.Log, AppTab.Calendar, AppTab.Stats)
                         val pagerState = rememberPagerState(
-                            initialPage = listTabs.indexOf(viewModel.currentTab).coerceAtLeast(0),
+                            initialPage = listTabs.indexOf(uiState.currentTab).coerceAtLeast(0),
                             pageCount = { listTabs.size }
                         )
 
                         // Sync from ViewModel tab selection to Page
-                        LaunchedEffect(viewModel.currentTab) {
-                            val targetPage = listTabs.indexOf(viewModel.currentTab).coerceAtLeast(0)
+                        LaunchedEffect(uiState.currentTab) {
+                            val targetPage = listTabs.indexOf(uiState.currentTab).coerceAtLeast(0)
                             if (pagerState.currentPage != targetPage) {
                                 pagerState.animateScrollToPage(targetPage)
                             }
@@ -111,7 +112,7 @@ class MainActivity : ComponentActivity() {
                         LaunchedEffect(pagerState) {
                             snapshotFlow { pagerState.settledPage }.collect { settledPage ->
                                 val targetTab = listTabs[settledPage]
-                                if (viewModel.currentTab != targetTab) {
+                                if (uiState.currentTab != targetTab) {
                                     viewModel.setTab(targetTab)
                                 }
                             }

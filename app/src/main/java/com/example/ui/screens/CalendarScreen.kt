@@ -31,7 +31,8 @@ import java.util.*
 
 @Composable
 fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>) {
-    val currentMonthCal = viewModel.calendarYearMonth
+    val uiState by viewModel.uiState.collectAsState()
+    val currentMonthCal = uiState.calendarYearMonth
     var selectedDayCal by remember { mutableStateOf(Calendar.getInstance()) }
     var recordToDelete by remember { mutableStateOf<WorkoutRecord?>(null) }
 

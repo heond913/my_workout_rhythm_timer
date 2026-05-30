@@ -49,12 +49,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     var systemVolume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
 
-    val totalSeconds = viewModel.totalTargetSeconds
-    val remaining = viewModel.remainingSeconds
-    val elapsed = viewModel.elapsedSeconds
-    val isRunning = viewModel.timerRunning
-    val mode = viewModel.timerMode
-    val interval = viewModel.rhythmIntervalSeconds
+    val uiState by viewModel.uiState.collectAsState()
+    val totalSeconds = uiState.totalTargetSeconds
+    val remaining = uiState.remainingSeconds
+    val elapsed = uiState.elapsedSeconds
+    val isRunning = uiState.timerRunning
+    val mode = uiState.timerMode
+    val interval = uiState.rhythmIntervalSeconds
 
     // Color Theme mappings - Vibrant Palette
     val tealActive = Color(0xFF006A60)
@@ -147,7 +148,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "총 ${viewModel.workoutCount}회",
+                    text = "총 ${uiState.workoutCount}회",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = tealActive
@@ -181,14 +182,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val presets = listOf(
-                Triple("스쿼트", viewModel.squatIntervalSeconds, "${viewModel.squatIntervalSeconds}초 박자"),
-                Triple("런지", viewModel.lungeIntervalSeconds, "${viewModel.lungeIntervalSeconds}초 박자"),
+                Triple("스쿼트", uiState.squatIntervalSeconds, "${uiState.squatIntervalSeconds}초 박자"),
+                Triple("런지", uiState.lungeIntervalSeconds, "${uiState.lungeIntervalSeconds}초 박자"),
                 Triple("플랭크", totalSeconds, "${totalSeconds}초 체크"),
-                Triple("기타", viewModel.otherIntervalSeconds, "${viewModel.otherIntervalSeconds}초 체크")
+                Triple("기타", uiState.otherIntervalSeconds, "${uiState.otherIntervalSeconds}초 체크")
             )
 
             presets.forEach { (label, secs, desc) ->
-                val isSelected = viewModel.timerPresetType == label
+                val isSelected = uiState.timerPresetType == label
                 val (itemBgColor, itemBorderColor, itemTextColor) = when (label) {
                     "스쿼트" -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
                     "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
@@ -471,13 +472,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .height(28.dp)
                                             .background(Color.White, CircleShape)
                                             .border(1.dp, Color(0xFFCCE8E3), CircleShape)
-                                            .clickable { viewModel.updateSquatInterval(viewModel.squatIntervalSeconds - 1) },
+                                            .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds - 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("-", color = Color(0xFF006A60), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${viewModel.squatIntervalSeconds}초",
+                                        text = "${uiState.squatIntervalSeconds}초",
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -489,7 +490,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .weight(1f)
                                             .height(28.dp)
                                             .background(Color(0xFF006A60), CircleShape)
-                                            .clickable { viewModel.updateSquatInterval(viewModel.squatIntervalSeconds + 1) },
+                                            .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds + 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -519,13 +520,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .height(28.dp)
                                             .background(Color.White, CircleShape)
                                             .border(1.dp, Color(0xFFD7E3FF), CircleShape)
-                                            .clickable { viewModel.updateLungeInterval(viewModel.lungeIntervalSeconds - 1) },
+                                            .clickable { viewModel.updateLungeInterval(uiState.lungeIntervalSeconds - 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("-", color = Color(0xFF3F5F90), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${viewModel.lungeIntervalSeconds}초",
+                                        text = "${uiState.lungeIntervalSeconds}초",
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -537,7 +538,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .weight(1f)
                                             .height(28.dp)
                                             .background(Color(0xFF3F5F90), CircleShape)
-                                            .clickable { viewModel.updateLungeInterval(viewModel.lungeIntervalSeconds + 1) },
+                                            .clickable { viewModel.updateLungeInterval(uiState.lungeIntervalSeconds + 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -567,13 +568,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .height(28.dp)
                                             .background(Color.White, CircleShape)
                                             .border(1.dp, Color(0xFFFFECCC), CircleShape)
-                                            .clickable { viewModel.updateOtherInterval(viewModel.otherIntervalSeconds - 1) },
+                                            .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds - 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("-", color = Color(0xFFE65100), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(
-                                        text = "${viewModel.otherIntervalSeconds}초",
+                                        text = "${uiState.otherIntervalSeconds}초",
                                         color = charcoalDark,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
@@ -585,7 +586,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             .weight(1f)
                                             .height(28.dp)
                                             .background(Color(0xFFE65100), CircleShape)
-                                            .clickable { viewModel.updateOtherInterval(viewModel.otherIntervalSeconds + 1) },
+                                            .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds + 1) },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -693,7 +694,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         }
     }
 
-    if (viewModel.showCompletionDialog) {
+    if (uiState.showCompletionDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.showCompletionDialog = false },
             title = {
@@ -713,7 +714,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    val exercise = when (viewModel.timerPresetType) {
+                    val exercise = when (uiState.timerPresetType) {
                         "스쿼트" -> "스쿼트"
                         "런지" -> "런지"
                         "플랭크" -> "플랭크"
@@ -740,7 +741,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(text = "총 수행 횟수", color = secondaryGray, fontSize = 13.sp)
-                                Text(text = "${viewModel.workoutCount}회", fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
+                                Text(text = "${uiState.workoutCount}회", fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
@@ -748,7 +749,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(text = "목표 수행 시간", color = secondaryGray, fontSize = 13.sp)
-                                Text(text = "${viewModel.totalTargetSeconds}초", fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                Text(text = "${uiState.totalTargetSeconds}초", fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
                             }
                         }
                     }

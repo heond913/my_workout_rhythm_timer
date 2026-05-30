@@ -30,11 +30,12 @@ import com.example.viewmodel.WorkoutViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogScreen(viewModel: WorkoutViewModel) {
-    val selectedExercise = viewModel.inputExerciseName
-    val repsVal = viewModel.inputReps
-    val secsVal = viewModel.inputDurationSeconds
-    val rating = viewModel.inputRating
-    val note = viewModel.inputNote
+    val uiState by viewModel.uiState.collectAsState()
+    val selectedExercise = uiState.inputExerciseName
+    val repsVal = uiState.inputReps
+    val secsVal = uiState.inputDurationSeconds
+    val rating = uiState.inputRating
+    val note = uiState.inputNote
 
     // Color Theme - Vibrant Palette
     val tealActive = Color(0xFF006A60)
