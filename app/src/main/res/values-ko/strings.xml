@@ -97,8 +97,11 @@
     <string name="empty_calendar_msg">이날 기록된 운동이 없습니다</string>
     <string name="empty_calendar_sub">타이머를 완주하거나 수동으로 로그를 기록하여 달력을 채워보세요!</string>
     <string name="desc_delete_record">기록 삭제</string>
+    <string name="desc_delete_all">해당 날짜의 모든 기록 삭제</string>
     <string name="delete_confirm_msg">정말 이 운동 기록을 삭제하시겠습니까?</string>
+    <string name="delete_all_confirm_msg">정말 해당 날짜의 모든 운동 기록을 삭제하시겠습니까?</string>
     <string name="delete">삭제</string>
+    <string name="delete_all">전체 삭제</string>
     <string name="cancel">취소</string>
 
     <!-- Stats Screen -->

@@ -20,6 +20,10 @@ class WorkoutRepository(
         workoutDao.deleteRecord(record)
     }
 
+    suspend fun deleteRecords(records: List<WorkoutRecord>) {
+        workoutDao.deleteRecords(records)
+    }
+
     suspend fun deleteById(id: Int) {
         workoutDao.deleteRecordById(id)
     }

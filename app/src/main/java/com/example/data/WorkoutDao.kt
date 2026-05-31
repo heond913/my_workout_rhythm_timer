@@ -1,6 +1,10 @@
 package com.example.data
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,6 +17,9 @@ interface WorkoutDao {
 
     @Delete
     suspend fun deleteRecord(record: WorkoutRecord)
+
+    @Delete
+    suspend fun deleteRecords(records: List<WorkoutRecord>)
 
     @Query("DELETE FROM workout_records WHERE id = :id")
     suspend fun deleteRecordById(id: Int)

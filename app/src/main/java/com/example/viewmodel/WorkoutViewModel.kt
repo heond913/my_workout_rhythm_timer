@@ -407,6 +407,12 @@ class WorkoutViewModel @JvmOverloads constructor(
         }
     }
 
+    fun deleteWorkoutRecords(records: List<WorkoutRecord>) {
+        viewModelScope.launch {
+            repository.deleteRecords(records)
+        }
+    }
+
     // --- CALENDAR HELPERS & STATISTICS CALCULATOR ---
     var calendarYearMonth: Calendar
         get() = _uiState.value.calendarYearMonth
