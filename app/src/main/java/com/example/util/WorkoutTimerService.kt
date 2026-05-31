@@ -149,7 +149,7 @@ class WorkoutTimerService : Service() {
                         var newShowDialog = currentLoopState.showCompletionDialog
 
                         var speakText: String? = null
-                        var shouldSpeakCompleted = false
+                        var coachingText: String? = null
 
                         if (currentLoopState.timerMode == TimerMode.Countdown) {
                             if (newRemaining > 0) {
@@ -159,9 +159,9 @@ class WorkoutTimerService : Service() {
                             // Check coaching alerts
                             val targetHalf = currentLoopState.totalTargetSeconds / 2
                             if (newRemaining == targetHalf && targetHalf >= 10) {
-                                speakText = getString(R.string.tts_workout_half)
+                                coachingText = getString(R.string.tts_workout_half)
                             } else if (newRemaining == 10 && currentLoopState.totalTargetSeconds > 15) {
-                                speakText = getString(R.string.tts_workout_last10)
+                                coachingText = getString(R.string.tts_workout_last10)
                             }
 
                             // Rhythm counts
@@ -172,22 +172,36 @@ class WorkoutTimerService : Service() {
                                 if (newRhythmTick >= interval) {
                                     if (newRemaining > 0) {
                                         soundHelper.playTick()
-                                        repTriggered = true
                                     }
+                                    repTriggered = true
                                     newWorkoutCount++
                                     newRhythmTick = 0
                                 }
                             }
 
-                            if (repTriggered && speakText == null) {
+                            if (repTriggered) {
                                 speakText = ttsHelper.getNumberWord(newWorkoutCount)
+                            }
+
+                            // Combine if both exist: prioritize number then coaching message
+                            if (speakText != null && coachingText != null) {
+                                speakText = "$speakText, $coachingText"
+                            } else if (speakText == null && coachingText != null) {
+                                speakText = coachingText
                             }
 
                             // Completed Countdown Condition
                             if (newRemaining <= 0) {
                                 newRunning = false
                                 soundHelper.playSetFinished()
-                                shouldSpeakCompleted = true
+                                
+                                val completionMsg = getString(R.string.tts_workout_completed)
+                                if (speakText != null) {
+                                    speakText = "$speakText, $completionMsg"
+                                } else {
+                                    speakText = completionMsg
+                                }
+
                                 logCurrentTimerWorkout()
                                 newShowDialog = true
                             }
@@ -223,9 +237,7 @@ class WorkoutTimerService : Service() {
                         }
 
                         // Speech Audio trigger
-                        if (shouldSpeakCompleted) {
-                            ttsHelper.speak(getString(R.string.tts_workout_completed))
-                        } else if (speakText != null) {
+                        if (speakText != null) {
                             ttsHelper.speak(speakText)
                         }
 

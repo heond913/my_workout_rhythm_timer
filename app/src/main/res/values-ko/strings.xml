@@ -127,7 +127,7 @@
     <!-- TTS Messages (TtsHelper / TimerService) -->
     <string name="tts_workout_start">운동을 시작합니다.</string>
     <string name="tts_workout_paused">일시 정지되었습니다.</string>
-    <string name="tts_workout_completed">수고하셨습니다! 운동이 완료되었습니다.</string>
+    <string name="tts_workout_completed">수고하셨습니다!</string>
     <string name="tts_workout_half">절반 지났습니다!</string>
     <string name="tts_workout_last10">마지막 10초!</string>
     <string name="log_timer_auto_completed">리듬 타이머 자동 완료</string>

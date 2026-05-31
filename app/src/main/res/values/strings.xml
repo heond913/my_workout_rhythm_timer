@@ -127,7 +127,7 @@
     <!-- TTS Messages (TtsHelper / TimerService) -->
     <string name="tts_workout_start">Workout starts.</string>
     <string name="tts_workout_paused">Workout paused.</string>
-    <string name="tts_workout_completed">Great job! Workout completed.</string>
+    <string name="tts_workout_completed">Great job!</string>
     <string name="tts_workout_half">Half is passed!</string>
     <string name="tts_workout_last10">Last 10 seconds!</string>
     <string name="log_timer_auto_completed">Rhythm Timer Auto Completed</string>
