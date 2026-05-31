@@ -1,15 +1,28 @@
 package com.example.ui.screens
 
+import android.content.Context
+import android.media.AudioManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pause
@@ -17,30 +30,43 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import android.media.AudioManager
-import java.util.Locale
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.*
-import androidx.compose.ui.res.stringResource
-import com.example.R
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.viewmodel.TimerMode
+import com.example.R
 import com.example.viewmodel.WorkoutViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +91,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     val isRunning = uiState.timerRunning
     val mode = uiState.timerMode
     val interval = uiState.rhythmIntervalSeconds
+
+    // Prevent screen from turning off while timer is running
+    val view = LocalView.current
+    DisposableEffect(isRunning) {
+        if (isRunning) {
+            view.keepScreenOn = true
+        }
+        onDispose {
+            view.keepScreenOn = false
+        }
+    }
 
     // Dynamically request notification permission on entry
     LaunchedEffect(Unit) {
@@ -125,7 +162,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
+            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else LocalLocale.current.platformLocale.language
             val isKo = currentLocale == "ko"
             
             TextButton(
@@ -221,8 +258,8 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 // Giant time numbers in high-contrast charcoal
-                val minutesString = String.format(Locale.getDefault(), "%02d", remaining / 60)
-                val secondsString = String.format(Locale.getDefault(), "%02d", remaining % 60)
+                val minutesString = String.format(LocalLocale.current.platformLocale, "%02d", remaining / 60)
+                val secondsString = String.format(LocalLocale.current.platformLocale, "%02d", remaining % 60)
 
                 Text(
                     text = "$minutesString:$secondsString",
