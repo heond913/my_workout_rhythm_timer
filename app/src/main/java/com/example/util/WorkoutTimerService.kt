@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.example.MainActivity
 import com.example.R
 import com.example.data.AppDatabase
@@ -211,7 +212,7 @@ class WorkoutTimerService : Service() {
                             // If countdown completed, delay stopping service to allow TTS congratulations & applause to play fully
                             shutdownJob = serviceScope.launch {
                                 delay(6000L) // 6 seconds is perfect to play both TTS and the SoundPool cheer
-                                stopForeground(true)
+                                ServiceCompat.stopForeground(this@WorkoutTimerService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                                 stopSelf()
                             }
                             break
@@ -245,7 +246,7 @@ class WorkoutTimerService : Service() {
             )
         }
         ttsHelper.stop()
-        stopForeground(true)
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 

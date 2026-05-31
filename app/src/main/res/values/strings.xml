@@ -121,12 +121,7 @@
     <string name="seconds_format">%1$d secs</string>
     <string name="minutes_seconds_format">%1$d mins %2$d secs</string>
     <string name="title_7days_consistency">7-Day Workout Consistency</string>
-    <string name="count_format">%1$d times</string>
     <string name="title_exercise_proportion">Workout Proportion Analysis</string>
-    <string name="legend_squats">Squats (Squats)</string>
-    <string name="legend_lunges">Lunges (Lunges)</string>
-    <string name="legend_planks">Planks (Planks)</string>
-    <string name="legend_others">Others (Others)</string>
     <string name="records_count_format">%1$d records</string>
 
     <!-- TTS Messages (TtsHelper / TimerService) -->
@@ -136,11 +131,6 @@
     <string name="tts_workout_half">Half is passed!</string>
     <string name="tts_workout_last10">Last 10 seconds!</string>
     <string name="log_timer_auto_completed">Rhythm Timer Auto Completed</string>
-
-    <!-- Language Settings -->
-    <string name="language_settings_title">Language Settings</string>
-    <string name="language_korean">한국어</string>
-    <string name="language_english">English</string>
 
     <!-- Notification Service -->
     <string name="notification_channel_name">Workout Rhythm Timer</string>

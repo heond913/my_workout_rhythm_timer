@@ -16,3 +16,6 @@
 local.properties
 .env
 debug.keystore
+
+# Custom IDE/Plugin settings
+.idea/planningMode.xml
