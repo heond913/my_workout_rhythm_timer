@@ -177,14 +177,57 @@ class MainActivity : AppCompatActivity() {
                                     verticalArrangement = Arrangement.Center,
                                     modifier = Modifier.padding(24.dp)
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.home_training_loading_1780072263159),
-                                        contentDescription = "홈 트레이닝 로딩 이미지",
+                                    // Custom beautifully rendered Compose illustration for the splash logo
+                                    Box(
                                         modifier = Modifier
-                                            .size(280.dp)
+                                            .size(220.dp)
                                             .padding(bottom = 24.dp),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        // Dynamic decorative outer ring with elegant negative space
+                                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                                            drawCircle(
+                                                color = Color(0xFFCCE8E3), // Soft mint active color
+                                                radius = size.minDimension / 2,
+                                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+                                            )
+                                            drawCircle(
+                                                color = Color(0xFF006A60).copy(alpha = 0.15f),
+                                                radius = size.minDimension * 0.42f
+                                            )
+                                        }
+                                        // Center core background & icon
+                                        Surface(
+                                            shape = androidx.compose.foundation.shape.CircleShape,
+                                            color = Color(0xFFCCE8E3),
+                                            shadowElevation = 4.dp,
+                                            modifier = Modifier.size(120.dp)
+                                        ) {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier.fillMaxSize()
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Timer,
+                                                    contentDescription = "Workout Rhythm Timer",
+                                                    tint = Color(0xFF006A60),
+                                                    modifier = Modifier.size(64.dp)
+                                                )
+                                            }
+                                        }
+                                        // Small decorative orbit indicator representing workout flow/rhythm
+                                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                                            val radius = size.minDimension / 2
+                                            val angleRad = Math.toRadians(-45.0)
+                                            val x = (center.x + radius * Math.cos(angleRad)).toFloat()
+                                            val y = (center.y + radius * Math.sin(angleRad)).toFloat()
+                                            drawCircle(
+                                                color = Color(0xFF006A60),
+                                                radius = 6.dp.toPx(),
+                                                center = androidx.compose.ui.geometry.Offset(x, y)
+                                            )
+                                        }
+                                    }
 
                                     val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
                                     val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language

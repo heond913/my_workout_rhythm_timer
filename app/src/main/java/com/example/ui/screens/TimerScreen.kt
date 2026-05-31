@@ -58,7 +58,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -162,7 +161,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else LocalLocale.current.platformLocale.language
+            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
             val isKo = currentLocale == "ko"
             
             TextButton(
@@ -258,8 +257,8 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 // Giant time numbers in high-contrast charcoal
-                val minutesString = String.format(LocalLocale.current.platformLocale, "%02d", remaining / 60)
-                val secondsString = String.format(LocalLocale.current.platformLocale, "%02d", remaining % 60)
+                val minutesString = String.format(java.util.Locale.getDefault(), "%02d", remaining / 60)
+                val secondsString = String.format(java.util.Locale.getDefault(), "%02d", remaining % 60)
 
                 Text(
                     text = "$minutesString:$secondsString",

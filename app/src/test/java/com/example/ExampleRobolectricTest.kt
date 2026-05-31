@@ -1,21 +1,40 @@
 package com.example
 
+import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.example.viewmodel.WorkoutViewModel
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
+@Config(sdk = [34])
 class ExampleRobolectricTest {
 
   @Test
   fun `read string from context`() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val appName = context.getString(R.string.app_name)
-    assertEquals("나만의 운동 타이머", appName)
+    assertEquals("My Workout Rhythm", appName)
+  }
+
+  @Test
+  fun `test WorkoutViewModel instantiation`() {
+    val app = ApplicationProvider.getApplicationContext<Application>()
+    val viewModel = WorkoutViewModel(app)
+    assertNotNull(viewModel)
+    assertNotNull(viewModel.uiState.value)
+  }
+
+  @Test
+  fun `test MainActivity boot succeeds`() {
+    val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+    val activity = controller.get()
+    assertNotNull(activity)
   }
 }
