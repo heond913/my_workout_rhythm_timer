@@ -58,4 +58,11 @@ class WorkoutRepository(
     fun saveRhythmInterval(value: Int) {
         sharedPreferences.edit { putInt("rhythm_interval_seconds", value) }
     }
+
+    // --- Language Selection ---
+    fun isLanguageSelected(): Boolean = sharedPreferences.getBoolean("is_language_selected", false)
+
+    fun saveLanguageSelected(selected: Boolean) {
+        sharedPreferences.edit { putBoolean("is_language_selected", selected) }
+    }
 }

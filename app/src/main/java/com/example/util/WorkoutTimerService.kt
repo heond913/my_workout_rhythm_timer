@@ -9,13 +9,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.example.MainActivity
 import com.example.R
 import com.example.data.AppDatabase
 import com.example.data.TimerRepository
-import com.example.data.TimerState
 import com.example.data.WorkoutRecord
 import com.example.data.WorkoutRepository
 import com.example.viewmodel.TimerMode
@@ -47,20 +47,30 @@ class WorkoutTimerService : Service() {
         const val ACTION_RESET = "com.example.ACTION_RESET"
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        val appLocales = AppCompatDelegate.getApplicationLocales()
+        if (!appLocales.isEmpty) {
+            val locale = appLocales.get(0)
+            if (locale != null) {
+                val config = newBase.resources.configuration
+                config.setLocale(locale)
+                val context = newBase.createConfigurationContext(config)
+                super.attachBaseContext(context)
+                return
+            }
+        }
+        super.attachBaseContext(newBase)
+    }
+
     override fun onCreate() {
         super.onCreate()
-        soundHelper = SoundHelper(application)
-        ttsHelper = TtsHelper(application)
+        soundHelper = SoundHelper(this)
+        ttsHelper = TtsHelper(this)
         repository = WorkoutRepository(
-            AppDatabase.getDatabase(applicationContext).workoutDao(),
-            applicationContext.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
+            AppDatabase.getDatabase(this).workoutDao(),
+            getSharedPreferences("workout_rhythm_prefs", MODE_PRIVATE)
         )
-        val notificationContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            createAttributionContext("notification")
-        } else {
-            this
-        }
-        notificationManager = notificationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
     }
 
@@ -349,6 +359,7 @@ class WorkoutTimerService : Service() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(titleText)
             .setContentText(contentText)
+            .setSubText(getString(R.string.app_name))
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentIntent(openAppPendingIntent)
             .setOnlyAlertOnce(true)

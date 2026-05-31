@@ -41,6 +41,16 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="This foreground service keeps the workout counting timer active and plays text-to-speech coaching counts when the exercise is running in the background." />
         </service>
+
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false"
+            tools:ignore="MissingServiceExportedEqualsTrue">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 
 </manifest>

@@ -12,12 +12,7 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
 
     init {
         try {
-            val resolvedContext = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                context.createAttributionContext("timer")
-            } else {
-                context.applicationContext
-            }
-            tts = TextToSpeech(resolvedContext, this)
+            tts = TextToSpeech(context, this)
         } catch (e: Exception) {
             Log.e("TtsHelper", "Failed to initialize TextToSpeech", e)
         }
@@ -36,7 +31,7 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
             val result = tts?.setLanguage(currentLocale)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TtsHelper", "Active locale $currentLocale is not supported or resources are missing, fallback to English or Korean.")
-                tts?.setLanguage(Locale.ENGLISH)
+                tts?.language = Locale.ENGLISH
             }
             
             isInitialized = true

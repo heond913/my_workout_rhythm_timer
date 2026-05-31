@@ -1,23 +1,16 @@
 package com.example.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.content.Intent
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.AppDatabase
-import com.example.data.WorkoutRecord
-import com.example.data.WorkoutRepository
 import com.example.data.TimerRepository
 import com.example.data.TimerState
-import com.example.util.SoundHelper
-import com.example.util.TtsHelper
+import com.example.data.WorkoutRecord
+import com.example.data.WorkoutRepository
 import com.example.util.WorkoutTimerService
-import android.content.Intent
-import android.os.Build
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +18,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 enum class AppTab {
     Timer,
@@ -55,6 +50,7 @@ data class WorkoutUiState(
     val rhythmTickCount: Int = 0,
     val workoutCount: Int = 0,
     val showCompletionDialog: Boolean = false,
+    val showLanguageSelection: Boolean = false,
     val calendarYearMonth: Calendar = Calendar.getInstance().apply {
         set(Calendar.YEAR, 2026)
         set(Calendar.MONTH, Calendar.MAY)
@@ -66,7 +62,7 @@ data class WorkoutUiState(
     val inputNote: String = ""
 )
 
-class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
+class WorkoutViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: WorkoutRepository = WorkoutRepository(
         AppDatabase.getDatabase(application).workoutDao(),
@@ -90,7 +86,8 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
             lungeIntervalSeconds = repository.getLungeInterval(),
             plankIntervalSeconds = repository.getPlankInterval(),
             otherIntervalSeconds = repository.getOtherInterval(),
-            rhythmIntervalSeconds = repository.getRhythmInterval()
+            rhythmIntervalSeconds = repository.getRhythmInterval(),
+            showLanguageSelection = !repository.isLanguageSelected()
         )
     )
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
@@ -220,6 +217,17 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         set(value) {
             TimerRepository.updateState { it.copy(showCompletionDialog = value) }
         }
+
+    var showLanguageSelection: Boolean
+        get() = _uiState.value.showLanguageSelection
+        set(value) {
+            _uiState.value = _uiState.value.copy(showLanguageSelection = value)
+        }
+
+    fun onLanguageSelected() {
+        repository.saveLanguageSelected(true)
+        showLanguageSelection = false
+    }
 
     fun selectPreset(preset: String) {
         val updatedPreset = preset
@@ -476,7 +484,4 @@ class WorkoutViewModel @kotlin.jvm.JvmOverloads constructor(
         return streak
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
 }
