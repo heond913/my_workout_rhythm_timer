@@ -100,6 +100,19 @@ class WorkoutTimerService : Service() {
         val currentState = TimerRepository.timerState.value
         if (currentState.isRunning && timerJob?.isActive == true) return
 
+        // If timer is already at 0 in Countdown mode, reset it automatically before starting again
+        if (currentState.timerMode == TimerMode.Countdown && currentState.remainingSeconds <= 0) {
+            TimerRepository.updateState {
+                it.copy(
+                    elapsedSeconds = 0,
+                    remainingSeconds = it.totalTargetSeconds,
+                    rhythmTickCount = 0,
+                    workoutCount = 0,
+                    showCompletionDialog = false
+                )
+            }
+        }
+
         if (sessionStartTime == 0L) {
             sessionStartTime = System.currentTimeMillis()
         }
@@ -114,7 +127,8 @@ class WorkoutTimerService : Service() {
         soundHelper.playStrongBeep()
         ttsHelper.speak(getString(R.string.tts_workout_start))
 
-        val startTime = System.currentTimeMillis() - currentState.elapsedSeconds * 1000L
+        val finalState = TimerRepository.timerState.value
+        val startTime = System.currentTimeMillis() - finalState.elapsedSeconds * 1000L
 
         timerJob = serviceScope.launch {
             while (TimerRepository.timerState.value.isRunning) {
