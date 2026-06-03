@@ -277,8 +277,15 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 if (isRunning) {
+                    val isPreparing = remaining > totalSeconds
                     Text(
-                        text = if (interval > 0) stringResource(id = R.string.rhythm_interval_notifying, interval) else stringResource(id = R.string.timer_in_progress),
+                        text = if (isPreparing) {
+                            stringResource(id = R.string.timer_preparing)
+                        } else if (interval > 0) {
+                            stringResource(id = R.string.rhythm_interval_notifying, interval)
+                        } else {
+                            stringResource(id = R.string.timer_in_progress)
+                        },
                         color = activePresetColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold

@@ -150,4 +150,11 @@
     <string name="language_selection_subtitle">Choose your preferred language to continue.</string>
     <string name="language_korean">한국어 (Korean)</string>
     <string name="language_english">English</string>
+
+    <!-- Timer Preparing / Counting strings -->
+    <string name="timer_preparing">Preparing...</string>
+    <string name="tts_prep_3">Three</string>
+    <string name="tts_prep_2">Two</string>
+    <string name="tts_prep_1">One</string>
+    <string name="tts_prep_start">Start!</string>
 </resources>

@@ -12,8 +12,9 @@ import java.util.Collections
 import java.util.concurrent.Executors
 
 class SoundHelper(context: Context) {
+    private val appContext = context.applicationContext
     @Suppress("DEPRECATION")
-    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    private val vibrator = appContext.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     private val executor = Executors.newSingleThreadExecutor()
 
     private var toneGenerator: ToneGenerator? = null
@@ -49,7 +50,7 @@ class SoundHelper(context: Context) {
         // Load applause resource cleanly on a background thread
         executor.submit {
             try {
-                applauseSoundId = soundPool.load(context.applicationContext, R.raw.applause_cheer, 1)
+                applauseSoundId = soundPool.load(appContext, R.raw.applause_cheer, 1)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -90,7 +91,8 @@ class SoundHelper(context: Context) {
             if (applauseSoundId != -1 && loadedSoundIds.contains(applauseSoundId)) {
                 soundPool.play(applauseSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
             } else {
-                playStrongBeep()
+                // If applause_cheer.mp3 is empty/unloaded, play a pleasant system notification signal
+                playSystemSuccessTone()
             }
 
             executor.submit {
@@ -106,6 +108,19 @@ class SoundHelper(context: Context) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    private fun playSystemSuccessTone() {
+        try {
+            // Safe fallback to default notification sound so user always gets a clear audio cue
+            val notificationUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+            val ringtone = android.media.RingtoneManager.getRingtone(appContext, notificationUri)
+            ringtone?.play()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Ultimate fallback to generic double-beep
+            playDoubleBeep()
         }
     }
 

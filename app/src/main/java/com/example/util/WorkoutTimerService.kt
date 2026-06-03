@@ -100,6 +100,8 @@ class WorkoutTimerService : Service() {
         val currentState = TimerRepository.timerState.value
         if (currentState.isRunning && timerJob?.isActive == true) return
 
+        val isFreshStart = (currentState.elapsedSeconds == 0)
+
         // If timer is already at 0 in Countdown mode, reset it automatically before starting again
         if (currentState.timerMode == TimerMode.Countdown && currentState.remainingSeconds <= 0) {
             TimerRepository.updateState {
@@ -117,15 +119,30 @@ class WorkoutTimerService : Service() {
             sessionStartTime = System.currentTimeMillis()
         }
 
-        // Set state running
-        TimerRepository.updateState { it.copy(isRunning = true) }
+        val freshRemaining = if (isFreshStart) {
+            currentState.totalTargetSeconds + 3
+        } else {
+            currentState.remainingSeconds
+        }
+
+        // Set state running with correct remainingSeconds accounting for preparation phase
+        TimerRepository.updateState {
+            it.copy(
+                isRunning = true,
+                remainingSeconds = freshRemaining
+            )
+        }
 
         // Start Foreground Service immediately to satisfy system mandates
         val notification = buildNotification()
         startForeground(NOTIFICATION_ID, notification)
 
-        soundHelper.playStrongBeep()
-        ttsHelper.speak(getString(R.string.tts_workout_start))
+        if (isFreshStart) {
+            ttsHelper.speak(getString(R.string.tts_prep_3))
+        } else {
+            soundHelper.playStrongBeep()
+            ttsHelper.speak(getString(R.string.tts_workout_start))
+        }
 
         val finalState = TimerRepository.timerState.value
         val startTime = System.currentTimeMillis() - finalState.elapsedSeconds * 1000L
@@ -141,7 +158,7 @@ class WorkoutTimerService : Service() {
                         val currentLoopState = TimerRepository.timerState.value
                         if (!currentLoopState.isRunning) break
 
-                        var newElapsed = currentLoopState.elapsedSeconds + 1
+                        var newElapsed = currentLoopState.elapsedSeconds
                         var newRemaining = currentLoopState.remainingSeconds
                         var newRhythmTick = currentLoopState.rhythmTickCount
                         var newWorkoutCount = currentLoopState.workoutCount
@@ -151,76 +168,113 @@ class WorkoutTimerService : Service() {
                         var speakText: String? = null
                         var coachingText: String? = null
 
+                        val targetTotal = currentLoopState.totalTargetSeconds
+
                         if (currentLoopState.timerMode == TimerMode.Countdown) {
+                            newElapsed++
                             if (newRemaining > 0) {
                                 newRemaining--
                             }
 
-                            // Check coaching alerts
-                            val targetHalf = currentLoopState.totalTargetSeconds / 2
-                            if (newRemaining == targetHalf && targetHalf >= 10) {
-                                coachingText = getString(R.string.tts_workout_half)
-                            } else if (newRemaining == 10 && currentLoopState.totalTargetSeconds > 15) {
-                                coachingText = getString(R.string.tts_workout_last10)
-                            }
+                            if (newRemaining > targetTotal) {
+                                // 3-second preparation phase
+                                if (newRemaining == targetTotal + 2) {
+                                    speakText = getString(R.string.tts_prep_2)
+                                } else if (newRemaining == targetTotal + 1) {
+                                    speakText = getString(R.string.tts_prep_1)
+                                }
+                            } else if (newRemaining == targetTotal) {
+                                // Transitioning to actual start
+                                speakText = getString(R.string.tts_prep_start)
+                                soundHelper.playStrongBeep()
+                                newRhythmTick = 0
+                            } else {
+                                // --- NORMAL WORKOUT COUNTDOWN ---
+                                // Check coaching alerts
+                                val targetHalf = targetTotal / 2
+                                if (newRemaining == targetHalf && targetHalf >= 10) {
+                                    coachingText = getString(R.string.tts_workout_half)
+                                } else if (newRemaining == 10 && targetTotal > 15) {
+                                    coachingText = getString(R.string.tts_workout_last10)
+                                }
 
-                            // Rhythm counts
-                            val interval = currentLoopState.rhythmIntervalSeconds
-                            var repTriggered = false
-                            if (interval > 0) {
-                                newRhythmTick++
-                                if (newRhythmTick >= interval) {
-                                    if (newRemaining > 0) {
-                                        soundHelper.playTick()
+                                // Rhythm counts
+                                val interval = currentLoopState.rhythmIntervalSeconds
+                                var repTriggered = false
+                                if (interval > 0) {
+                                    newRhythmTick++
+                                    if (newRhythmTick >= interval) {
+                                        if (newRemaining > 0) {
+                                            soundHelper.playTick()
+                                        }
+                                        repTriggered = true
+                                        newWorkoutCount++
+                                        newRhythmTick = 0
                                     }
-                                    repTriggered = true
-                                    newWorkoutCount++
-                                    newRhythmTick = 0
-                                }
-                            }
-
-                            if (repTriggered) {
-                                speakText = ttsHelper.getNumberWord(newWorkoutCount)
-                            }
-
-                            // Combine if both exist: prioritize number then coaching message
-                            if (speakText != null && coachingText != null) {
-                                speakText = "$speakText, $coachingText"
-                            } else if (speakText == null && coachingText != null) {
-                                speakText = coachingText
-                            }
-
-                            // Completed Countdown Condition
-                            if (newRemaining <= 0) {
-                                newRunning = false
-                                soundHelper.playSetFinished()
-                                
-                                val completionMsg = getString(R.string.tts_workout_completed)
-                                if (speakText != null) {
-                                    speakText = "$speakText, $completionMsg"
-                                } else {
-                                    speakText = completionMsg
                                 }
 
-                                logCurrentTimerWorkout()
-                                newShowDialog = true
+                                if (repTriggered) {
+                                    speakText = ttsHelper.getNumberWord(newWorkoutCount)
+                                }
+
+                                // Combine if both exist: prioritize number then coaching message
+                                if (speakText != null && coachingText != null) {
+                                    speakText = "$speakText, $coachingText"
+                                } else if (speakText == null && coachingText != null) {
+                                    speakText = coachingText
+                                }
+
+                                // Completed Countdown Condition
+                                if (newRemaining <= 0) {
+                                    newRunning = false
+                                    soundHelper.playSetFinished()
+                                    
+                                    val completionMsg = getString(R.string.tts_workout_completed)
+                                    if (speakText != null) {
+                                        speakText = "$speakText, $completionMsg"
+                                    } else {
+                                        speakText = completionMsg
+                                    }
+
+                                    logCurrentTimerWorkout()
+                                    newShowDialog = true
+                                }
                             }
                         } else {
                             // Count-up Mode
-                            val interval = currentLoopState.rhythmIntervalSeconds
-                            var repTriggered = false
-                            if (interval > 0) {
-                                newRhythmTick++
-                                if (newRhythmTick >= interval) {
-                                    soundHelper.playTick()
-                                    repTriggered = true
-                                    newWorkoutCount++
-                                    newRhythmTick = 0
+                            val isPreparing = newRemaining > targetTotal
+                            if (isPreparing) {
+                                if (newRemaining > 0) {
+                                    newRemaining--
                                 }
-                            }
+                                if (newRemaining == targetTotal + 2) {
+                                    speakText = getString(R.string.tts_prep_2)
+                                } else if (newRemaining == targetTotal + 1) {
+                                    speakText = getString(R.string.tts_prep_1)
+                                }
+                            } else if (newRemaining == targetTotal && currentLoopState.elapsedSeconds == 0) {
+                                // Note: transition to start
+                                speakText = getString(R.string.tts_prep_start)
+                                soundHelper.playStrongBeep()
+                                newRhythmTick = 0
+                            } else {
+                                // --- NORMAL WORKOUT COUNT-UP ---
+                                newElapsed++
+                                val interval = currentLoopState.rhythmIntervalSeconds
+                                var repTriggered = false
+                                if (interval > 0) {
+                                    newRhythmTick++
+                                    if (newRhythmTick >= interval) {
+                                        soundHelper.playTick()
+                                        repTriggered = true
+                                        newWorkoutCount++
+                                        newRhythmTick = 0
+                                    }
+                                }
 
-                            if (repTriggered) {
-                                speakText = ttsHelper.getNumberWord(newWorkoutCount)
+                                if (repTriggered) {
+                                    speakText = ttsHelper.getNumberWord(newWorkoutCount)
+                                }
                             }
                         }
 
@@ -349,7 +403,9 @@ class WorkoutTimerService : Service() {
         }
         val titleText = "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
         
-        val contentText = if (state.timerMode == TimerMode.Countdown) {
+        val contentText = if (state.remainingSeconds > state.totalTargetSeconds) {
+            getString(R.string.timer_preparing)
+        } else if (state.timerMode == TimerMode.Countdown) {
             getString(R.string.notification_content_countdown, state.remainingSeconds, state.workoutCount)
         } else {
             getString(R.string.notification_content_countup, state.elapsedSeconds, state.workoutCount)
@@ -406,6 +462,12 @@ class WorkoutTimerService : Service() {
         builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notification_action_reset), resetPendingIntent)
 
         return builder.build()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        Log.d("WorkoutTimerService", "onTaskRemoved called - task cleared from recent apps")
+        resetTimerLoop()
     }
 
     override fun onDestroy() {
