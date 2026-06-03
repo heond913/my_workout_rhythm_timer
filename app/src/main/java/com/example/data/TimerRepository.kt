@@ -27,7 +27,11 @@ data class TimerState(
     val squatRestSeconds: Int = 30,
     val lungeRestSeconds: Int = 30,
     val plankRestSeconds: Int = 30,
-    val otherRestSeconds: Int = 30
+    val otherRestSeconds: Int = 30,
+    val isRoutineActive: Boolean = false,
+    val routineName: String = "",
+    val routineStepsJson: String = "",
+    val routineCurrentStepIndex: Int = 0
 )
 
 object TimerRepository {

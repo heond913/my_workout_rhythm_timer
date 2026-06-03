@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,17 +47,20 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -144,6 +148,15 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
     val scrollState = rememberScrollState()
 
+    val appLocalesForScreen = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+    val currentLocaleForScreen = if (!appLocalesForScreen.isEmpty) appLocalesForScreen.get(0)?.language else java.util.Locale.getDefault().language
+    val isKo = currentLocaleForScreen == "ko"
+
+    var showRoutineDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var editingRoutineId by remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    var routineNameInput by remember { androidx.compose.runtime.mutableStateOf("") }
+    var routineStepsInput by remember { androidx.compose.runtime.mutableStateOf<List<com.example.data.RoutineStep>>(emptyList()) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -218,6 +231,90 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 24.dp)
         )
+
+        // Custom Routine active playback visual track progress banner
+        if (uiState.isRoutineActive) {
+            val steps = com.example.data.CustomRoutine.deserializeSteps(uiState.routineStepsJson)
+            val currentIdx = uiState.routineCurrentStepIndex
+            
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .border(1.dp, Color(0xFFCCE8E3), RoundedCornerShape(12.dp))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = if (isKo) "🔄 커스텀 루틴: ${uiState.routineName}" else "🔄 Routine: ${uiState.routineName}",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = tealActive,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        steps.forEachIndexed { index, step ->
+                            val isCurrent = index == currentIdx
+                            val isCompleted = index < currentIdx
+                            
+                            val stepColor = when (step.exerciseName) {
+                                "스쿼트" -> Color(0xFFE65100)
+                                "런지" -> Color(0xFF3F5F90)
+                                "플랭크" -> Color(0xFF93000A)
+                                else -> Color(0xFF006A60)
+                            }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(
+                                        if (isCurrent) stepColor.copy(alpha = 0.2f) else if (isCompleted) Color.LightGray.copy(alpha = 0.3f) else Color.White,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .border(
+                                        if (isCurrent) 2.dp else 1.dp,
+                                        if (isCurrent) stepColor else if (isCompleted) Color.Gray.copy(alpha = 0.5f) else Color.LightGray,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = step.exerciseName,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isCurrent) FontWeight.Black else FontWeight.Bold,
+                                        color = if (isCurrent) stepColor else if (isCompleted) Color.Gray else charcoalDark
+                                    )
+                                    Text(
+                                        text = "${step.durationSeconds}s",
+                                        fontSize = 9.sp,
+                                        color = if (isCurrent) stepColor.copy(alpha = 0.8f) else Color.Gray
+                                    )
+                                    if (step.restSeconds > 0) {
+                                        Text(
+                                            text = "+${step.restSeconds}s rest",
+                                            fontSize = 8.sp,
+                                            color = Color(0xFF00796B),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                            if (index < steps.size - 1) {
+                                Text("➡️", fontSize = 10.sp, color = secondaryGray)
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -380,7 +477,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         Spacer(modifier = Modifier.height(20.dp))
 
         // Slider for Duration Target settings
-        if (!isRunning) {
+        if (!isRunning && !uiState.isRoutineActive) {
             Card(
                 colors = CardDefaults.cardColors(containerColor = cardSurface),
                 shape = RoundedCornerShape(16.dp),
@@ -419,7 +516,6 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 viewModel.totalTargetSeconds = next
                                 viewModel.resetTimer()
                             },
-                            // [방법 3 적용] 터치 영역은 48.dp, 눈에 보이는 하얀 원은 36.dp 크기로 축소
                             modifier = Modifier
                                 .size(48.dp) 
                                 .padding(6.dp) 
@@ -430,7 +526,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 imageVector = Icons.Default.Remove,
                                 contentDescription = stringResource(id = R.string.desc_decrease_5_sec),
                                 tint = tealActive,
-                                modifier = Modifier.size(14.dp) // 버튼 크기에 맞게 내부 대시 기호 크기 조정
+                                modifier = Modifier.size(14.dp)
                             )
                         }
 
@@ -459,17 +555,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 viewModel.totalTargetSeconds = next
                                 viewModel.resetTimer()
                             },
-                            // [방법 3 적용] 마이너스 버튼과 완벽한 대칭을 위해 동일한 터치 영역 및 패딩 지정
                             modifier = Modifier
                                 .size(48.dp)
-                                .padding(6.dp) // 안쪽으로 6.dp 밀려 들어가 실제 보이는 녹색 원은 36.dp 크기가 됨
+                                .padding(6.dp)
                                 .background(tealActive, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(id = R.string.desc_increase_5_sec),
                                 tint = Color.White,
-                                modifier = Modifier.size(14.dp) // 마이너스 아이콘과 동일하게 14.dp로 조절하여 밸런스 매칭
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
@@ -521,7 +616,6 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 systemVolume = next
                                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, next, AudioManager.FLAG_SHOW_UI)
                             },
-                            // [방법 3 적용] 터치 영역은 48.dp, 눈에 보이는 하얀 원은 36.dp 크기로 축소
                             modifier = Modifier
                                 .size(48.dp)
                                 .padding(6.dp)
@@ -532,7 +626,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 imageVector = Icons.Default.Remove,
                                 contentDescription = stringResource(id = R.string.desc_decrease_volume),
                                 tint = tealActive,
-                                modifier = Modifier.size(14.dp) // 버튼 크기에 맞게 내부 대시 기호 크기 조정
+                                modifier = Modifier.size(14.dp)
                             )
                         }
 
@@ -560,17 +654,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 systemVolume = next
                                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, next, AudioManager.FLAG_SHOW_UI)
                             },
-                            // [방법 3 적용] 마이너스 버튼과 완벽한 대칭을 위해 동일한 터치 영역 및 패딩 지정
                             modifier = Modifier
                                 .size(48.dp)
-                                .padding(6.dp) // 안쪽으로 6.dp 밀려 들어가 실제 보이는 녹색 원은 36.dp 크기가 됨
+                                .padding(6.dp)
                                 .background(tealActive, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(id = R.string.desc_increase_volume),
                                 tint = Color.White,
-                                modifier = Modifier.size(14.dp) // 마이너스 아이콘과 동일하게 14.dp로 조절하여 밸런스 매칭
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
@@ -578,7 +671,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             }
         }
 
-        if (!isRunning) {
+        if (!isRunning && !uiState.isRoutineActive) {
             // RHYTHM TIMER EXERCISE CONFIGURATIONS
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -625,6 +718,253 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 intervalValue = uiState.otherIntervalSeconds,
                 onIntervalChange = { viewModel.updateOtherInterval(it) }
             )
+
+            // --- CUSTOM ROUTINES SECTION ---
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isKo) "🎯 커스텀 루틴 목록" else "🎯 Custom Routines List",
+                    color = charcoalDark,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, tealActive, CircleShape)
+                        .clip(CircleShape)
+                        .clickable {
+                            editingRoutineId = null
+                            routineNameInput = ""
+                            routineStepsInput = listOf(com.example.data.RoutineStep("스쿼트", 60, 4, 15))
+                            showRoutineDialog = true
+                        }
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (isKo) "+ 루틴 생성" else "+ Build Routine",
+                        color = tealActive,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+
+            if (uiState.customRoutines.isEmpty()) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = cardSurface),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                ) {
+                    Text(
+                        text = if (isKo) "등록된 커스텀 루틴이 없습니다." else "No custom routines saved.",
+                        color = secondaryGray,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            } else {
+                uiState.customRoutines.forEach { routine ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = cardSurface),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp)
+                            .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(16.dp))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = routine.name,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = charcoalDark
+                                    )
+                                    if (!routine.id.startsWith("default_")) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape)
+                                                .clickable { viewModel.deleteRoutine(routine.id) },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("🗑️", fontSize = 12.sp)
+                                        }
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(2.dp))
+                                
+                                val totalSeconds = routine.steps.sumOf { it.durationSeconds + it.restSeconds }
+                                val mins = totalSeconds / 60
+                                val secs = totalSeconds % 60
+                                val totalLabel = if (mins > 0) {
+                                    if (secs > 0) "${mins} min ${secs} sec" else "${mins} min"
+                                } else {
+                                    "${secs} sec"
+                                }
+                                Text(
+                                    text = "Total: $totalLabel",
+                                    fontSize = 13.sp,
+                                    color = charcoalDark.copy(alpha = 0.7f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                                
+                                Spacer(modifier = Modifier.height(10.dp))
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    routine.steps.forEachIndexed { index, step ->
+                                        val displayExerciseName = when (step.exerciseName) {
+                                            "스쿼트", "Squat" -> "Squat"
+                                            "런지", "Lunge" -> "Lunge"
+                                            "플랭크", "Plank" -> "Plank"
+                                            else -> "Etc."
+                                        }
+                                        
+                                        val (chipBg, chipTx) = when (step.exerciseName) {
+                                            "스쿼트", "Squat" -> Pair(Color(0xFFD05404), Color.White)
+                                            "런지", "Lunge" -> Pair(Color(0xFF2B4D7E), Color.White)
+                                            "플랭크", "Plank" -> Pair(Color(0xFF93000A), Color.White)
+                                            else -> Pair(Color(0xFF0C6052), Color.White)
+                                        }
+                                        
+                                        Box(
+                                            modifier = Modifier
+                                                .background(chipBg, RoundedCornerShape(50.dp))
+                                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                                        ) {
+                                            Text(
+                                                text = "$displayExerciseName (${step.durationSeconds}s)",
+                                                color = chipTx,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        
+                                        if (step.restSeconds > 0) {
+                                            Text(
+                                                text = "→",
+                                                color = Color.LightGray,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(Color(0xFFCFD1DC), RoundedCornerShape(50.dp))
+                                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                                            ) {
+                                                Text(
+                                                    text = if (isKo) "Rest (${step.restSeconds}s)" else "Rest (${step.restSeconds}s)",
+                                                    color = Color(0xFF191C1B),
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                        
+                                        if (index < routine.steps.size - 1) {
+                                            Text(
+                                                text = "→",
+                                                color = Color.LightGray,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+                            
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Play Button
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .clickable { viewModel.startRoutine(routine) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(Color(0xFF0C6052), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.PlayArrow,
+                                            contentDescription = "Start Routine",
+                                            tint = Color.White,
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .padding(start = 2.dp)
+                                        )
+                                    }
+                                }
+                                
+                                // Edit Button
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            editingRoutineId = routine.id
+                                            routineNameInput = routine.name
+                                            routineStepsInput = routine.steps
+                                            showRoutineDialog = true
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(Color.White, CircleShape)
+                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit Routine",
+                                            tint = Color(0xFF0C6052),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         }
@@ -651,22 +991,54 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Reset Button
+                // Stop / Reset Button
                 IconButton(
-                    onClick = { viewModel.resetTimer() },
-                    enabled = !isRunning,
+                    onClick = {
+                        if (uiState.isRoutineActive) {
+                            viewModel.stopRoutine()
+                        } else {
+                            viewModel.resetTimer()
+                        }
+                    },
+                    enabled = uiState.isRoutineActive || !isRunning,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(if (isRunning) Color(0xFFEAEAEA) else Color(0xFFE6F3F1), CircleShape)
-                        .border(1.dp, if (isRunning) Color(0xFFDDDDDD) else Color(0xFFDCE5E2), CircleShape)
+                        .background(
+                            if (uiState.isRoutineActive) Color(0xFFFFDAD6)
+                            else if (isRunning) Color(0xFFEAEAEA)
+                            else Color(0xFFE6F3F1),
+                            CircleShape
+                        )
+                        .border(
+                            1.dp,
+                            if (uiState.isRoutineActive) Color(0xFFFFDAD6)
+                            else if (isRunning) Color(0xFFDDDDDD)
+                            else Color(0xFFDCE5E2),
+                            CircleShape
+                        )
                         .testTag("reset_timer_button")
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = stringResource(id = R.string.desc_reset_timer),
-                        tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    if (uiState.isRoutineActive) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh, // base target, drawn box over it
+                            contentDescription = "Stop",
+                            tint = Color(0xFFBA1A1A),
+                            modifier = Modifier.size(24.dp).drawBehind {
+                                drawRect(
+                                    color = Color(0xFFBA1A1A),
+                                    topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.25f, size.height * 0.25f),
+                                    size = androidx.compose.ui.geometry.Size(size.width * 0.5f, size.height * 0.5f)
+                                )
+                            }
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(id = R.string.desc_reset_timer),
+                            tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(24.dp))
@@ -903,6 +1275,421 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             containerColor = Color.White
         )
     }
+
+    if (showRoutineDialog) {
+        RoutineEditDialog(
+            routineId = editingRoutineId,
+            initialName = routineNameInput,
+            initialSteps = routineStepsInput,
+            isKo = isKo,
+            onDismiss = { showRoutineDialog = false },
+            onSave = { name, steps ->
+                viewModel.createOrUpdateRoutine(
+                    name = name,
+                    steps = steps,
+                    id = editingRoutineId
+                )
+                showRoutineDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun RoutineEditDialog(
+    routineId: String?,
+    initialName: String,
+    initialSteps: List<com.example.data.RoutineStep>,
+    isKo: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String, List<com.example.data.RoutineStep>) -> Unit
+) {
+    var name by remember { mutableStateOf(initialName) }
+    var steps by remember { mutableStateOf(initialSteps) }
+    
+    val tealActive = Color(0xFF006A60)
+    val charcoalDark = Color(0xFF191C1B)
+    val secondaryGray = Color(0xFF3F4947)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = if (routineId == null) {
+                    if (isKo) "새 커스텀 루틴 생성" else "Create Custom Routine"
+                } else {
+                    if (isKo) "커스텀 루틴 편집" else "Edit Custom Routine"
+                },
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = tealActive
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = if (isKo) "루틴명" else "Routine Name",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = secondaryGray
+                )
+                
+                androidx.compose.material3.OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = { Text(if (isKo) "예: 하체 버닝 세트" else "e.g. Legs Burn") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isKo) "운동 단계 (${steps.size})" else "Exercise Steps (${steps.size})",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = secondaryGray
+                    )
+                    
+                    TextButton(
+                        onClick = {
+                            steps = steps + com.example.data.RoutineStep("스쿼트", 60, 4, 15)
+                        }
+                    ) {
+                        Text(
+                            text = if (isKo) "➕ 단계 추가" else "➕ Add Step",
+                            color = tealActive,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                if (steps.isEmpty()) {
+                    Text(
+                        text = if (isKo) "등록된 운동이 없습니다. 단계를 추가해주세요." else "No steps added. Please add some exercises.",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                    )
+                }
+
+                steps.forEachIndexed { index, step ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F7F5)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(12.dp))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isKo) "${index + 1}단계" else "Step ${index + 1}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = tealActive
+                                )
+                                
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    IconButton(
+                                        onClick = {
+                                            if (index > 0) {
+                                                val mutable = steps.toMutableList()
+                                                val temp = mutable[index]
+                                                mutable[index] = mutable[index - 1]
+                                                mutable[index - 1] = temp
+                                                steps = mutable
+                                            }
+                                        },
+                                        enabled = index > 0,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Text("🔼", fontSize = 12.sp)
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            if (index < steps.size - 1) {
+                                                val mutable = steps.toMutableList()
+                                                val temp = mutable[index]
+                                                mutable[index] = mutable[index + 1]
+                                                mutable[index + 1] = temp
+                                                steps = mutable
+                                            }
+                                        },
+                                        enabled = index < steps.size - 1,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Text("🔽", fontSize = 12.sp)
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            steps = steps.filterIndexed { idx, _ -> idx != index }
+                                        },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Text("❌", fontSize = 11.sp)
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                val exerciseTypes = listOf("스쿼트", "런지", "플랭크", "기타")
+                                exerciseTypes.forEach { exe ->
+                                    val isSelected = step.exerciseName == exe
+                                    val (selectedBg, selectedBorder, txtColor) = when (exe) {
+                                        "스쿼트" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
+                                        "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
+                                        "플랭크" -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
+                                        else -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                                    }
+                                    
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .background(
+                                                if (isSelected) selectedBg else Color.White,
+                                                RoundedCornerShape(8.dp)
+                                            )
+                                            .border(
+                                                1.dp,
+                                                if (isSelected) selectedBorder else Color(0xFFDCE5E2),
+                                                RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable {
+                                                steps = steps.mapIndexed { idx, s ->
+                                                    if (idx == index) s.copy(exerciseName = exe) else s
+                                                }
+                                            }
+                                            .padding(vertical = 4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = exe,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSelected) txtColor else charcoalDark
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isKo) "운동 시간" else "Duration",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = secondaryGray
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .background(Color.White, CircleShape)
+                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                            .clickable {
+                                                steps = steps.mapIndexed { idx, s ->
+                                                    if (idx == index) s.copy(durationSeconds = (s.durationSeconds - 5).coerceAtLeast(5)) else s
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("-", color = tealActive, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                    Text(
+                                        text = "${step.durationSeconds}초",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = charcoalDark,
+                                        modifier = Modifier.widthIn(min = 36.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .background(tealActive, CircleShape)
+                                            .clickable {
+                                                steps = steps.mapIndexed { idx, s ->
+                                                    if (idx == index) s.copy(durationSeconds = (s.durationSeconds + 5).coerceAtMost(300)) else s
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            if (step.exerciseName != "플랭크") {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (isKo) "박자 세팅" else "Rhythm Interval",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = secondaryGray
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(26.dp)
+                                                .background(Color.White, CircleShape)
+                                                .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                                .clickable {
+                                                    steps = steps.mapIndexed { idx, s ->
+                                                        if (idx == index) s.copy(rhythmIntervalSeconds = (s.rhythmIntervalSeconds - 1).coerceAtLeast(1)) else s
+                                                    }
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("-", color = tealActive, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Text(
+                                            text = "${step.rhythmIntervalSeconds}초",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = charcoalDark,
+                                            modifier = Modifier.widthIn(min = 36.dp),
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(26.dp)
+                                                .background(tealActive, CircleShape)
+                                                .clickable {
+                                                    steps = steps.mapIndexed { idx, s ->
+                                                        if (idx == index) s.copy(rhythmIntervalSeconds = (s.rhythmIntervalSeconds + 1).coerceAtMost(15)) else s
+                                                    }
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isKo) "운동 끝난 후 휴식시간" else "Rest Duration After",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = secondaryGray
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .background(Color.White, CircleShape)
+                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                            .clickable {
+                                                steps = steps.mapIndexed { idx, s ->
+                                                    if (idx == index) s.copy(restSeconds = (s.restSeconds - 5).coerceAtLeast(0)) else s
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("-", color = tealActive, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                    Text(
+                                        text = "${step.restSeconds}초",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = charcoalDark,
+                                        modifier = Modifier.widthIn(min = 36.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .background(tealActive, CircleShape)
+                                            .clickable {
+                                                steps = steps.mapIndexed { idx, s ->
+                                                    if (idx == index) s.copy(restSeconds = (s.restSeconds + 5).coerceAtMost(120)) else s
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        onSave(name, steps)
+                    }
+                },
+                enabled = name.isNotBlank() && steps.isNotEmpty(),
+                colors = ButtonDefaults.buttonColors(containerColor = tealActive),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(if (isKo) "저장" else "Save", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(if (isKo) "취소" else "Cancel", color = secondaryGray, fontWeight = FontWeight.Bold)
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        containerColor = Color.White
+    )
 }
 
 @Composable

@@ -135,4 +135,57 @@ class WorkoutRepository(
     fun saveLanguageSelected(selected: Boolean) {
         sharedPreferences.edit { putBoolean("is_language_selected", selected) }
     }
+
+    // --- Custom Routines Persistence ---
+    fun getCustomRoutines(): List<CustomRoutine> {
+        val ids = sharedPreferences.getStringSet("custom_routines_ids", null)
+        if (ids == null) {
+            // Provide default presets if none saved yet
+            val defaultRoutines = listOf(
+                CustomRoutine(
+                    id = "default_1",
+                    name = "전신 리듬 세트 (스쿼트 & 런지)",
+                    steps = listOf(
+                        RoutineStep("스쿼트", 60, 4, 15),
+                        RoutineStep("런지", 60, 5, 0)
+                    )
+                ),
+                CustomRoutine(
+                    id = "default_2",
+                    name = "하체 단련 세트",
+                    steps = listOf(
+                        RoutineStep("스쿼트", 45, 3, 20),
+                        RoutineStep("런지", 45, 4, 20),
+                        RoutineStep("기타", 60, 6, 0)
+                    )
+                )
+            )
+            saveCustomRoutines(defaultRoutines)
+            return defaultRoutines
+        }
+        
+        return ids.map { id ->
+            val name = sharedPreferences.getString("custom_routine_name_$id", "") ?: ""
+            val stepsStr = sharedPreferences.getString("custom_routine_steps_$id", "") ?: ""
+            val timestamp = sharedPreferences.getLong("custom_routine_time_$id", System.currentTimeMillis())
+            CustomRoutine(
+                id = id,
+                name = name,
+                steps = CustomRoutine.deserializeSteps(stepsStr),
+                timestamp = timestamp
+            )
+        }.sortedBy { it.timestamp }
+    }
+
+    fun saveCustomRoutines(routines: List<CustomRoutine>) {
+        val ids = routines.map { it.id }.toSet()
+        sharedPreferences.edit {
+            putStringSet("custom_routines_ids", ids)
+            routines.forEach { routine ->
+                putString("custom_routine_name_${routine.id}", routine.name)
+                putString("custom_routine_steps_${routine.id}", routine.serializeSteps())
+                putLong("custom_routine_time_${routine.id}", routine.timestamp)
+            }
+        }
+    }
 }

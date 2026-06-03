@@ -10,6 +10,8 @@ import com.example.data.TimerRepository
 import com.example.data.TimerState
 import com.example.data.WorkoutRecord
 import com.example.data.WorkoutRepository
+import com.example.data.CustomRoutine
+import com.example.data.RoutineStep
 import com.example.util.WorkoutTimerService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -75,7 +77,12 @@ data class WorkoutUiState(
     val squatRestSeconds: Int = 30,
     val lungeRestSeconds: Int = 30,
     val plankRestSeconds: Int = 30,
-    val otherRestSeconds: Int = 30
+    val otherRestSeconds: Int = 30,
+    val isRoutineActive: Boolean = false,
+    val routineName: String = "",
+    val routineStepsJson: String = "",
+    val routineCurrentStepIndex: Int = 0,
+    val customRoutines: List<CustomRoutine> = emptyList()
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -156,6 +163,10 @@ class WorkoutViewModel @JvmOverloads constructor(
             )
         )
 
+        _uiState.update {
+            it.copy(customRoutines = repository.getCustomRoutines())
+        }
+
         viewModelScope.launch {
             TimerRepository.timerState.collect { timerState ->
                 _uiState.update {
@@ -181,7 +192,11 @@ class WorkoutViewModel @JvmOverloads constructor(
                         squatRestSeconds = timerState.squatRestSeconds,
                         lungeRestSeconds = timerState.lungeRestSeconds,
                         plankRestSeconds = timerState.plankRestSeconds,
-                        otherRestSeconds = timerState.otherRestSeconds
+                        otherRestSeconds = timerState.otherRestSeconds,
+                        isRoutineActive = timerState.isRoutineActive,
+                        routineName = timerState.routineName,
+                        routineStepsJson = timerState.routineStepsJson,
+                        routineCurrentStepIndex = timerState.routineCurrentStepIndex
                     )
                 }
             }
@@ -597,6 +612,71 @@ class WorkoutViewModel @JvmOverloads constructor(
                 currentTab = AppTab.Calendar
             )
         }
+    }
+
+    // --- Custom Routine Actions ---
+    fun createOrUpdateRoutine(name: String, steps: List<RoutineStep>, id: String? = null) {
+        val routines = _uiState.value.customRoutines.toMutableList()
+        val finalId = id ?: "routine_${System.currentTimeMillis()}"
+        val index = routines.indexOfFirst { it.id == finalId }
+        
+        val newRoutine = CustomRoutine(
+            id = finalId,
+            name = name,
+            steps = steps,
+            timestamp = System.currentTimeMillis()
+        )
+        
+        if (index >= 0) {
+            routines[index] = newRoutine
+        } else {
+            routines.add(newRoutine)
+        }
+        
+        repository.saveCustomRoutines(routines)
+        _uiState.update { it.copy(customRoutines = routines) }
+    }
+
+    fun deleteRoutine(id: String) {
+        val filtered = _uiState.value.customRoutines.filterNot { it.id == id }
+        repository.saveCustomRoutines(filtered)
+        _uiState.update { it.copy(customRoutines = filtered) }
+    }
+
+    fun startRoutine(routine: CustomRoutine) {
+        if (routine.steps.isEmpty()) return
+        val firstStep = routine.steps[0]
+        
+        TimerRepository.updateState {
+            it.copy(
+                isRoutineActive = true,
+                routineName = routine.name,
+                routineStepsJson = routine.serializeSteps(),
+                routineCurrentStepIndex = 0,
+                timerPresetType = firstStep.exerciseName,
+                rhythmIntervalSeconds = firstStep.rhythmIntervalSeconds,
+                totalTargetSeconds = firstStep.durationSeconds,
+                remainingSeconds = firstStep.durationSeconds + 3, // prep phase included on start
+                elapsedSeconds = 0,
+                rhythmTickCount = 0,
+                workoutCount = 0,
+                isResting = false
+            )
+        }
+        
+        startTimer()
+    }
+
+    fun stopRoutine() {
+        TimerRepository.updateState {
+            it.copy(
+                isRoutineActive = false,
+                routineName = "",
+                routineStepsJson = "",
+                routineCurrentStepIndex = 0
+            )
+        }
+        resetTimer()
     }
 
     fun deleteWorkoutRecord(record: WorkoutRecord) {

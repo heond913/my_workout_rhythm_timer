@@ -167,11 +167,16 @@ class WorkoutTimerService : Service() {
                         var newIsResting = currentLoopState.isResting
                         var newRestRemaining = currentLoopState.restRemainingSeconds
                         var newRestTotal = currentLoopState.restTotalSeconds
+                        var newCurrentStepIndex = currentLoopState.routineCurrentStepIndex
+                        var newIsRoutineActive = currentLoopState.isRoutineActive
+                        var newPresetType = currentLoopState.timerPresetType
+                        var newInterval = currentLoopState.rhythmIntervalSeconds
+                        var newTotalTarget = currentLoopState.totalTargetSeconds
 
                         var speakText: String? = null
                         var coachingText: String? = null
 
-                        val targetTotal = currentLoopState.totalTargetSeconds
+                        val targetTotal = newTotalTarget
 
                         if (currentLoopState.isResting) {
                             if (newRestRemaining > 0) {
@@ -184,14 +189,42 @@ class WorkoutTimerService : Service() {
                             }
 
                             if (newRestRemaining <= 0) {
-                                newIsResting = false
-                                newElapsed = 0
-                                newRhythmTick = 0
-                                newWorkoutCount = 0
-                                newRemaining = targetTotal + 3
-                                speakText = getString(R.string.rest_finished_prepare)
-                                soundHelper.playStrongBeep()
-                                ttsHelper.speak(getString(R.string.tts_prep_3))
+                                if (currentLoopState.isRoutineActive) {
+                                    val steps = com.example.data.CustomRoutine.deserializeSteps(currentLoopState.routineStepsJson)
+                                    val nextStepIdx = currentLoopState.routineCurrentStepIndex + 1
+                                    if (nextStepIdx < steps.size) {
+                                        val nextStep = steps[nextStepIdx]
+                                        newCurrentStepIndex = nextStepIdx
+                                        newPresetType = nextStep.exerciseName
+                                        newInterval = nextStep.rhythmIntervalSeconds
+                                        newTotalTarget = nextStep.durationSeconds
+                                        
+                                        newIsResting = false
+                                        newElapsed = 0
+                                        newRhythmTick = 0
+                                        newWorkoutCount = 0
+                                        newRemaining = nextStep.durationSeconds + 3
+                                        
+                                        speakText = "쉬는 시간 끝! 다음 운동은 " + nextStep.exerciseName + "입니다. 준비하세요!"
+                                        soundHelper.playStrongBeep()
+                                    } else {
+                                        newIsResting = false
+                                        newRunning = false
+                                        newIsRoutineActive = false
+                                        newShowDialog = true
+                                        speakText = "축하합니다! 모든 루틴을 완료하였습니다!"
+                                        soundHelper.playSetFinished()
+                                    }
+                                } else {
+                                    newIsResting = false
+                                    newElapsed = 0
+                                    newRhythmTick = 0
+                                    newWorkoutCount = 0
+                                    newRemaining = targetTotal + 3
+                                    speakText = getString(R.string.rest_finished_prepare)
+                                    soundHelper.playStrongBeep()
+                                    ttsHelper.speak(getString(R.string.tts_prep_3))
+                                }
                             }
                         } else {
                             if (currentLoopState.timerMode == TimerMode.Countdown) {
@@ -254,8 +287,43 @@ class WorkoutTimerService : Service() {
 
                                 // Completed Countdown Condition
                                 if (newRemaining <= 0) {
-                                    val isExerciseAutoRestEnabled = false
-                                    if (isExerciseAutoRestEnabled) {
+                                    if (currentLoopState.isRoutineActive) {
+                                         val steps = com.example.data.CustomRoutine.deserializeSteps(currentLoopState.routineStepsJson)
+                                         val currentStepIdx = currentLoopState.routineCurrentStepIndex
+                                         val currentStep = steps[currentStepIdx]
+                                         
+                                         logCurrentTimerWorkout()
+                                         
+                                         if (currentStep.restSeconds > 0) {
+                                             newIsResting = true
+                                             newRestTotal = currentStep.restSeconds
+                                             newRestRemaining = currentStep.restSeconds
+                                             soundHelper.playSetFinished()
+                                             speakText = currentStep.exerciseName + " 완료! " + currentStep.restSeconds + "초간 휴식하세요."
+                                         } else {
+                                             val nextStepIdx = currentStepIdx + 1
+                                             if (nextStepIdx < steps.size) {
+                                                 val nextStep = steps[nextStepIdx]
+                                                 newCurrentStepIndex = nextStepIdx
+                                                 newPresetType = nextStep.exerciseName
+                                                 newInterval = nextStep.rhythmIntervalSeconds
+                                                 newTotalTarget = nextStep.durationSeconds
+                                                 newRemaining = nextStep.durationSeconds + 3
+                                                 newElapsed = 0
+                                                 newRhythmTick = 0
+                                                 newWorkoutCount = 0
+                                                 
+                                                 speakText = currentStep.exerciseName + " 완료! 다음은 " + nextStep.exerciseName + "입니다. 준비하세요!"
+                                                 soundHelper.playStrongBeep()
+                                             } else {
+                                                 newRunning = false
+                                                 newIsRoutineActive = false
+                                                 newShowDialog = true
+                                                 speakText = "축하합니다! 모든 루틴을 완주하셨습니다!"
+                                                 soundHelper.playSetFinished()
+                                             }
+                                         }
+                                    } else if (false) {
                                         newIsResting = true
                                         val restSecs = when (currentLoopState.timerPresetType) {
                                             "스쿼트" -> currentLoopState.squatRestSeconds
@@ -335,7 +403,12 @@ class WorkoutTimerService : Service() {
                                 showCompletionDialog = newShowDialog,
                                 isResting = newIsResting,
                                 restRemainingSeconds = newRestRemaining,
-                                restTotalSeconds = newRestTotal
+                                restTotalSeconds = newRestTotal,
+                                routineCurrentStepIndex = newCurrentStepIndex,
+                                isRoutineActive = newIsRoutineActive,
+                                timerPresetType = newPresetType,
+                                rhythmIntervalSeconds = newInterval,
+                                totalTargetSeconds = newTotalTarget
                             )
                         }
 
@@ -406,7 +479,11 @@ class WorkoutTimerService : Service() {
                         reps = if (state.workoutCount > 0) state.workoutCount else null,
                         sets = 1,
                         durationSeconds = duration,
-                        note = getString(R.string.log_timer_auto_completed),
+                        note = if (state.isRoutineActive) {
+                            "[${state.routineName}] " + getString(R.string.log_timer_auto_completed)
+                        } else {
+                            getString(R.string.log_timer_auto_completed)
+                        },
                         rating = 4
                     )
                 )
@@ -451,7 +528,11 @@ class WorkoutTimerService : Service() {
             "기타" -> getString(R.string.preset_other)
             else -> state.timerPresetType
         }
-        val titleText = "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
+        val titleText = if (state.isRoutineActive) {
+            "[${state.routineName}] ${state.routineCurrentStepIndex + 1}단계 - $exerciseDisplay"
+        } else {
+            "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
+        }
         
         val contentText = if (state.isResting) {
             getString(R.string.notification_content_resting, state.restRemainingSeconds)
