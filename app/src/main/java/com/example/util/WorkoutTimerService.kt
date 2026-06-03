@@ -190,38 +190,42 @@ class WorkoutTimerService : Service() {
                                 newRhythmTick = 0
                             } else {
                                 // --- NORMAL WORKOUT COUNTDOWN ---
-                                // Check coaching alerts
-                                val targetHalf = targetTotal / 2
-                                if (newRemaining == targetHalf && targetHalf >= 10) {
-                                    coachingText = getString(R.string.tts_workout_half)
-                                } else if (newRemaining == 10 && targetTotal > 15) {
-                                    coachingText = getString(R.string.tts_workout_last10)
-                                }
-
-                                // Rhythm counts
-                                val interval = currentLoopState.rhythmIntervalSeconds
-                                var repTriggered = false
-                                if (interval > 0) {
-                                    newRhythmTick++
-                                    if (newRhythmTick >= interval) {
-                                        if (newRemaining > 0) {
-                                            soundHelper.playTick()
-                                        }
-                                        repTriggered = true
-                                        newWorkoutCount++
-                                        newRhythmTick = 0
+                                if (currentLoopState.timerPresetType == "플랭크" && newRemaining in 1..10) {
+                                    speakText = ttsHelper.getCountdownWord(newRemaining)
+                                } else {
+                                    // Check coaching alerts
+                                    val targetHalf = targetTotal / 2
+                                    if (newRemaining == targetHalf && targetHalf >= 10) {
+                                        coachingText = getString(R.string.tts_workout_half)
+                                    } else if (newRemaining == 10 && targetTotal > 15) {
+                                        coachingText = getString(R.string.tts_workout_last10)
                                     }
-                                }
 
-                                if (repTriggered) {
-                                    speakText = ttsHelper.getNumberWord(newWorkoutCount)
-                                }
+                                    // Rhythm counts
+                                    val interval = currentLoopState.rhythmIntervalSeconds
+                                    var repTriggered = false
+                                    if (interval > 0) {
+                                        newRhythmTick++
+                                        if (newRhythmTick >= interval) {
+                                            if (newRemaining > 0) {
+                                                soundHelper.playTick()
+                                            }
+                                            repTriggered = true
+                                            newWorkoutCount++
+                                            newRhythmTick = 0
+                                        }
+                                    }
 
-                                // Combine if both exist: prioritize number then coaching message
-                                if (speakText != null && coachingText != null) {
-                                    speakText = "$speakText, $coachingText"
-                                } else if (speakText == null && coachingText != null) {
-                                    speakText = coachingText
+                                    if (repTriggered) {
+                                        speakText = ttsHelper.getNumberWord(newWorkoutCount)
+                                    }
+
+                                    // Combine if both exist: prioritize number then coaching message
+                                    if (speakText != null && coachingText != null) {
+                                        speakText = "$speakText, $coachingText"
+                                    } else if (speakText == null && coachingText != null) {
+                                        speakText = coachingText
+                                    }
                                 }
 
                                 // Completed Countdown Condition

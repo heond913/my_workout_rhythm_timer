@@ -109,6 +109,49 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
         }
     }
 
+    /**
+     * Converts a countdown number (1 to 10) for plank countdown
+     */
+    fun getCountdownWord(count: Int): String {
+        if (count < 1 || count > 10) return ""
+        val currentLocale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            context.resources.configuration.locales[0]
+        } else {
+            @Suppress("DEPRECATION")
+            context.resources.configuration.locale
+        } ?: Locale.getDefault()
+
+        return if (currentLocale.language == "ko") {
+            when (count) {
+                10 -> "십"
+                9 -> "구"
+                8 -> "팔"
+                7 -> "칠"
+                6 -> "육"
+                5 -> "오"
+                4 -> "사"
+                3 -> "삼"
+                2 -> "이"
+                1 -> "일"
+                else -> ""
+            }
+        } else {
+            when (count) {
+                10 -> "Ten"
+                9 -> "Nine"
+                8 -> "Eight"
+                7 -> "Seven"
+                6 -> "Six"
+                5 -> "Five"
+                4 -> "Four"
+                3 -> "Three"
+                2 -> "Two"
+                1 -> "One"
+                else -> ""
+            }
+        }
+    }
+
     fun speak(text: String, queueMode: Int = TextToSpeech.QUEUE_FLUSH) {
         if (isInitialized && tts != null) {
             try {
