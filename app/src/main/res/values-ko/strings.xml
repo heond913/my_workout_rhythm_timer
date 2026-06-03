@@ -60,6 +60,16 @@
     <string name="sub_reps">회 단위로 수행한 횟수를 입력하세요</string>
     <string name="desc_decrease_reps">수행 횟수 감소</string>
     <string name="desc_increase_reps">수행 횟수 증가</string>
+    <string name="label_sets">세트 수 (Sets)</string>
+    <string name="sub_sets">완료한 운동 세트 수를 입력하세요</string>
+    <string name="desc_decrease_sets">세트 수 감소</string>
+    <string name="desc_increase_sets">세트 수 증가</string>
+    <string name="label_weight">중량 (Weight - kg)</string>
+    <string name="sub_weight">사용한 운동 무게(kg)를 입력하세요</string>
+    <string name="desc_decrease_weight">중량 감소</string>
+    <string name="desc_increase_weight">중량 증가</string>
+    <string name="unit_sets">세트</string>
+    <string name="unit_weight">kg</string>
     <string name="label_duration_secs">수행 시간 (Seconds)</string>
     <string name="sub_duration_secs">초 단위로 수행한 시간을 입력하세요 (예: 60초 = 1분)</string>
     <string name="desc_decrease_duration">수행 시간 감소</string>
@@ -126,6 +136,22 @@
     <string name="title_7days_consistency">최근 7일간의 운동 일관성</string>
     <string name="title_exercise_proportion">피트니스 종목별 비중 분석</string>
     <string name="records_count_format">%1$d회 기록</string>
+
+    <!-- Statistics Periods & Metrics -->
+    <string name="tab_daily">일별</string>
+    <string name="tab_weekly">주별</string>
+    <string name="tab_monthly">월별</string>
+    <string name="stat_metric_count">운동 횟수</string>
+    <string name="stat_metric_duration">총 운동 시간</string>
+    <string name="unit_times">회</string>
+    <string name="unit_minutes">분</string>
+    <string name="unit_seconds">초</string>
+    <string name="label_overall_habit">전체 트렌드 분석</string>
+    <string name="no_data_for_period">해당 기간 동안 완료된 운동 기록이 없습니다.</string>
+    <string name="this_week">이번 주</string>
+    <string name="weeks_ago_format">%1$d주 전</string>
+    <string name="current_month_short">이번 달</string>
+
 
     <!-- TTS Messages (TtsHelper / TimerService) -->
     <string name="tts_workout_start">운동을 시작합니다.</string>

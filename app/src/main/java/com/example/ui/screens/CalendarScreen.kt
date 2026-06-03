@@ -414,12 +414,30 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                     fontSize = 14.sp
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Row {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     if (workout.reps != null && workout.reps > 0) {
                                         Text(
                                             text = stringResource(id = R.string.workout_count_format, workout.reps),
                                             fontSize = 12.sp,
                                             color = charcoalDark,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                    if (workout.sets != null && workout.sets > 0) {
+                                        Text(
+                                            text = "${workout.sets}${stringResource(id = R.string.unit_sets)}",
+                                            fontSize = 12.sp,
+                                            color = charcoalDark,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                    if (workout.weightKg != null && workout.weightKg > 0.0) {
+                                        Text(
+                                            text = "${if (workout.weightKg % 1.0 == 0.0) workout.weightKg.toInt().toString() else workout.weightKg}${stringResource(id = R.string.unit_weight)}",
+                                            fontSize = 12.sp,
+                                            color = Color(0xFFE65100),
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))

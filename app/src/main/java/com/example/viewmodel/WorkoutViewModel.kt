@@ -62,6 +62,8 @@ data class WorkoutUiState(
     },
     val inputExerciseName: String = "스쿼트",
     val inputReps: String = "15",
+    val inputSets: String = "3",
+    val inputWeightKg: String = "0",
     val inputDurationSeconds: String = "60",
     val inputRating: Int = 3,
     val inputNote: String = ""
@@ -414,6 +416,16 @@ class WorkoutViewModel @JvmOverloads constructor(
         set(value) {
             _uiState.value = _uiState.value.copy(inputReps = value)
         }
+    var inputSets: String
+        get() = _uiState.value.inputSets
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputSets = value)
+        }
+    var inputWeightKg: String
+        get() = _uiState.value.inputWeightKg
+        set(value) {
+            _uiState.value = _uiState.value.copy(inputWeightKg = value)
+        }
     var inputDurationSeconds: String
         get() = _uiState.value.inputDurationSeconds
         set(value) {
@@ -433,6 +445,8 @@ class WorkoutViewModel @JvmOverloads constructor(
     fun saveWorkoutRecord(
         exercise: String = inputExerciseName,
         reps: Int? = inputReps.toIntOrNull(),
+        sets: Int? = inputSets.toIntOrNull(),
+        weightKg: Double? = inputWeightKg.toDoubleOrNull(),
         duration: Int? = inputDurationSeconds.toIntOrNull(),
         rating: Int = inputRating,
         note: String = inputNote,
@@ -442,6 +456,8 @@ class WorkoutViewModel @JvmOverloads constructor(
             val record = WorkoutRecord(
                 exerciseName = exercise,
                 reps = reps,
+                sets = sets,
+                weightKg = weightKg,
                 durationSeconds = duration,
                 rating = rating,
                 note = note,

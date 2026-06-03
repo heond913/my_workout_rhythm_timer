@@ -41,6 +41,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedExercise = uiState.inputExerciseName
     val repsVal = uiState.inputReps
+    val setsVal = uiState.inputSets
+    val weightVal = uiState.inputWeightKg
     val secsVal = uiState.inputDurationSeconds
     val rating = uiState.inputRating
     val note = uiState.inputNote
@@ -342,6 +344,154 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_reps), tint = Color.White)
+                    }
+                }
+            }
+        }
+
+        // Set Count input
+        Card(
+            colors = CardDefaults.cardColors(containerColor = cardSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.label_sets),
+                    color = if (selectedExercise == "스쿼트" || selectedExercise == "런지" || selectedExercise == "플랭크") tealActive else charcoalDark,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.sub_sets),
+                    color = secondaryGray,
+                    fontSize = 11.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = {
+                            val currentIdx = setsVal.toIntOrNull() ?: 1
+                            val newVal = (currentIdx - 1).coerceAtLeast(1)
+                            viewModel.inputSets = newVal.toString()
+                        },
+                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_sets), tint = tealActive)
+                    }
+
+                    OutlinedTextField(
+                        value = setsVal,
+                        onValueChange = { viewModel.inputSets = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(120.dp).testTag("sets_input_field"),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = charcoalDark,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = tealActive,
+                            unfocusedBorderColor = borderColor,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        ),
+                        singleLine = true
+                    )
+
+                    IconButton(
+                        onClick = {
+                            val currentIdx = setsVal.toIntOrNull() ?: 1
+                            val newVal = currentIdx + 1
+                            viewModel.inputSets = newVal.toString()
+                        },
+                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_sets), tint = Color.White)
+                    }
+                }
+            }
+        }
+
+        // Weight input (Squats or Lunges highlight)
+        Card(
+            colors = CardDefaults.cardColors(containerColor = cardSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.label_weight),
+                    color = if (selectedExercise == "스쿼트" || selectedExercise == "런지") tealActive else charcoalDark,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.sub_weight),
+                    color = secondaryGray,
+                    fontSize = 11.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = {
+                            val currentVal = weightVal.toDoubleOrNull() ?: 0.0
+                            val newVal = (currentVal - 2.5).coerceAtLeast(0.0)
+                            viewModel.inputWeightKg = if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString()
+                        },
+                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_weight), tint = tealActive)
+                    }
+
+                    OutlinedTextField(
+                        value = weightVal,
+                        onValueChange = { viewModel.inputWeightKg = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(120.dp).testTag("weight_input_field"),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = charcoalDark,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = tealActive,
+                            unfocusedBorderColor = borderColor,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        ),
+                        singleLine = true
+                    )
+
+                    IconButton(
+                        onClick = {
+                            val currentVal = weightVal.toDoubleOrNull() ?: 0.0
+                            val newVal = currentVal + 2.5
+                            viewModel.inputWeightKg = if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString()
+                        },
+                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_weight), tint = Color.White)
                     }
                 }
             }

@@ -60,6 +60,16 @@
     <string name="sub_reps">Enter the number of completed repetitions</string>
     <string name="desc_decrease_reps">Decrease reps</string>
     <string name="desc_increase_reps">Increase reps</string>
+    <string name="label_sets">Set Count</string>
+    <string name="sub_sets">Enter the number of completed sets</string>
+    <string name="desc_decrease_sets">Decrease sets</string>
+    <string name="desc_increase_sets">Increase sets</string>
+    <string name="label_weight">Weight (kg)</string>
+    <string name="sub_weight">Enter the training weight used</string>
+    <string name="desc_decrease_weight">Decrease weight</string>
+    <string name="desc_increase_weight">Increase weight</string>
+    <string name="unit_sets">sets</string>
+    <string name="unit_weight">kg</string>
     <string name="label_duration_secs">Duration (Seconds)</string>
     <string name="sub_duration_secs">Enter the duration in seconds (e.g. 60s = 1m)</string>
     <string name="desc_decrease_duration">Decrease duration</string>
@@ -126,6 +136,22 @@
     <string name="title_7days_consistency">7-Day Workout Consistency</string>
     <string name="title_exercise_proportion">Workout Proportion Analysis</string>
     <string name="records_count_format">%1$d records</string>
+
+    <!-- Statistics Periods & Metrics -->
+    <string name="tab_daily">Daily</string>
+    <string name="tab_weekly">Weekly</string>
+    <string name="tab_monthly">Monthly</string>
+    <string name="stat_metric_count">Workout Count</string>
+    <string name="stat_metric_duration">Total Duration</string>
+    <string name="unit_times">times</string>
+    <string name="unit_minutes">min</string>
+    <string name="unit_seconds">sec</string>
+    <string name="label_overall_habit">Custom Trend Analytics</string>
+    <string name="no_data_for_period">No workouts recorded for this period</string>
+    <string name="this_week">This W</string>
+    <string name="weeks_ago_format">%1$dw ago</string>
+    <string name="current_month_short">This M</string>
+
 
     <!-- TTS Messages (TtsHelper / TimerService) -->
     <string name="tts_workout_start">Workout starts.</string>

@@ -359,6 +359,7 @@ class WorkoutTimerService : Service() {
                     WorkoutRecord(
                         exerciseName = exercise,
                         reps = if (state.workoutCount > 0) state.workoutCount else null,
+                        sets = 1,
                         durationSeconds = duration,
                         note = getString(R.string.log_timer_auto_completed),
                         rating = 4

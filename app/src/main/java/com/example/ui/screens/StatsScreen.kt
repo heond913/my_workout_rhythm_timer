@@ -20,6 +20,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -63,6 +69,8 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
     }
 
     val totalReps = workoutRecords.sumOf { it.reps ?: 0 }
+    val totalSets = workoutRecords.sumOf { it.sets ?: 0 }
+    val maxWeight = workoutRecords.mapNotNull { it.weightKg }.maxOrNull() ?: 0.0
     val totalSeconds = workoutRecords.sumOf { it.durationSeconds ?: 0 }
     val totalMins = totalSeconds / 60
     val totalSecsRemainder = totalSeconds % 60
@@ -284,11 +292,97 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
             }
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Card D: Sets
+            Card(
+                colors = CardDefaults.cardColors(containerColor = cardSurface),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Restore,
+                        contentDescription = "Total sets",
+                        tint = tealActive,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(id = R.string.label_sets),
+                        fontSize = 11.sp,
+                        color = secondaryGray,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "$totalSets ${stringResource(id = R.string.unit_sets)}",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = tealActive,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            // Card E: Max Weight
+            Card(
+                colors = CardDefaults.cardColors(containerColor = cardSurface),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FitnessCenter,
+                        contentDescription = "Max Weight",
+                        tint = Color(0xFFE65100),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(id = R.string.label_weight),
+                        fontSize = 11.sp,
+                        color = secondaryGray,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "${if (maxWeight % 1.0 == 0.0) maxWeight.toInt().toString() else maxWeight} ${stringResource(id = R.string.unit_weight)}",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFFE65100),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(18.dp))
 
-        // 3. Custom Canvas rendering 7-Day Consistency Bar Graph
+        // 3. Custom Canvas rendering Interactive Bar Graph Dashboard (Daily/Weekly/Monthly)
+        var selectedPeriod by remember { mutableStateOf(0) } // 0: Daily, 1: Weekly, 2: Monthly
+        var selectedMetric by remember { mutableStateOf(0) } // 0: Count, 1: Duration
+
         Text(
-            text = stringResource(id = R.string.title_7days_consistency),
+            text = stringResource(id = R.string.label_overall_habit),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = charcoalDark,
@@ -303,82 +397,270 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                 .fillMaxWidth()
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
         ) {
-            Column(modifier = Modifier.padding(18.dp)) {
-                val sdf = SimpleDateFormat("M/d", Locale.getDefault())
-                val dayKeyFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-                
-                val last7Days = (0..6).map { offset ->
-                    Calendar.getInstance().apply {
-                        set(2026, Calendar.MAY, 29)
-                        add(Calendar.DAY_OF_YEAR, -offset)
-                    }
-                }.reversed()
-
-                val workoutCounts7Days = last7Days.map { day ->
-                    val dayStr = dayKeyFormat.format(day.time)
-                    val count = workoutRecords.count { record ->
-                        val recCal = Calendar.getInstance().apply { timeInMillis = record.timestamp }
-                        dayKeyFormat.format(recCal.time) == dayStr
-                    }
-                    Pair(sdf.format(day.time), count)
-                }
-
-                val maxCountInLast7Days = workoutCounts7Days.maxOfOrNull { it.second }?.coerceAtLeast(1) ?: 1
-
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Period tab selection: [ Daily ] [ Weekly ] [ Monthly ]
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(140.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.Bottom
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    workoutCounts7Days.forEach { (label, count) ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.weight(1f)
+                    val periods = listOf(
+                        Pair(0, R.string.tab_daily),
+                        Pair(1, R.string.tab_weekly),
+                        Pair(2, R.string.tab_monthly)
+                    )
+                    periods.forEach { (index, stringRes) ->
+                        val isSelected = selectedPeriod == index
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSelected) tealActive else Color(0xFFE6F3F1))
+                                .clickable { selectedPeriod = index }
+                                .padding(vertical = 10.dp)
+                                .testTag("period_tab_$index"),
+                            contentAlignment = Alignment.Center
                         ) {
-                            // Bar column canvas with clean pastel background column guidelines
-                            Canvas(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.4f)
-                                    .height(100.dp)
-                            ) {
-                                val barHeight = (count.toFloat() / maxCountInLast7Days.toFloat()) * size.height
-                                
-                                // Draw background column guide with soft green-grey
-                                drawRoundRect(
-                                    color = Color(0xFFDAE5E1),
-                                    topLeft = Offset(0f, 0f),
-                                    size = Size(size.width, size.height),
-                                    cornerRadius = CornerRadius(12f, 12f)
-                                )
+                            Text(
+                                text = stringResource(id = stringRes),
+                                color = if (isSelected) Color.White else tealActive,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
 
-                                // Draw filled gradient column in Vibrant Teal
-                                if (count > 0) {
-                                    drawRoundRect(
-                                        brush = Brush.verticalGradient(
-                                            colors = listOf(tealActive, Color(0xFFCCE8E3))
-                                        ),
-                                        topLeft = Offset(0f, size.height - barHeight),
-                                        size = Size(size.width, barHeight),
-                                        cornerRadius = CornerRadius(12f, 12f)
-                                    )
+                // Metric selection: [ Workout Count ] [ Total Duration ]
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val metrics = listOf(
+                        Pair(0, R.string.stat_metric_count),
+                        Pair(1, R.string.stat_metric_duration)
+                    )
+                    metrics.forEach { (index, stringRes) ->
+                        val isSelected = selectedMetric == index
+                        val highlightColor = if (index == 0) tealActive else Color(0xFFE65100)
+                        val lightHighlight = if (index == 0) Color(0xFFE6F3F1) else Color(0xFFFFECCC)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .border(1.dp, if (isSelected) highlightColor else Color.Transparent, RoundedCornerShape(10.dp))
+                                .background(if (isSelected) lightHighlight else Color(0xFFF2F7F5))
+                                .clickable { selectedMetric = index }
+                                .padding(vertical = 10.dp)
+                                .testTag("metric_tab_$index"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(id = stringRes),
+                                color = if (isSelected) highlightColor else secondaryGray,
+                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+
+                // Retrieve data according to selected Period & Metric
+                val chartData: List<Triple<String, Int, Int>> = when (selectedPeriod) {
+                    0 -> {
+                        // Daily: last 7 days back from today
+                        val dayKeyFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                        val displayFormat = SimpleDateFormat("M/d", Locale.getDefault())
+                        (0..6).map { offset ->
+                            val dayCal = Calendar.getInstance().apply {
+                                add(Calendar.DAY_OF_YEAR, -offset)
+                            }
+                            val dateStr = dayKeyFormat.format(dayCal.time)
+                            val dayWorkouts = workoutRecords.filter { record ->
+                                val recCal = Calendar.getInstance().apply { timeInMillis = record.timestamp }
+                                dayKeyFormat.format(recCal.time) == dateStr
+                            }
+                            val count = dayWorkouts.size
+                            val seconds = dayWorkouts.sumOf { it.durationSeconds ?: 0 }
+                            val minutes = seconds / 60
+                            Triple(displayFormat.format(dayCal.time), count, minutes)
+                        }.reversed()
+                    }
+                    1 -> {
+                        // Weekly Data is rolling 5 weeks back
+                        (0..4).map { wOffset ->
+                            val startCal = Calendar.getInstance().apply {
+                                add(Calendar.DAY_OF_YEAR, -(wOffset * 7 + 6))
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            val endCal = Calendar.getInstance().apply {
+                                add(Calendar.DAY_OF_YEAR, -(wOffset * 7))
+                                set(Calendar.HOUR_OF_DAY, 23)
+                                set(Calendar.MINUTE, 59)
+                                set(Calendar.SECOND, 59)
+                                set(Calendar.MILLISECOND, 999)
+                            }
+                            
+                            val label = if (wOffset == 0) {
+                                stringResource(id = R.string.this_week)
+                            } else {
+                                stringResource(id = R.string.weeks_ago_format, wOffset)
+                            }
+                            
+                            val weekWorkouts = workoutRecords.filter { record ->
+                                record.timestamp in startCal.timeInMillis..endCal.timeInMillis
+                            }
+                            val count = weekWorkouts.size
+                            val seconds = weekWorkouts.sumOf { it.durationSeconds ?: 0 }
+                            val minutes = seconds / 60
+                            
+                            Triple(label, count, minutes)
+                        }.reversed()
+                    }
+                    else -> {
+                        // Monthly Data is last 6 months back
+                        (0..5).map { mOffset ->
+                            val startCal = Calendar.getInstance().apply {
+                                add(Calendar.MONTH, -mOffset)
+                                set(Calendar.DAY_OF_MONTH, 1)
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            val endCal = (startCal.clone() as Calendar).apply {
+                                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+                                set(Calendar.HOUR_OF_DAY, 23)
+                                set(Calendar.MINUTE, 59)
+                                set(Calendar.SECOND, 59)
+                                set(Calendar.MILLISECOND, 999)
+                            }
+                            
+                            val label = if (mOffset == 0) {
+                                stringResource(id = R.string.current_month_short)
+                            } else {
+                                val monthFormat = SimpleDateFormat("M월", Locale.getDefault())
+                                val monthFormatEn = SimpleDateFormat("MMM", Locale.getDefault())
+                                val locale = Locale.getDefault()
+                                if (locale.language == "ko") {
+                                    monthFormat.format(startCal.time)
+                                } else {
+                                    monthFormatEn.format(startCal.time)
                                 }
                             }
+                            
+                            val monthWorkouts = workoutRecords.filter { record ->
+                                record.timestamp in startCal.timeInMillis..endCal.timeInMillis
+                            }
+                            val count = monthWorkouts.size
+                            val seconds = monthWorkouts.sumOf { it.durationSeconds ?: 0 }
+                            val minutes = seconds / 60
+                            
+                            Triple(label, count, minutes)
+                        }.reversed()
+                    }
+                }
 
+                val hasAnyData = chartData.any { if (selectedMetric == 0) it.second > 0 else it.third > 0 }
+                val maxVal = chartData.maxOfOrNull { if (selectedMetric == 0) it.second else it.third }?.coerceAtLeast(1) ?: 1
+                val valueUnit = if (selectedMetric == 0) stringResource(id = R.string.unit_times) else stringResource(id = R.string.unit_minutes)
+
+                if (!hasAnyData) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.FitnessCenter,
+                                contentDescription = null,
+                                tint = secondaryGray.copy(alpha = 0.4f),
+                                modifier = Modifier.size(32.dp)
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.no_data_for_period),
+                                fontSize = 12.sp,
+                                color = secondaryGray.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        chartData.forEach { (label, count, minutes) ->
+                            val value = if (selectedMetric == 0) count else minutes
+                            val isValueActive = value > 0
+                            
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Canvas(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.4f)
+                                        .height(95.dp)
+                                ) {
+                                    val barHeight = (value.toFloat() / maxVal.toFloat()) * size.height
+                                    
+                                    // Draw background column guide with soft green-grey
+                                    drawRoundRect(
+                                        color = Color(0xFFDAE5E1),
+                                        topLeft = Offset(0f, 0f),
+                                        size = Size(size.width, size.height),
+                                        cornerRadius = CornerRadius(12f, 12f)
+                                    )
 
-                            Text(
-                                text = label,
-                                fontSize = 10.sp,
-                                color = if (count > 0) tealActive else secondaryGray,
-                                fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal
-                            )
-                            Text(
-                                text = stringResource(id = R.string.workout_count_format, count),
-                                fontSize = 9.sp,
-                                color = if (count > 0) charcoalDark else secondaryGray.copy(alpha = 0.6f)
-                            )
+                                    if (isValueActive) {
+                                        val brush = if (selectedMetric == 0) {
+                                            Brush.verticalGradient(
+                                                colors = listOf(tealActive, Color(0xFFCCE8E3))
+                                            )
+                                        } else {
+                                            Brush.verticalGradient(
+                                                colors = listOf(Color(0xFFE65100), Color(0xFFFFECCC))
+                                            )
+                                        }
+                                        drawRoundRect(
+                                            brush = brush,
+                                            topLeft = Offset(0f, size.height - barHeight),
+                                            size = Size(size.width, barHeight),
+                                            cornerRadius = CornerRadius(12f, 12f)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Text(
+                                    text = label,
+                                    fontSize = 10.sp,
+                                    color = if (isValueActive) (if (selectedMetric == 0) tealActive else Color(0xFFE65100)) else secondaryGray,
+                                    fontWeight = if (isValueActive) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 1
+                                )
+                                Text(
+                                    text = "$value$valueUnit",
+                                    fontSize = 9.sp,
+                                    color = if (isValueActive) charcoalDark else secondaryGray.copy(alpha = 0.6f),
+                                    fontWeight = if (isValueActive) FontWeight.SemiBold else FontWeight.Normal,
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }
