@@ -15,7 +15,19 @@ data class TimerState(
     val remainingSeconds: Int = 60,
     val rhythmTickCount: Int = 0,
     val workoutCount: Int = 0,
-    val showCompletionDialog: Boolean = false
+    val showCompletionDialog: Boolean = false,
+    val autoRestEnabled: Boolean = false,
+    val squatAutoRestEnabled: Boolean = false,
+    val lungeAutoRestEnabled: Boolean = false,
+    val plankAutoRestEnabled: Boolean = false,
+    val otherAutoRestEnabled: Boolean = false,
+    val isResting: Boolean = false,
+    val restRemainingSeconds: Int = 0,
+    val restTotalSeconds: Int = 30,
+    val squatRestSeconds: Int = 30,
+    val lungeRestSeconds: Int = 30,
+    val plankRestSeconds: Int = 30,
+    val otherRestSeconds: Int = 30
 )
 
 object TimerRepository {

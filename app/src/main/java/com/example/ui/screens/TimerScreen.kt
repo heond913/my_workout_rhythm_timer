@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +43,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -218,7 +222,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Center circular timer visualizer
-        val progressFraction = if (totalSeconds > 0) remaining.toFloat() / totalSeconds.toFloat() else 0f
+        val progressFraction = if (uiState.isResting) {
+            if (uiState.restTotalSeconds > 0) uiState.restRemainingSeconds.toFloat() / uiState.restTotalSeconds.toFloat() else 0f
+        } else {
+            if (totalSeconds > 0) remaining.toFloat() / totalSeconds.toFloat() else 0f
+        }
 
         val animatedProgress by animateFloatAsState(
             targetValue = progressFraction,
@@ -231,7 +239,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 .drawBehind {
                     // Draw clean background ring matching active preset color theme
                     drawArc(
-                        color = activePresetBgColor,
+                        color = if (uiState.isResting) Color(0xFFE0E0E0) else activePresetBgColor,
                         startAngle = -90f,
                         sweepAngle = 360f,
                         useCenter = false,
@@ -239,7 +247,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     )
                     // Draw progress arc in active preset custom color
                     drawArc(
-                        color = activePresetColor,
+                        color = if (uiState.isResting) Color(0xFF00796B) else activePresetColor,
                         startAngle = -90f,
                         sweepAngle = animatedProgress * 360f,
                         useCenter = false,
@@ -252,13 +260,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 Icon(
                     imageVector = Icons.Default.Timer,
                     contentDescription = stringResource(id = R.string.desc_timer_clock),
-                    tint = activePresetColor,
+                    tint = if (uiState.isResting) Color(0xFF00796B) else activePresetColor,
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 // Giant time numbers in high-contrast charcoal
-                val minutesString = String.format(java.util.Locale.getDefault(), "%02d", remaining / 60)
-                val secondsString = String.format(java.util.Locale.getDefault(), "%02d", remaining % 60)
+                val displayRemaining = if (uiState.isResting) uiState.restRemainingSeconds else remaining
+                val minutesString = String.format(java.util.Locale.getDefault(), "%02d", displayRemaining / 60)
+                val secondsString = String.format(java.util.Locale.getDefault(), "%02d", displayRemaining % 60)
 
                 Text(
                     text = "$minutesString:$secondsString",
@@ -272,21 +281,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     text = stringResource(id = R.string.workout_count_format, uiState.workoutCount),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = activePresetColor
+                    color = if (uiState.isResting) Color(0xFF00796B) else activePresetColor
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 if (isRunning) {
                     val isPreparing = remaining > totalSeconds
                     Text(
-                        text = if (isPreparing) {
+                        text = if (uiState.isResting) {
+                            stringResource(id = R.string.rest_timer_status)
+                        } else if (isPreparing) {
                             stringResource(id = R.string.timer_preparing)
                         } else if (interval > 0) {
                             stringResource(id = R.string.rhythm_interval_notifying, interval)
                         } else {
                             stringResource(id = R.string.timer_in_progress)
                         },
-                        color = activePresetColor,
+                        color = if (uiState.isResting) Color(0xFF00796B) else activePresetColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -568,178 +579,52 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         }
 
         if (!isRunning) {
+            // RHYTHM TIMER EXERCISE CONFIGURATIONS
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(id = R.string.rhythm_individ_config_title),
+                color = charcoalDark,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+
+            // 1. Squat Settings Card
+            ExerciseSettingsCard(
+                title = stringResource(id = R.string.preset_squat),
+                themeColor = Color(0xFFE65100),
+                bgColor = Color(0xFFFFECCC).copy(alpha = 0.3f),
+                borderColor = Color(0xFFFFECCC),
+                intervalLabel = stringResource(id = R.string.rhythm_pace_label),
+                intervalValue = uiState.squatIntervalSeconds,
+                onIntervalChange = { viewModel.updateSquatInterval(it) }
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
-            Card(
-                colors = CardDefaults.cardColors(containerColor = cardSurface),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(16.dp))
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = stringResource(id = R.string.rhythm_individ_config_title),
-                        color = charcoalDark,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
 
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Squat Config Column Block - Styled in Orange Theme (Swapped)
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(Color(0xFFFFECCC).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFFFECCC), RoundedCornerShape(12.dp))
-                                    .padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(stringResource(id = R.string.preset_squat), color = Color(0xFFE65100), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color.White, CircleShape)
-                                            .border(1.dp, Color(0xFFFFECCC), CircleShape)
-                                            .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds - 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("-", color = Color(0xFFE65100), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    Text(
-                                        text = stringResource(id = R.string.seconds_format, uiState.squatIntervalSeconds),
-                                        color = charcoalDark,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1.3f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color(0xFFE65100), CircleShape)
-                                            .clickable { viewModel.updateSquatInterval(uiState.squatIntervalSeconds + 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
- 
-                            // Lunge Config Column Block
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(Color(0xFFD7E3FF).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFD7E3FF), RoundedCornerShape(12.dp))
-                                    .padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(stringResource(id = R.string.preset_lunge), color = Color(0xFF3F5F90), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color.White, CircleShape)
-                                            .border(1.dp, Color(0xFFD7E3FF), CircleShape)
-                                            .clickable { viewModel.updateLungeInterval(uiState.lungeIntervalSeconds - 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("-", color = Color(0xFF3F5F90), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    Text(
-                                        text = stringResource(id = R.string.seconds_format, uiState.lungeIntervalSeconds),
-                                        color = charcoalDark,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1.3f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color(0xFF3F5F90), CircleShape)
-                                            .clickable { viewModel.updateLungeInterval(uiState.lungeIntervalSeconds + 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
+            // 2. Lunge Settings Card
+            ExerciseSettingsCard(
+                title = stringResource(id = R.string.preset_lunge),
+                themeColor = Color(0xFF3F5F90),
+                bgColor = Color(0xFFD7E3FF).copy(alpha = 0.3f),
+                borderColor = Color(0xFFD7E3FF),
+                intervalLabel = stringResource(id = R.string.rhythm_pace_label),
+                intervalValue = uiState.lungeIntervalSeconds,
+                onIntervalChange = { viewModel.updateLungeInterval(it) }
+            )
 
-                            // Other/기타 Config Column Block - Styled in Teal Theme (Swapped)
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(Color(0xFFE6F3F1), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFCCE8E3), RoundedCornerShape(12.dp))
-                                    .padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(stringResource(id = R.string.preset_other), color = Color(0xFF006A60), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color.White, CircleShape)
-                                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
-                                            .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds - 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("-", color = Color(0xFF006A60), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    Text(
-                                        text = stringResource(id = R.string.seconds_format, uiState.otherIntervalSeconds),
-                                        color = charcoalDark,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1.3f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(28.dp)
-                                            .background(Color(0xFF006A60), CircleShape)
-                                            .clickable { viewModel.updateOtherInterval(uiState.otherIntervalSeconds + 1) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 3. Other Settings Card
+            ExerciseSettingsCard(
+                title = stringResource(id = R.string.preset_other),
+                themeColor = Color(0xFF006A60),
+                bgColor = Color(0xFFCCE8E3).copy(alpha = 0.3f),
+                borderColor = Color(0xFFCCE8E3),
+                intervalLabel = stringResource(id = R.string.rhythm_pace_label),
+                intervalValue = uiState.otherIntervalSeconds,
+                onIntervalChange = { viewModel.updateOtherInterval(it) }
+            )
         }
 
         }
@@ -1017,5 +902,90 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             shape = RoundedCornerShape(16.dp),
             containerColor = Color.White
         )
+    }
+}
+
+@Composable
+fun ExerciseSettingsCard(
+    title: String,
+    themeColor: Color,
+    bgColor: Color,
+    borderColor: Color,
+    intervalLabel: String,
+    intervalValue: Int,
+    onIntervalChange: (Int) -> Unit
+) {
+    val charcoalDark = Color(0xFF191C1B)
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left: Title
+            Text(
+                text = title,
+                color = themeColor,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            // Right: Interval/Speed control
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = intervalLabel,
+                    color = charcoalDark.copy(alpha = 0.7f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.White, CircleShape)
+                            .border(1.dp, borderColor, CircleShape)
+                            .clickable { onIntervalChange((intervalValue - 1).coerceAtLeast(1)) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("-", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Text(
+                        text = stringResource(id = R.string.seconds_format, intervalValue),
+                        color = charcoalDark,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.widthIn(min = 36.dp),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(themeColor, CircleShape)
+                            .clickable { onIntervalChange((intervalValue + 1).coerceAtMost(60)) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -781,6 +782,76 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     }
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Premium Social Share card for stats
+        var showShareDialog by remember { mutableStateOf(false) }
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.5.dp, tealActive, RoundedCornerShape(16.dp))
+                .clickable { showShareDialog = true }
+                .padding(4.dp)
+                .testTag("stats_social_share_card")
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(tealActive, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share overall stats",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.social_share_title),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = charcoalDark
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(id = R.string.social_share_subtitle),
+                        fontSize = 11.sp,
+                        color = secondaryGray
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        if (showShareDialog) {
+            SocialShareDialog(
+                shareData = ShareData.GeneralStats(
+                    streak = streak,
+                    totalSessions = totalSessions,
+                    totalSets = totalSets,
+                    maxWeight = maxWeight,
+                    totalMinutes = totalMins,
+                    totalSeconds = totalSecsRemainder
+                ),
+                onDismiss = { showShareDialog = false }
+            )
         }
     }
 }

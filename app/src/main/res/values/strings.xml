@@ -160,6 +160,17 @@
     <string name="tts_workout_half">Half is passed!</string>
     <string name="tts_workout_last10">Last 10 seconds!</string>
     <string name="log_timer_auto_completed">Rhythm Timer Auto Completed</string>
+    <string name="rest_10_seconds_left">10 seconds of rest remaining.</string>
+    <string name="rest_finished_prepare">Rest completed. Prepare for next set.</string>
+    <string name="set_completed_rest_starting">Set completed. Starting %1$d seconds of rest.</string>
+    <string name="auto_rest_timer_label">Auto-rest Timer</string>
+    <string name="auto_rest_timer_desc">Automatically triggers a customized rest countdown between sets.</string>
+    <string name="rest_duration_label">Rest Duration</string>
+    <string name="rhythm_pace_label">Rhythm Pace</string>
+    <string name="hold_duration_label">Hold Check Duration</string>
+    <string name="rest_title_format">%1$s Rest</string>
+    <string name="rest_timer_status">Resting</string>
+    <string name="notification_content_resting">Resting: %1$d sec remaining</string>
 
     <!-- Notification Service -->
     <string name="notification_channel_name">Workout Rhythm Timer</string>
@@ -202,4 +213,21 @@
     <string name="other_tip2">Listen to your body, stay well hydrated, and match your effort to your fatigue level.</string>
 
     <string name="title_useful_tips">💡 Useful Training Tips</string>
+
+    <!-- Social Share Feature -->
+    <string name="social_share_title">Share Workout Status</string>
+    <string name="social_share_subtitle">Create a beautiful card to share on your social media</string>
+    <string name="social_share_card_tag">#MyWorkoutRhythm</string>
+    <string name="btn_share_instagram">Instagram Share</string>
+    <string name="btn_share_tiktok">TikTok Share</string>
+    <string name="btn_share_system">Other App Share</string>
+    <string name="toast_copied_and_opening_app">Copied to clipboard. Opening %1$s!</string>
+    <string name="toast_app_not_installed">%1$s is not installed, opened standard share instead!</string>
+    <string name="share_card_style">Card Style</string>
+    <string name="share_card_style_neon">Neon Active</string>
+    <string name="share_card_style_cosmic">Cosmic Slate</string>
+    <string name="share_card_style_forest">Minty Forest</string>
+    <string name="share_card_style_coral">Warm Coral</string>
+    <string name="share_text_success_format">🔥 %1$s Complete! 🔥\n🗓 Date: %2$s\n%3$s⏱ Duration: %4$s\n⭐ Level: %5$s\n🚀 Feel the groove with #MyWorkoutRhythm!</string>
+    <string name="share_text_stats_format">🏆 Workout Rhythm Stats! 🏆\n🔥 Workout Streak: %1$d Days!\n💪 Total workouts: %2$d times / %3$d sets\n🏋️‍♂️ Max lifting: %4$skg\n⏱ Total time: %5$d min %6$d sec\n📊 Custom habits on #MyWorkoutRhythm with #TikTok workouts!</string>
 </resources>

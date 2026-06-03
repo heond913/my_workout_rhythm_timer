@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     val currentMonthCal = uiState.calendarYearMonth
     var selectedDayCal by remember { mutableStateOf(Calendar.getInstance()) }
     var recordToDelete by remember { mutableStateOf<WorkoutRecord?>(null) }
+    var workoutToShare by remember { mutableStateOf<WorkoutRecord?>(null) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     // Keep selectedDayCal in sync with currentMonthCal's month and year when month changes
@@ -485,16 +487,32 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                IconButton(
-                                    onClick = { recordToDelete = workout },
-                                    modifier = Modifier.size(24.dp)
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = stringResource(id = R.string.desc_delete_record),
-                                        tint = Color(0xFF93000A), // Red Plank outline crimson
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    IconButton(
+                                        onClick = { workoutToShare = workout },
+                                        modifier = Modifier.size(24.dp).testTag("share_record_btn_${workout.id}")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Share on social media",
+                                            tint = tealActive,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { recordToDelete = workout },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = stringResource(id = R.string.desc_delete_record),
+                                            tint = Color(0xFF93000A),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -561,6 +579,13 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             },
             containerColor = Color.White,
             shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (workoutToShare != null) {
+        SocialShareDialog(
+            shareData = ShareData.SingleWorkout(workoutToShare!!),
+            onDismiss = { workoutToShare = null }
         )
     }
 }

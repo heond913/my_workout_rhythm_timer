@@ -160,6 +160,17 @@
     <string name="tts_workout_half">절반 지났습니다!</string>
     <string name="tts_workout_last10">마지막 10초!</string>
     <string name="log_timer_auto_completed">리듬 타이머 자동 완료</string>
+    <string name="rest_10_seconds_left">휴식이 10초 남았습니다.</string>
+    <string name="rest_finished_prepare">휴식 완료! 다음 세트를 준비하세요.</string>
+    <string name="set_completed_rest_starting">세트 완료! %1$d초 휴식을 시작합니다.</string>
+    <string name="auto_rest_timer_label">자동 휴식 타이머</string>
+    <string name="auto_rest_timer_desc">세트 완료 후 설정한 휴식 시간만큼 자동으로 휴식에 진입합니다.</string>
+    <string name="rest_duration_label">휴식 시간 설정</string>
+    <string name="rhythm_pace_label">리듬 속도</string>
+    <string name="hold_duration_label">유지 시간 간격</string>
+    <string name="rest_title_format">%1$s 휴식</string>
+    <string name="rest_timer_status">휴식 중인 상태</string>
+    <string name="notification_content_resting">휴식 중: %1$d초 남음</string>
 
     <!-- Notification Service -->
     <string name="notification_channel_name">운동 리듬 타이머</string>
@@ -202,4 +213,21 @@
     <string name="other_tip2">내 몸의 반응에 유심히 집중하고 무리하지 않으며, 피로가 심할 땐 저강도나 충분한 세트 휴식으로 유연하게 대처하세요.</string>
 
     <string name="title_useful_tips">💡 알아두면 유익한 운동 팁</string>
+
+    <!-- Social Share Feature -->
+    <string name="social_share_title">운동 기록 소셜 공유</string>
+    <string name="social_share_subtitle">나만의 운동 기록 카드를 꾸미고 소셜 미디어에 자랑해 보세요</string>
+    <string name="social_share_card_tag">#나만의운동타이머</string>
+    <string name="btn_share_instagram">인스타그램 공유</string>
+    <string name="btn_share_tiktok">틱톡 공유</string>
+    <string name="btn_share_system">기타 앱 공유</string>
+    <string name="toast_copied_and_opening_app">내용이 클립보드에 복사되었습니다. %1$s 앱을 엽니다!</string>
+    <string name="toast_app_not_installed">%1$s 앱이 설치되어 있지 않아 일반 공유로 진행합니다!</string>
+    <string name="share_card_style">카드 디자인 스타일</string>
+    <string name="share_card_style_neon">네온 액티브 (Neon)</string>
+    <string name="share_card_style_cosmic">우주 슬레이트 (Cosmic)</string>
+    <string name="share_card_style_forest">민 티 포레스트 (Mint)</string>
+    <string name="share_card_style_coral">웜 코랄 (Coral)</string>
+    <string name="share_text_success_format">🔥 %1$s 완수 완료! 🔥\n🗓 날짜: %2$s\n%3$s⏱ 운동 시간: %4$s\n⭐ 만족도: %5$s\n🚀 #나만의운동타이머 와 함께 오운완 달성!</string>
+    <string name="share_text_stats_format">🏆 나만의 운동 타이머 성장 분석! 🏆\n🔥 현재 연속 운동: %1$d일 돌파!\n💪 누적 운동: %2$d회 / %3$d세트\n🏋️‍♂️ 최대 중량: %4$skg\n⏱ 누적 시간: %5$d분 %6$d초\n📊 #틱톡운동 #통계 분석 완료! #나만의운동타이머</string>
 </resources>

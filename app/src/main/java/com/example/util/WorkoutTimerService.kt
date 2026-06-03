@@ -164,13 +164,37 @@ class WorkoutTimerService : Service() {
                         var newWorkoutCount = currentLoopState.workoutCount
                         var newRunning = currentLoopState.isRunning
                         var newShowDialog = currentLoopState.showCompletionDialog
+                        var newIsResting = currentLoopState.isResting
+                        var newRestRemaining = currentLoopState.restRemainingSeconds
+                        var newRestTotal = currentLoopState.restTotalSeconds
 
                         var speakText: String? = null
                         var coachingText: String? = null
 
                         val targetTotal = currentLoopState.totalTargetSeconds
 
-                        if (currentLoopState.timerMode == TimerMode.Countdown) {
+                        if (currentLoopState.isResting) {
+                            if (newRestRemaining > 0) {
+                                newRestRemaining--
+                            }
+                            if (newRestRemaining == 10 && newRestTotal > 15) {
+                                speakText = getString(R.string.rest_10_seconds_left)
+                            } else if (newRestRemaining in 1..3) {
+                                speakText = ttsHelper.getCountdownWord(newRestRemaining)
+                            }
+
+                            if (newRestRemaining <= 0) {
+                                newIsResting = false
+                                newElapsed = 0
+                                newRhythmTick = 0
+                                newWorkoutCount = 0
+                                newRemaining = targetTotal + 3
+                                speakText = getString(R.string.rest_finished_prepare)
+                                soundHelper.playStrongBeep()
+                                ttsHelper.speak(getString(R.string.tts_prep_3))
+                            }
+                        } else {
+                            if (currentLoopState.timerMode == TimerMode.Countdown) {
                             newElapsed++
                             if (newRemaining > 0) {
                                 newRemaining--
@@ -230,18 +254,35 @@ class WorkoutTimerService : Service() {
 
                                 // Completed Countdown Condition
                                 if (newRemaining <= 0) {
-                                    newRunning = false
-                                    soundHelper.playSetFinished()
-                                    
-                                    val completionMsg = getString(R.string.tts_workout_completed)
-                                    if (speakText != null) {
-                                        speakText = "$speakText, $completionMsg"
+                                    val isExerciseAutoRestEnabled = false
+                                    if (isExerciseAutoRestEnabled) {
+                                        newIsResting = true
+                                        val restSecs = when (currentLoopState.timerPresetType) {
+                                            "스쿼트" -> currentLoopState.squatRestSeconds
+                                            "런지" -> currentLoopState.lungeRestSeconds
+                                            "플랭크" -> currentLoopState.plankRestSeconds
+                                            "기타" -> currentLoopState.otherRestSeconds
+                                            else -> 30
+                                        }
+                                        newRestTotal = restSecs
+                                        newRestRemaining = restSecs
+                                        soundHelper.playSetFinished()
+                                        speakText = getString(R.string.set_completed_rest_starting, restSecs)
+                                        logCurrentTimerWorkout()
                                     } else {
-                                        speakText = completionMsg
-                                    }
+                                        newRunning = false
+                                        soundHelper.playSetFinished()
 
-                                    logCurrentTimerWorkout()
-                                    newShowDialog = true
+                                        val completionMsg = getString(R.string.tts_workout_completed)
+                                        if (speakText != null) {
+                                            speakText = "$speakText, $completionMsg"
+                                        } else {
+                                            speakText = completionMsg
+                                        }
+
+                                        logCurrentTimerWorkout()
+                                        newShowDialog = true
+                                    }
                                 }
                             }
                         } else {
@@ -281,6 +322,7 @@ class WorkoutTimerService : Service() {
                                 }
                             }
                         }
+                        }
 
                         // Update State atomically
                         TimerRepository.updateState {
@@ -290,7 +332,10 @@ class WorkoutTimerService : Service() {
                                 rhythmTickCount = newRhythmTick,
                                 workoutCount = newWorkoutCount,
                                 isRunning = newRunning,
-                                showCompletionDialog = newShowDialog
+                                showCompletionDialog = newShowDialog,
+                                isResting = newIsResting,
+                                restRemainingSeconds = newRestRemaining,
+                                restTotalSeconds = newRestTotal
                             )
                         }
 
@@ -408,7 +453,9 @@ class WorkoutTimerService : Service() {
         }
         val titleText = "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
         
-        val contentText = if (state.remainingSeconds > state.totalTargetSeconds) {
+        val contentText = if (state.isResting) {
+            getString(R.string.notification_content_resting, state.restRemainingSeconds)
+        } else if (state.remainingSeconds > state.totalTargetSeconds) {
             getString(R.string.timer_preparing)
         } else if (state.timerMode == TimerMode.Countdown) {
             getString(R.string.notification_content_countdown, state.remainingSeconds, state.workoutCount)

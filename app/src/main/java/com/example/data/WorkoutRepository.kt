@@ -83,6 +83,52 @@ class WorkoutRepository(
         sharedPreferences.edit { putInt("rhythm_interval_seconds", value) }
     }
 
+    // --- Auto Rest Preferences ---
+    fun getAutoRestEnabled(): Boolean = sharedPreferences.getBoolean("auto_rest_enabled", false)
+    fun saveAutoRestEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean("auto_rest_enabled", value) }
+    }
+
+    fun getSquatAutoRestEnabled(): Boolean = sharedPreferences.getBoolean("squat_auto_rest_enabled", false)
+    fun saveSquatAutoRestEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean("squat_auto_rest_enabled", value) }
+    }
+
+    fun getLungeAutoRestEnabled(): Boolean = sharedPreferences.getBoolean("lunge_auto_rest_enabled", false)
+    fun saveLungeAutoRestEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean("lunge_auto_rest_enabled", value) }
+    }
+
+    fun getPlankAutoRestEnabled(): Boolean = sharedPreferences.getBoolean("plank_auto_rest_enabled", false)
+    fun savePlankAutoRestEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean("plank_auto_rest_enabled", value) }
+    }
+
+    fun getOtherAutoRestEnabled(): Boolean = sharedPreferences.getBoolean("other_auto_rest_enabled", false)
+    fun saveOtherAutoRestEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean("other_auto_rest_enabled", value) }
+    }
+
+    fun getSquatRestSeconds(): Int = sharedPreferences.getInt("squat_rest_seconds", 30)
+    fun saveSquatRestSeconds(value: Int) {
+        sharedPreferences.edit { putInt("squat_rest_seconds", value) }
+    }
+
+    fun getLungeRestSeconds(): Int = sharedPreferences.getInt("lunge_rest_seconds", 30)
+    fun saveLungeRestSeconds(value: Int) {
+        sharedPreferences.edit { putInt("lunge_rest_seconds", value) }
+    }
+
+    fun getPlankRestSeconds(): Int = sharedPreferences.getInt("plank_rest_seconds", 30)
+    fun savePlankRestSeconds(value: Int) {
+        sharedPreferences.edit { putInt("plank_rest_seconds", value) }
+    }
+
+    fun getOtherRestSeconds(): Int = sharedPreferences.getInt("other_rest_seconds", 30)
+    fun saveOtherRestSeconds(value: Int) {
+        sharedPreferences.edit { putInt("other_rest_seconds", value) }
+    }
+
     // --- Language Selection ---
     fun isLanguageSelected(): Boolean = sharedPreferences.getBoolean("is_language_selected", false)
 

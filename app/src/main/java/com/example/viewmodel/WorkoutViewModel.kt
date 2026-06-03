@@ -56,17 +56,26 @@ data class WorkoutUiState(
     val workoutCount: Int = 0,
     val showCompletionDialog: Boolean = false,
     val showLanguageSelection: Boolean = false,
-    val calendarYearMonth: Calendar = Calendar.getInstance().apply {
-        set(Calendar.YEAR, 2026)
-        set(Calendar.MONTH, Calendar.MAY)
-    },
+    val calendarYearMonth: Calendar = Calendar.getInstance(),
     val inputExerciseName: String = "스쿼트",
     val inputReps: String = "15",
     val inputSets: String = "3",
     val inputWeightKg: String = "0",
     val inputDurationSeconds: String = "60",
     val inputRating: Int = 3,
-    val inputNote: String = ""
+    val inputNote: String = "",
+    val autoRestEnabled: Boolean = false,
+    val squatAutoRestEnabled: Boolean = false,
+    val lungeAutoRestEnabled: Boolean = false,
+    val plankAutoRestEnabled: Boolean = false,
+    val otherAutoRestEnabled: Boolean = false,
+    val isResting: Boolean = false,
+    val restRemainingSeconds: Int = 0,
+    val restTotalSeconds: Int = 30,
+    val squatRestSeconds: Int = 30,
+    val lungeRestSeconds: Int = 30,
+    val plankRestSeconds: Int = 30,
+    val otherRestSeconds: Int = 30
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -98,7 +107,16 @@ class WorkoutViewModel @JvmOverloads constructor(
             plankTargetSeconds = repository.getPlankTargetSeconds(),
             otherTargetSeconds = repository.getOtherTargetSeconds(),
             rhythmIntervalSeconds = repository.getRhythmInterval(),
-            showLanguageSelection = !repository.isLanguageSelected()
+            showLanguageSelection = !repository.isLanguageSelected(),
+            autoRestEnabled = repository.getAutoRestEnabled(),
+            squatAutoRestEnabled = repository.getSquatAutoRestEnabled(),
+            lungeAutoRestEnabled = repository.getLungeAutoRestEnabled(),
+            plankAutoRestEnabled = repository.getPlankAutoRestEnabled(),
+            otherAutoRestEnabled = repository.getOtherAutoRestEnabled(),
+            squatRestSeconds = repository.getSquatRestSeconds(),
+            lungeRestSeconds = repository.getLungeRestSeconds(),
+            plankRestSeconds = repository.getPlankRestSeconds(),
+            otherRestSeconds = repository.getOtherRestSeconds()
         )
     )
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
@@ -118,7 +136,23 @@ class WorkoutViewModel @JvmOverloads constructor(
                 timerPresetType = initialPreset,
                 rhythmIntervalSeconds = initialRhythm,
                 remainingSeconds = initialTarget,
-                totalTargetSeconds = initialTarget
+                totalTargetSeconds = initialTarget,
+                autoRestEnabled = repository.getAutoRestEnabled(),
+                squatAutoRestEnabled = repository.getSquatAutoRestEnabled(),
+                lungeAutoRestEnabled = repository.getLungeAutoRestEnabled(),
+                plankAutoRestEnabled = repository.getPlankAutoRestEnabled(),
+                otherAutoRestEnabled = repository.getOtherAutoRestEnabled(),
+                squatRestSeconds = repository.getSquatRestSeconds(),
+                lungeRestSeconds = repository.getLungeRestSeconds(),
+                plankRestSeconds = repository.getPlankRestSeconds(),
+                otherRestSeconds = repository.getOtherRestSeconds(),
+                restTotalSeconds = when (initialPreset) {
+                    "스쿼트" -> repository.getSquatRestSeconds()
+                    "런지" -> repository.getLungeRestSeconds()
+                    "플랭크" -> repository.getPlankRestSeconds()
+                    "기타" -> repository.getOtherRestSeconds()
+                    else -> 30
+                }
             )
         )
 
@@ -135,7 +169,19 @@ class WorkoutViewModel @JvmOverloads constructor(
                         remainingSeconds = timerState.remainingSeconds,
                         rhythmTickCount = timerState.rhythmTickCount,
                         workoutCount = timerState.workoutCount,
-                        showCompletionDialog = timerState.showCompletionDialog
+                        showCompletionDialog = timerState.showCompletionDialog,
+                        autoRestEnabled = timerState.autoRestEnabled,
+                        squatAutoRestEnabled = timerState.squatAutoRestEnabled,
+                        lungeAutoRestEnabled = timerState.lungeAutoRestEnabled,
+                        plankAutoRestEnabled = timerState.plankAutoRestEnabled,
+                        otherAutoRestEnabled = timerState.otherAutoRestEnabled,
+                        isResting = timerState.isResting,
+                        restRemainingSeconds = timerState.restRemainingSeconds,
+                        restTotalSeconds = timerState.restTotalSeconds,
+                        squatRestSeconds = timerState.squatRestSeconds,
+                        lungeRestSeconds = timerState.lungeRestSeconds,
+                        plankRestSeconds = timerState.plankRestSeconds,
+                        otherRestSeconds = timerState.otherRestSeconds
                     )
                 }
             }
@@ -284,6 +330,13 @@ class WorkoutViewModel @JvmOverloads constructor(
             "기타" -> otherIntervalSeconds
             else -> 0
         }
+        val restSecs = when (updatedPreset) {
+            "스쿼트" -> _uiState.value.squatRestSeconds
+            "런지" -> _uiState.value.lungeRestSeconds
+            "플랭크" -> _uiState.value.plankRestSeconds
+            "기타" -> _uiState.value.otherRestSeconds
+            else -> 30
+        }
         TimerRepository.updateState {
             it.copy(
                 timerPresetType = updatedPreset,
@@ -292,7 +345,9 @@ class WorkoutViewModel @JvmOverloads constructor(
                 elapsedSeconds = 0,
                 remainingSeconds = targetSecondsForPreset,
                 rhythmTickCount = 0,
-                workoutCount = 0
+                workoutCount = 0,
+                restTotalSeconds = restSecs,
+                isResting = false
             )
         }
         _uiState.update {
@@ -303,7 +358,8 @@ class WorkoutViewModel @JvmOverloads constructor(
                 squatTargetSeconds = repository.getSquatTargetSeconds(),
                 lungeTargetSeconds = repository.getLungeTargetSeconds(),
                 plankTargetSeconds = repository.getPlankTargetSeconds(),
-                otherTargetSeconds = repository.getOtherTargetSeconds()
+                otherTargetSeconds = repository.getOtherTargetSeconds(),
+                isResting = false
             )
         }
         repository.saveTimerPresetType(updatedPreset)
@@ -348,6 +404,76 @@ class WorkoutViewModel @JvmOverloads constructor(
         if (timerPresetType == "기타") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
+        }
+    }
+
+    fun updateAutoRestEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(autoRestEnabled = enabled) }
+        repository.saveAutoRestEnabled(enabled)
+        TimerRepository.updateState { it.copy(autoRestEnabled = enabled) }
+    }
+
+    fun updateSquatAutoRestEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(squatAutoRestEnabled = enabled) }
+        repository.saveSquatAutoRestEnabled(enabled)
+        TimerRepository.updateState { it.copy(squatAutoRestEnabled = enabled) }
+    }
+
+    fun updateLungeAutoRestEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(lungeAutoRestEnabled = enabled) }
+        repository.saveLungeAutoRestEnabled(enabled)
+        TimerRepository.updateState { it.copy(lungeAutoRestEnabled = enabled) }
+    }
+
+    fun updatePlankAutoRestEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(plankAutoRestEnabled = enabled) }
+        repository.savePlankAutoRestEnabled(enabled)
+        TimerRepository.updateState { it.copy(plankAutoRestEnabled = enabled) }
+    }
+
+    fun updateOtherAutoRestEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(otherAutoRestEnabled = enabled) }
+        repository.saveOtherAutoRestEnabled(enabled)
+        TimerRepository.updateState { it.copy(otherAutoRestEnabled = enabled) }
+    }
+
+    fun updateSquatRestSeconds(seconds: Int) {
+        val safeSecs = seconds.coerceIn(5, 300)
+        _uiState.update { it.copy(squatRestSeconds = safeSecs) }
+        repository.saveSquatRestSeconds(safeSecs)
+        TimerRepository.updateState {
+            val updated = it.copy(squatRestSeconds = safeSecs)
+            if (updated.timerPresetType == "스쿼트") updated.copy(restTotalSeconds = safeSecs) else updated
+        }
+    }
+
+    fun updateLungeRestSeconds(seconds: Int) {
+        val safeSecs = seconds.coerceIn(5, 300)
+        _uiState.update { it.copy(lungeRestSeconds = safeSecs) }
+        repository.saveLungeRestSeconds(safeSecs)
+        TimerRepository.updateState {
+            val updated = it.copy(lungeRestSeconds = safeSecs)
+            if (updated.timerPresetType == "런지") updated.copy(restTotalSeconds = safeSecs) else updated
+        }
+    }
+
+    fun updatePlankRestSeconds(seconds: Int) {
+        val safeSecs = seconds.coerceIn(5, 300)
+        _uiState.update { it.copy(plankRestSeconds = safeSecs) }
+        repository.savePlankRestSeconds(safeSecs)
+        TimerRepository.updateState {
+            val updated = it.copy(plankRestSeconds = safeSecs)
+            if (updated.timerPresetType == "플랭크") updated.copy(restTotalSeconds = safeSecs) else updated
+        }
+    }
+
+    fun updateOtherRestSeconds(seconds: Int) {
+        val safeSecs = seconds.coerceIn(5, 300)
+        _uiState.update { it.copy(otherRestSeconds = safeSecs) }
+        repository.saveOtherRestSeconds(safeSecs)
+        TimerRepository.updateState {
+            val updated = it.copy(otherRestSeconds = safeSecs)
+            if (updated.timerPresetType == "기타") updated.copy(restTotalSeconds = safeSecs) else updated
         }
     }
 
