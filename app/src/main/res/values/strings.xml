@@ -157,4 +157,23 @@
     <string name="tts_prep_2">Two</string>
     <string name="tts_prep_1">One</string>
     <string name="tts_prep_start">Start!</string>
+
+    <!-- Completion Tips & Encouragement -->
+    <string name="squat_encouragement">Perfect lower body stimulation! Feel your hips and glutes getting stronger already!</string>
+    <string name="squat_tip1">Keep feet shoulder-width apart and ensure knees don\'t flare excessively forward past your toes.</string>
+    <string name="squat_tip2">Push primarily through your heels when rising up to direct the maximum load to your glutes.</string>
+
+    <string name="lunge_encouragement">Flawless balance! You\'re building symmetry and bulletproof lower-body strength!</string>
+    <string name="lunge_tip1">Keep your chest high, spine straight, and aim for a clean 90-degree bend in both knees.</string>
+    <string name="lunge_tip2">Keep 70% of your weight on your front heel to protect your patella joints from strain.</string>
+
+    <string name="plank_encouragement">Outstanding endurance! Your core is becoming a powerhouse of stability!</string>
+    <string name="plank_tip1">Maintain a straight line from shoulders to heels, keeping your pelvis engaged and not sagging.</string>
+    <string name="plank_tip2">Press actively through your elbows and forearms to prevent shoulder blades from winging.</string>
+
+    <string name="other_encouragement">Routine complete! Consistency is the code that unlocks ultimate performance!</string>
+    <string name="other_tip1">Warm sessions should always be bookended with dynamic stretch routines and a cool-down.</string>
+    <string name="other_tip2">Listen to your body, stay well hydrated, and match your effort to your fatigue level.</string>
+
+    <string name="title_useful_tips">💡 Useful Training Tips</string>
 </resources>

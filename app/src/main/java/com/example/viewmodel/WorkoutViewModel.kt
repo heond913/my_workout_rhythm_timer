@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -41,6 +42,10 @@ data class WorkoutUiState(
     val lungeIntervalSeconds: Int = 5,
     val plankIntervalSeconds: Int = 10,
     val otherIntervalSeconds: Int = 10,
+    val squatTargetSeconds: Int = 60,
+    val lungeTargetSeconds: Int = 60,
+    val plankTargetSeconds: Int = 60,
+    val otherTargetSeconds: Int = 60,
     val timerRunning: Boolean = false,
     val timerMode: TimerMode = TimerMode.Countdown,
     val totalTargetSeconds: Int = 60,
@@ -86,6 +91,10 @@ class WorkoutViewModel @JvmOverloads constructor(
             lungeIntervalSeconds = repository.getLungeInterval(),
             plankIntervalSeconds = repository.getPlankInterval(),
             otherIntervalSeconds = repository.getOtherInterval(),
+            squatTargetSeconds = repository.getSquatTargetSeconds(),
+            lungeTargetSeconds = repository.getLungeTargetSeconds(),
+            plankTargetSeconds = repository.getPlankTargetSeconds(),
+            otherTargetSeconds = repository.getOtherTargetSeconds(),
             rhythmIntervalSeconds = repository.getRhythmInterval(),
             showLanguageSelection = !repository.isLanguageSelected()
         )
@@ -94,30 +103,39 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     init {
         val initialPreset = repository.getTimerPresetType()
+        val initialTarget = when (initialPreset) {
+            "스쿼트" -> repository.getSquatTargetSeconds()
+            "런지" -> repository.getLungeTargetSeconds()
+            "플랭크" -> repository.getPlankTargetSeconds()
+            "기타" -> repository.getOtherTargetSeconds()
+            else -> 60
+        }
         val initialRhythm = repository.getRhythmInterval()
         TimerRepository.setState(
             TimerState(
                 timerPresetType = initialPreset,
                 rhythmIntervalSeconds = initialRhythm,
-                remainingSeconds = 60,
-                totalTargetSeconds = 60
+                remainingSeconds = initialTarget,
+                totalTargetSeconds = initialTarget
             )
         )
 
         viewModelScope.launch {
             TimerRepository.timerState.collect { timerState ->
-                _uiState.value = _uiState.value.copy(
-                    timerRunning = timerState.isRunning,
-                    timerMode = timerState.timerMode,
-                    timerPresetType = timerState.timerPresetType,
-                    totalTargetSeconds = timerState.totalTargetSeconds,
-                    rhythmIntervalSeconds = timerState.rhythmIntervalSeconds,
-                    elapsedSeconds = timerState.elapsedSeconds,
-                    remainingSeconds = timerState.remainingSeconds,
-                    rhythmTickCount = timerState.rhythmTickCount,
-                    workoutCount = timerState.workoutCount,
-                    showCompletionDialog = timerState.showCompletionDialog
-                )
+                _uiState.update {
+                    it.copy(
+                        timerRunning = timerState.isRunning,
+                        timerMode = timerState.timerMode,
+                        timerPresetType = timerState.timerPresetType,
+                        totalTargetSeconds = timerState.totalTargetSeconds,
+                        rhythmIntervalSeconds = timerState.rhythmIntervalSeconds,
+                        elapsedSeconds = timerState.elapsedSeconds,
+                        remainingSeconds = timerState.remainingSeconds,
+                        rhythmTickCount = timerState.rhythmTickCount,
+                        workoutCount = timerState.workoutCount,
+                        showCompletionDialog = timerState.showCompletionDialog
+                    )
+                }
             }
         }
     }
@@ -181,9 +199,28 @@ class WorkoutViewModel @JvmOverloads constructor(
                     remainingSeconds = value
                 )
             }
-            if (timerPresetType == "플랭크") {
+            val activePreset = _uiState.value.timerPresetType
+            if (activePreset == "플랭크") {
                 TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
                 repository.saveRhythmInterval(value)
+            }
+            when (activePreset) {
+                "스쿼트" -> {
+                    _uiState.update { it.copy(squatTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                    repository.saveSquatTargetSeconds(value)
+                }
+                "런지" -> {
+                    _uiState.update { it.copy(lungeTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                    repository.saveLungeTargetSeconds(value)
+                }
+                "플랭크" -> {
+                    _uiState.update { it.copy(plankTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                    repository.savePlankTargetSeconds(value)
+                }
+                "기타" -> {
+                    _uiState.update { it.copy(otherTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                    repository.saveOtherTargetSeconds(value)
+                }
             }
         }
 
@@ -231,21 +268,40 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun selectPreset(preset: String) {
         val updatedPreset = preset
+        val targetSecondsForPreset = when (preset) {
+            "스쿼트" -> repository.getSquatTargetSeconds()
+            "런지" -> repository.getLungeTargetSeconds()
+            "플랭크" -> repository.getPlankTargetSeconds()
+            "기타" -> repository.getOtherTargetSeconds()
+            else -> 60
+        }
         val updatedRhythmInterval = when (preset) {
             "스쿼트" -> squatIntervalSeconds
             "런지" -> lungeIntervalSeconds
-            "플랭크" -> totalTargetSeconds
+            "플랭크" -> targetSecondsForPreset
             "기타" -> otherIntervalSeconds
             else -> 0
         }
         TimerRepository.updateState {
             it.copy(
                 timerPresetType = updatedPreset,
+                totalTargetSeconds = targetSecondsForPreset,
                 rhythmIntervalSeconds = updatedRhythmInterval,
                 elapsedSeconds = 0,
-                remainingSeconds = totalTargetSeconds,
+                remainingSeconds = targetSecondsForPreset,
                 rhythmTickCount = 0,
                 workoutCount = 0
+            )
+        }
+        _uiState.update {
+            it.copy(
+                timerPresetType = updatedPreset,
+                totalTargetSeconds = targetSecondsForPreset,
+                remainingSeconds = targetSecondsForPreset,
+                squatTargetSeconds = repository.getSquatTargetSeconds(),
+                lungeTargetSeconds = repository.getLungeTargetSeconds(),
+                plankTargetSeconds = repository.getPlankTargetSeconds(),
+                otherTargetSeconds = repository.getOtherTargetSeconds()
             )
         }
         repository.saveTimerPresetType(updatedPreset)

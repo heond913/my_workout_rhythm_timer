@@ -840,6 +840,25 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     }
 
     if (uiState.showCompletionDialog) {
+        val encouragementRes = when (uiState.timerPresetType) {
+            "스쿼트" -> R.string.squat_encouragement
+            "런지" -> R.string.lunge_encouragement
+            "플랭크" -> R.string.plank_encouragement
+            else -> R.string.other_encouragement
+        }
+        val tip1Res = when (uiState.timerPresetType) {
+            "스쿼트" -> R.string.squat_tip1
+            "런지" -> R.string.lunge_tip1
+            "플랭크" -> R.string.plank_tip1
+            else -> R.string.other_tip1
+        }
+        val tip2Res = when (uiState.timerPresetType) {
+            "스쿼트" -> R.string.squat_tip2
+            "런지" -> R.string.lunge_tip2
+            "플랭크" -> R.string.plank_tip2
+            else -> R.string.other_tip2
+        }
+
         AlertDialog(
             onDismissRequest = { viewModel.showCompletionDialog = false },
             title = {
@@ -851,7 +870,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 )
             },
             text = {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                ) {
                     Text(
                         text = stringResource(id = R.string.goal_completed_msg),
                         fontSize = 14.sp,
@@ -868,7 +891,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -895,6 +918,88 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             ) {
                                 Text(text = stringResource(id = R.string.label_target_duration), color = secondaryGray, fontSize = 13.sp)
                                 Text(text = stringResource(id = R.string.seconds_format, uiState.totalTargetSeconds), fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                            }
+                        }
+                    }
+
+                    // Encouragement Message Card
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9E6)), // Light gold tint
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "✨", fontSize = 24.sp, modifier = Modifier.padding(end = 8.dp))
+                            Text(
+                                text = stringResource(id = encouragementRes),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF805B00),
+                                lineHeight = 18.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    // Useful Tips Title
+                    Text(
+                        text = stringResource(id = R.string.title_useful_tips),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = charcoalDark,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Tips Card
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F7F8)), // Very soft light gray
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = "1️⃣",
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(end = 8.dp, top = 2.dp)
+                                )
+                                Text(
+                                    text = stringResource(id = tip1Res),
+                                    fontSize = 13.sp,
+                                    color = charcoalDark,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            Spacer(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                                    .height(1.dp)
+                                    .background(Color.LightGray.copy(alpha = 0.4f))
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = "2️⃣",
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(end = 8.dp, top = 2.dp)
+                                )
+                                Text(
+                                    text = stringResource(id = tip2Res),
+                                    fontSize = 13.sp,
+                                    color = charcoalDark,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
                             }
                         }
                     }

@@ -58,6 +58,26 @@ class WorkoutRepository(
         sharedPreferences.edit { putInt("other_interval", value) }
     }
 
+    fun getSquatTargetSeconds(): Int = sharedPreferences.getInt("squat_target_seconds", 60)
+    fun saveSquatTargetSeconds(value: Int) {
+        sharedPreferences.edit { putInt("squat_target_seconds", value) }
+    }
+
+    fun getLungeTargetSeconds(): Int = sharedPreferences.getInt("lunge_target_seconds", 60)
+    fun saveLungeTargetSeconds(value: Int) {
+        sharedPreferences.edit { putInt("lunge_target_seconds", value) }
+    }
+
+    fun getPlankTargetSeconds(): Int = sharedPreferences.getInt("plank_target_seconds", 60)
+    fun savePlankTargetSeconds(value: Int) {
+        sharedPreferences.edit { putInt("plank_target_seconds", value) }
+    }
+
+    fun getOtherTargetSeconds(): Int = sharedPreferences.getInt("other_target_seconds", 60)
+    fun saveOtherTargetSeconds(value: Int) {
+        sharedPreferences.edit { putInt("other_target_seconds", value) }
+    }
+
     fun getRhythmInterval(): Int = sharedPreferences.getInt("rhythm_interval_seconds", 4)
     fun saveRhythmInterval(value: Int) {
         sharedPreferences.edit { putInt("rhythm_interval_seconds", value) }

@@ -157,4 +157,23 @@
     <string name="tts_prep_2">이</string>
     <string name="tts_prep_1">일</string>
     <string name="tts_prep_start">시작!</string>
+
+    <!-- Completion Tips & Encouragement -->
+    <string name="squat_encouragement">완벽한 하체 자극! 허벅지와 엉덩이 근육이 더 단단해지고 있습니다!</string>
+    <string name="squat_tip1">발은 어깨너비로 벌리고, 내려갈 때 무릎이 발끝 앞으로 많이 나가지 않도록 주의하세요.</string>
+    <string name="squat_tip2">올라올 때는 앞발 혹은 뒤꿈치로 지면을 지긋이 밀어주면 둔근(엉덩이)에 자극이 더 잘 들어갑니다.</string>
+
+    <string name="lunge_encouragement">좌우 완벽한 균형 감각! 하체 대칭형 근력과 코어가 고루 자극을 받아 튼튼해집니다!</string>
+    <string name="lunge_tip1">상체를 곧게 세우고 골반 정렬에 신경 쓰며, 앞뒤 무릎 각도가 모두 무리 없이 90도 직각을 이루도록 내리세요.</string>
+    <string name="lunge_tip2">체중의 70% 정도를 앞발 뒤꿈치에 실어 디뎌야 무릎 뚜껑뼈(슬개골) 통증과 손상을 튼튼하게 예방합니다.</string>
+
+    <string name="plank_encouragement">지옥의 버티기 성공! 신체의 중심 코어가 탄탄하게 고정되며 상복부와 척추 정렬을 완성합니다!</string>
+    <string name="plank_tip1">어깨 밑에 수직으로 팔꿈치를 두고, 머리부터 발뒤꿈치까지 직선을 이뤄 엉덩이가 처지거나 과하게 들리지 않게 복부에 힘을 주세요.</string>
+    <string name="plank_tip2">날개뼈(견갑날개)가 튀어나오지 않게 팔꿈치와 겨드랑이에 힘을 주어 등 위쪽 바닥을 밀어올리는 느낌을 상상하세요.</string>
+
+    <string name="other_encouragement">오늘 하루도 자신과의 약속 성공! 꾸준한 운동 습관만큼 성장에 있어 효율적이고 강력한 도구는 없습니다!</string>
+    <string name="other_tip1">운동을 수행한 후 가벼운 정적 스트레칭과 수분 보충은 근력 피로 해소와 관절 유연성 관리에 핵심입니다.</string>
+    <string name="other_tip2">내 몸의 반응에 유심히 집중하고 무리하지 않으며, 피로가 심할 땐 저강도나 충분한 세트 휴식으로 유연하게 대처하세요.</string>
+
+    <string name="title_useful_tips">💡 알아두면 유익한 운동 팁</string>
 </resources>
