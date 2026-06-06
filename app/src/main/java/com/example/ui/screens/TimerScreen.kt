@@ -135,6 +135,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(uiState.isRoutineActive) {
+        if (uiState.isRoutineActive) {
+            scrollState.animateScrollTo(0)
+        }
+    }
+
     val appLocalesForScreen = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
     val currentLocaleForScreen = if (!appLocalesForScreen.isEmpty) appLocalesForScreen.get(0)?.language else java.util.Locale.getDefault().language
     val isKo = currentLocaleForScreen == "ko"
@@ -394,65 +400,67 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             rhythmIntervalSecondsProvider = { uiState.rhythmIntervalSeconds }
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        if (!uiState.isRoutineActive) {
+            Spacer(modifier = Modifier.height(28.dp))
 
-        // Preset Exercise quick interval speed suggestions (Vibrant Palette specific categorizations)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val presets = listOf(
-                Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
-                Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
-                Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
-                Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
-            )
+            // Preset Exercise quick interval speed suggestions (Vibrant Palette specific categorizations)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val presets = listOf(
+                    Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
+                    Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
+                    Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
+                    Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
+                )
 
-            presets.forEach { (exeType, secs, desc) ->
-                val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
-                val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
-                    ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
-                    ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
-                    ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
-                }
+                presets.forEach { (exeType, secs, desc) ->
+                    val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
+                    val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
+                        ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
+                        ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
+                        ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
+                        ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                    }
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            if (isSelected) itemBgColor else cardSurface,
-                            RoundedCornerShape(12.dp)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                if (isSelected) itemBgColor else cardSurface,
+                                RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                1.dp,
+                                if (isSelected) itemBorderColor else Color(0xFFDCE5E2),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .clickable(enabled = !isRunning) {
+                                viewModel.selectPreset(exeType.name)
+                            }
+                            .padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val labelDisplay = stringResource(id = exeType.displayNameResId)
+                        Text(
+                            text = labelDisplay,
+                            color = if (isSelected) itemTextColor else charcoalDark,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        .border(
-                            1.dp,
-                            if (isSelected) itemBorderColor else Color(0xFFDCE5E2),
-                            RoundedCornerShape(12.dp)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = desc,
+                            color = if (isSelected) itemTextColor.copy(alpha = 0.8f) else secondaryGray,
+                            fontSize = 10.sp
                         )
-                        .clickable(enabled = !isRunning) {
-                            viewModel.selectPreset(exeType.name)
-                        }
-                        .padding(vertical = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val labelDisplay = stringResource(id = exeType.displayNameResId)
-                    Text(
-                        text = labelDisplay,
-                        color = if (isSelected) itemTextColor else charcoalDark,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = desc,
-                        color = if (isSelected) itemTextColor.copy(alpha = 0.8f) else secondaryGray,
-                        fontSize = 10.sp
-                    )
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         // Slider for Duration Target settings
         if (!isRunning && !uiState.isRoutineActive) {
