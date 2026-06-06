@@ -301,6 +301,8 @@ class WorkoutTimerService : Service() {
                                              newIsResting = true
                                              newRestTotal = currentStep.restSeconds
                                              newRestRemaining = currentStep.restSeconds
+                                             newElapsed = 0
+                                             startTime = System.currentTimeMillis()
                                              soundHelper.playSetFinished()
                                              speakText = currentStep.exerciseName + " 완료! " + currentStep.restSeconds + "초간 휴식하세요."
                                          } else {
@@ -313,6 +315,7 @@ class WorkoutTimerService : Service() {
                                                  newTotalTarget = nextStep.durationSeconds
                                                  newRemaining = nextStep.durationSeconds + 3
                                                  newElapsed = 0
+                                                 startTime = System.currentTimeMillis()
                                                  newRhythmTick = 0
                                                  newWorkoutCount = 0
                                                  
