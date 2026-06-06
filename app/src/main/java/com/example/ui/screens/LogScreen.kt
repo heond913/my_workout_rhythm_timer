@@ -125,12 +125,12 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             RoundedCornerShape(16.dp)
                         )
                         .clickable {
-                            viewModel.inputExerciseName = exe
+                            viewModel.updateInputExerciseName(exe)
                             // Set intelligent defaults for easy flow
                             if (exe == "스쿼트" || exe == "런지") {
-                                if (viewModel.inputReps.isEmpty()) viewModel.inputReps = "15"
+                                if (uiState.inputReps.isEmpty()) viewModel.updateInputReps("15")
                             } else if (exe == "플랭크") {
-                                if (viewModel.inputDurationSeconds.isEmpty()) viewModel.inputDurationSeconds = "60"
+                                if (uiState.inputDurationSeconds.isEmpty()) viewModel.updateInputDurationSeconds("60")
                             }
                         },
                     shape = RoundedCornerShape(16.dp)
@@ -174,7 +174,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 value = customName,
                 onValueChange = {
                     customName = it
-                    viewModel.inputExerciseName = it
+                    viewModel.updateInputExerciseName(it)
                 },
                 label = { Text(stringResource(id = R.string.lbl_custom_exercise), color = secondaryGray) },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -308,7 +308,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = repsVal.toIntOrNull() ?: 0
                             val newVal = (currentIdx - 5).coerceAtLeast(0)
-                            viewModel.inputReps = newVal.toString()
+                            viewModel.updateInputReps(newVal.toString())
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
@@ -317,7 +317,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
                     OutlinedTextField(
                         value = repsVal,
-                        onValueChange = { viewModel.inputReps = it },
+                        onValueChange = { viewModel.updateInputReps(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("reps_input_field"),
                         textStyle = LocalTextStyle.current.copy(
@@ -339,7 +339,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = repsVal.toIntOrNull() ?: 0
                             val newVal = currentIdx + 5
-                            viewModel.inputReps = newVal.toString()
+                            viewModel.updateInputReps(newVal.toString())
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
@@ -382,7 +382,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = setsVal.toIntOrNull() ?: 1
                             val newVal = (currentIdx - 1).coerceAtLeast(1)
-                            viewModel.inputSets = newVal.toString()
+                            viewModel.updateInputSets(newVal.toString())
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
@@ -391,7 +391,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
                     OutlinedTextField(
                         value = setsVal,
-                        onValueChange = { viewModel.inputSets = it },
+                        onValueChange = { viewModel.updateInputSets(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("sets_input_field"),
                         textStyle = LocalTextStyle.current.copy(
@@ -413,7 +413,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = setsVal.toIntOrNull() ?: 1
                             val newVal = currentIdx + 1
-                            viewModel.inputSets = newVal.toString()
+                            viewModel.updateInputSets(newVal.toString())
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
@@ -456,7 +456,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentVal = weightVal.toDoubleOrNull() ?: 0.0
                             val newVal = (currentVal - 2.5).coerceAtLeast(0.0)
-                            viewModel.inputWeightKg = if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString()
+                            viewModel.updateInputWeightKg(if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString())
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
@@ -465,7 +465,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
                     OutlinedTextField(
                         value = weightVal,
-                        onValueChange = { viewModel.inputWeightKg = it },
+                        onValueChange = { viewModel.updateInputWeightKg(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("weight_input_field"),
                         textStyle = LocalTextStyle.current.copy(
@@ -487,7 +487,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentVal = weightVal.toDoubleOrNull() ?: 0.0
                             val newVal = currentVal + 2.5
-                            viewModel.inputWeightKg = if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString()
+                            viewModel.updateInputWeightKg(if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString())
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
@@ -530,7 +530,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = secsVal.toIntOrNull() ?: 0
                             val newVal = (currentIdx - 10).coerceAtLeast(0)
-                            viewModel.inputDurationSeconds = newVal.toString()
+                            viewModel.updateInputDurationSeconds(newVal.toString())
                         },
                         modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
@@ -539,7 +539,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
                     OutlinedTextField(
                         value = secsVal,
-                        onValueChange = { viewModel.inputDurationSeconds = it },
+                        onValueChange = { viewModel.updateInputDurationSeconds(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("duration_input_field"),
                         textStyle = LocalTextStyle.current.copy(
@@ -561,7 +561,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onClick = {
                             val currentIdx = secsVal.toIntOrNull() ?: 0
                             val newVal = currentIdx + 10
-                            viewModel.inputDurationSeconds = newVal.toString()
+                            viewModel.updateInputDurationSeconds(newVal.toString())
                         },
                         modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
                     ) {
@@ -617,7 +617,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             tint = if (isFilled) tealActive else Color(0xFFDAE5E1),
                             modifier = Modifier
                                 .size(36.dp)
-                                .clickable { viewModel.inputRating = star }
+                                .clickable { viewModel.updateInputRating(star) }
                         )
                     }
                 }
@@ -643,7 +643,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 Spacer(modifier = Modifier.height(10.dp))
                 OutlinedTextField(
                     value = note,
-                    onValueChange = { viewModel.inputNote = it },
+                    onValueChange = { viewModel.updateInputNote(it) },
                     placeholder = { Text(stringResource(id = R.string.placeholder_memo), color = secondaryGray, fontSize = 12.sp) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = charcoalDark,

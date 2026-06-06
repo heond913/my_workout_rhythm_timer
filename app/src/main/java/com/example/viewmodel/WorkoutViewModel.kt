@@ -206,129 +206,93 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     // Backwards compatibility property delegations via getters/setters (also used for direct updates)
-    var currentTab: AppTab
+    val currentTab: AppTab
         get() = _uiState.value.currentTab
-        private set(value) {
-            _uiState.value = _uiState.value.copy(currentTab = value)
-        }
 
     fun setTab(tab: AppTab) {
-        _uiState.value = _uiState.value.copy(currentTab = tab)
+        _uiState.update { it.copy(currentTab = tab) }
     }
 
     // --- TIMER STATE MANIPULATION ---
-    var timerPresetType: String
+    val timerPresetType: String
         get() = _uiState.value.timerPresetType
-        set(value) {
-            TimerRepository.updateState { it.copy(timerPresetType = value) }
-        }
     
-    var squatIntervalSeconds: Int
+    val squatIntervalSeconds: Int
         get() = _uiState.value.squatIntervalSeconds
-        set(value) {
-            _uiState.value = _uiState.value.copy(squatIntervalSeconds = value)
-        }
-    var lungeIntervalSeconds: Int
+    val lungeIntervalSeconds: Int
         get() = _uiState.value.lungeIntervalSeconds
-        set(value) {
-            _uiState.value = _uiState.value.copy(lungeIntervalSeconds = value)
-        }
-    var plankIntervalSeconds: Int
+    val plankIntervalSeconds: Int
         get() = _uiState.value.plankIntervalSeconds
-        set(value) {
-            _uiState.value = _uiState.value.copy(plankIntervalSeconds = value)
-        }
-    var otherIntervalSeconds: Int
+    val otherIntervalSeconds: Int
         get() = _uiState.value.otherIntervalSeconds
-        set(value) {
-            _uiState.value = _uiState.value.copy(otherIntervalSeconds = value)
-        }
 
-    var timerRunning: Boolean
+    val timerRunning: Boolean
         get() = _uiState.value.timerRunning
-        private set(value) {
-            TimerRepository.updateState { it.copy(isRunning = value) }
-        }
-    var timerMode: TimerMode
+    val timerMode: TimerMode
         get() = _uiState.value.timerMode
-        private set(value) {
-            TimerRepository.updateState { it.copy(timerMode = value) }
-        }
 
-    var totalTargetSeconds: Int
+    val totalTargetSeconds: Int
         get() = _uiState.value.totalTargetSeconds
-        set(value) {
-            TimerRepository.updateState {
-                it.copy(
-                    totalTargetSeconds = value,
-                    remainingSeconds = value
-                )
-            }
-            val activePreset = _uiState.value.timerPresetType
-            if (activePreset == "플랭크") {
-                TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
-                repository.saveRhythmInterval(value)
-            }
-            when (activePreset) {
-                "스쿼트" -> {
-                    _uiState.update { it.copy(squatTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
-                    repository.saveSquatTargetSeconds(value)
-                }
-                "런지" -> {
-                    _uiState.update { it.copy(lungeTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
-                    repository.saveLungeTargetSeconds(value)
-                }
-                "플랭크" -> {
-                    _uiState.update { it.copy(plankTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
-                    repository.savePlankTargetSeconds(value)
-                }
-                "기타" -> {
-                    _uiState.update { it.copy(otherTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
-                    repository.saveOtherTargetSeconds(value)
-                }
-            }
-        }
 
-    var rhythmIntervalSeconds: Int
-        get() = _uiState.value.rhythmIntervalSeconds
-        set(value) {
+    fun updateTargetSeconds(value: Int) {
+        TimerRepository.updateState {
+            it.copy(
+                totalTargetSeconds = value,
+                remainingSeconds = value
+            )
+        }
+        val activePreset = _uiState.value.timerPresetType
+        if (activePreset == "플랭크") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
+            repository.saveRhythmInterval(value)
         }
-    var elapsedSeconds: Int
-        get() = _uiState.value.elapsedSeconds
-        set(value) {
-            TimerRepository.updateState { it.copy(elapsedSeconds = value) }
+        when (activePreset) {
+            "스쿼트" -> {
+                _uiState.update { it.copy(squatTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                repository.saveSquatTargetSeconds(value)
+            }
+            "런지" -> {
+                _uiState.update { it.copy(lungeTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                repository.saveLungeTargetSeconds(value)
+            }
+            "플랭크" -> {
+                _uiState.update { it.copy(plankTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                repository.savePlankTargetSeconds(value)
+            }
+            "기타" -> {
+                _uiState.update { it.copy(otherTargetSeconds = value, totalTargetSeconds = value, remainingSeconds = value) }
+                repository.saveOtherTargetSeconds(value)
+            }
         }
-    var remainingSeconds: Int
-        get() = _uiState.value.remainingSeconds
-        set(value) {
-            TimerRepository.updateState { it.copy(remainingSeconds = value) }
-        }
-    var rhythmTickCount: Int
-        get() = _uiState.value.rhythmTickCount
-        set(value) {
-            TimerRepository.updateState { it.copy(rhythmTickCount = value) }
-        }
-    var workoutCount: Int
-        get() = _uiState.value.workoutCount
-        set(value) {
-            TimerRepository.updateState { it.copy(workoutCount = value) }
-        }
-    var showCompletionDialog: Boolean
-        get() = _uiState.value.showCompletionDialog
-        set(value) {
-            TimerRepository.updateState { it.copy(showCompletionDialog = value) }
-        }
+    }
 
-    var showLanguageSelection: Boolean
+    val rhythmIntervalSeconds: Int
+        get() = _uiState.value.rhythmIntervalSeconds
+    val elapsedSeconds: Int
+        get() = _uiState.value.elapsedSeconds
+    val remainingSeconds: Int
+        get() = _uiState.value.remainingSeconds
+    val rhythmTickCount: Int
+        get() = _uiState.value.rhythmTickCount
+    val workoutCount: Int
+        get() = _uiState.value.workoutCount
+    val showCompletionDialog: Boolean
+        get() = _uiState.value.showCompletionDialog
+
+    fun updateShowCompletionDialog(show: Boolean) {
+        TimerRepository.updateState { it.copy(showCompletionDialog = show) }
+    }
+
+    val showLanguageSelection: Boolean
         get() = _uiState.value.showLanguageSelection
-        set(value) {
-            _uiState.value = _uiState.value.copy(showLanguageSelection = value)
-        }
+
+    fun updateShowLanguageSelection(show: Boolean) {
+        _uiState.update { it.copy(showLanguageSelection = show) }
+    }
 
     fun onLanguageSelected() {
         repository.saveLanguageSelected(true)
-        showLanguageSelection = false
+        updateShowLanguageSelection(false)
     }
 
     fun selectPreset(preset: String) {
@@ -388,7 +352,7 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun updateSquatInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        _uiState.value = _uiState.value.copy(squatIntervalSeconds = safeSecs)
+        _uiState.update { it.copy(squatIntervalSeconds = safeSecs) }
         repository.saveSquatInterval(safeSecs)
         if (timerPresetType == "스쿼트") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
@@ -398,7 +362,7 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun updateLungeInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        _uiState.value = _uiState.value.copy(lungeIntervalSeconds = safeSecs)
+        _uiState.update { it.copy(lungeIntervalSeconds = safeSecs) }
         repository.saveLungeInterval(safeSecs)
         if (timerPresetType == "런지") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
@@ -408,7 +372,7 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun updatePlankInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        _uiState.value = _uiState.value.copy(plankIntervalSeconds = safeSecs)
+        _uiState.update { it.copy(plankIntervalSeconds = safeSecs) }
         repository.savePlankInterval(safeSecs)
         if (timerPresetType == "플랭크") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
@@ -418,7 +382,7 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun updateOtherInterval(seconds: Int) {
         val safeSecs = seconds.coerceIn(1, 60)
-        _uiState.value = _uiState.value.copy(otherIntervalSeconds = safeSecs)
+        _uiState.update { it.copy(otherIntervalSeconds = safeSecs) }
         repository.saveOtherInterval(safeSecs)
         if (timerPresetType == "기타") {
             TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
@@ -560,41 +524,47 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     // --- RECORD FORM INPUT STATE ---
-    var inputExerciseName: String
+    val inputExerciseName: String
         get() = _uiState.value.inputExerciseName
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputExerciseName = value)
-        }
-    var inputReps: String
+    fun updateInputExerciseName(value: String) {
+        _uiState.update { it.copy(inputExerciseName = value) }
+    }
+
+    val inputReps: String
         get() = _uiState.value.inputReps
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputReps = value)
-        }
-    var inputSets: String
+    fun updateInputReps(value: String) {
+        _uiState.update { it.copy(inputReps = value) }
+    }
+
+    val inputSets: String
         get() = _uiState.value.inputSets
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputSets = value)
-        }
-    var inputWeightKg: String
+    fun updateInputSets(value: String) {
+        _uiState.update { it.copy(inputSets = value) }
+    }
+
+    val inputWeightKg: String
         get() = _uiState.value.inputWeightKg
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputWeightKg = value)
-        }
-    var inputDurationSeconds: String
+    fun updateInputWeightKg(value: String) {
+        _uiState.update { it.copy(inputWeightKg = value) }
+    }
+
+    val inputDurationSeconds: String
         get() = _uiState.value.inputDurationSeconds
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputDurationSeconds = value)
-        }
-    var inputRating: Int
+    fun updateInputDurationSeconds(value: String) {
+        _uiState.update { it.copy(inputDurationSeconds = value) }
+    }
+
+    val inputRating: Int
         get() = _uiState.value.inputRating
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputRating = value)
-        }
-    var inputNote: String
+    fun updateInputRating(value: Int) {
+        _uiState.update { it.copy(inputRating = value) }
+    }
+
+    val inputNote: String
         get() = _uiState.value.inputNote
-        set(value) {
-            _uiState.value = _uiState.value.copy(inputNote = value)
-        }
+    fun updateInputNote(value: String) {
+        _uiState.update { it.copy(inputNote = value) }
+    }
 
     fun saveWorkoutRecord(
         exercise: String = inputExerciseName,
@@ -620,10 +590,12 @@ class WorkoutViewModel @JvmOverloads constructor(
             repository.insert(record)
             
             // Clear or reset fields
-            _uiState.value = _uiState.value.copy(
-                inputNote = "",
-                currentTab = AppTab.Calendar
-            )
+            _uiState.update {
+                it.copy(
+                    inputNote = "",
+                    currentTab = AppTab.Calendar
+                )
+            }
         }
     }
 
@@ -705,18 +677,19 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     // --- CALENDAR HELPERS & STATISTICS CALCULATOR ---
-    var calendarYearMonth: Calendar
+    val calendarYearMonth: Calendar
         get() = _uiState.value.calendarYearMonth
-        set(value) {
-            _uiState.value = _uiState.value.copy(calendarYearMonth = value)
-        }
+
+    fun updateCalendarYearMonth(value: Calendar) {
+        _uiState.update { it.copy(calendarYearMonth = value) }
+    }
 
     fun changeMonth(amount: Int) {
         val newCal = Calendar.getInstance().apply {
             timeInMillis = calendarYearMonth.timeInMillis
             add(Calendar.MONTH, amount)
         }
-        _uiState.value = _uiState.value.copy(calendarYearMonth = newCal)
+        _uiState.update { it.copy(calendarYearMonth = newCal) }
     }
 
     fun getWorkoutsForDay(day: Calendar, records: List<WorkoutRecord>): List<WorkoutRecord> {

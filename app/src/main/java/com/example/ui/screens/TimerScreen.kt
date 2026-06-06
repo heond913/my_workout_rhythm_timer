@@ -586,7 +586,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             onClick = {
                                 val current = viewModel.totalTargetSeconds
                                 val next = (current - 5).coerceAtLeast(5)
-                                viewModel.totalTargetSeconds = next
+                                viewModel.updateTargetSeconds(next)
                                 viewModel.resetTimer()
                             },
                             modifier = Modifier
@@ -608,7 +608,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             value = totalSeconds.toFloat(),
                             onValueChange = {
                                 val rounded = (it.toInt() / 5) * 5 // Snap to 5-sec values
-                                viewModel.totalTargetSeconds = rounded.coerceAtLeast(5)
+                                viewModel.updateTargetSeconds(rounded.coerceAtLeast(5))
                                 viewModel.resetTimer()
                             },
                             valueRange = 5f..300f,
@@ -625,7 +625,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             onClick = {
                                 val current = viewModel.totalTargetSeconds
                                 val next = (current + 5).coerceAtMost(300)
-                                viewModel.totalTargetSeconds = next
+                                viewModel.updateTargetSeconds(next)
                                 viewModel.resetTimer()
                             },
                             modifier = Modifier
@@ -1133,7 +1133,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 val isManualInputEnabled = !isRunning && uiState.manualInputEnabled
                 IconButton(
                     onClick = {
-                        viewModel.inputDurationSeconds = totalSeconds.toString()
+                        viewModel.updateInputDurationSeconds(totalSeconds.toString())
                         viewModel.setTab(com.example.viewmodel.AppTab.Log)
                     },
                     enabled = isManualInputEnabled,
@@ -1174,7 +1174,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         }
 
         AlertDialog(
-            onDismissRequest = { viewModel.showCompletionDialog = false },
+            onDismissRequest = { viewModel.updateShowCompletionDialog(false) },
             title = {
                 Text(
                     text = stringResource(id = R.string.goal_completed_title),
@@ -1321,7 +1321,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.showCompletionDialog = false },
+                    onClick = { viewModel.updateShowCompletionDialog(false) },
                     colors = ButtonDefaults.buttonColors(containerColor = tealActive),
                     shape = RoundedCornerShape(8.dp)
                 ) {
