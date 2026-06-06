@@ -756,7 +756,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         .padding(16.dp),
                 ) {
                     Text(
-                        text = if (isKo) "등록된 커스텀 루틴이 없습니다." else "No custom routines saved.",
+                        text = if (isKo) "없음" else "None",
                         color = secondaryGray,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
@@ -792,16 +792,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         fontWeight = FontWeight.Bold,
                                         color = charcoalDark
                                     )
-                                    if (!routine.id.startsWith("default_")) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .clip(CircleShape)
-                                                .clickable { viewModel.deleteRoutine(routine.id) },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("🗑️", fontSize = 12.sp)
-                                        }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                            .clickable { viewModel.deleteRoutine(routine.id) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("🗑️", fontSize = 12.sp)
                                     }
                                 }
                                 
