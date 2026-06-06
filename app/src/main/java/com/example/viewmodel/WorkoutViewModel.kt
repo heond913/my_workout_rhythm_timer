@@ -102,7 +102,10 @@ data class WorkoutUiState(
     val routineStepsJson: String = "",
     val routineCurrentStepIndex: Int = 0,
     val customRoutines: List<CustomRoutine> = emptyList(),
-    val manualInputEnabled: Boolean = true
+    val manualInputEnabled: Boolean = true,
+    val recordToDelete: WorkoutRecord? = null,
+    val workoutToShare: WorkoutRecord? = null,
+    val showDeleteAllDialog: Boolean = false
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -724,6 +727,18 @@ class WorkoutViewModel @JvmOverloads constructor(
     fun formatDateString(timestamp: Long): String {
         val sdf = SimpleDateFormat("yyyy년 MM월 dd일 HH:mm", Locale.getDefault())
         return sdf.format(Date(timestamp))
+    }
+
+    fun setRecordToDelete(record: WorkoutRecord?) {
+        _uiState.update { it.copy(recordToDelete = record) }
+    }
+
+    fun setWorkoutToShare(record: WorkoutRecord?) {
+        _uiState.update { it.copy(workoutToShare = record) }
+    }
+
+    fun setShowDeleteAllDialog(show: Boolean) {
+        _uiState.update { it.copy(showDeleteAllDialog = show) }
     }
 
     // Streak calculation

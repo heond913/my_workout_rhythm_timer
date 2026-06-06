@@ -64,9 +64,10 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     val uiState by viewModel.uiState.collectAsState()
     val currentMonthCal = uiState.calendarYearMonth
     var selectedDayCal by remember { mutableStateOf(Calendar.getInstance()) }
-    var recordToDelete by remember { mutableStateOf<WorkoutRecord?>(null) }
-    var workoutToShare by remember { mutableStateOf<WorkoutRecord?>(null) }
-    var showDeleteAllDialog by remember { mutableStateOf(false) }
+
+    val recordToDelete = uiState.recordToDelete
+    val workoutToShare = uiState.workoutToShare
+    val showDeleteAllDialog = uiState.showDeleteAllDialog
 
     // Keep selectedDayCal in sync with currentMonthCal's month and year when month changes
     LaunchedEffect(currentMonthCal) {
@@ -300,7 +301,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .clickable { showDeleteAllDialog = true }
+                            .clickable { viewModel.setShowDeleteAllDialog(true) }
                             .padding(4.dp)
                     )
                 }
@@ -472,7 +473,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     IconButton(
-                                        onClick = { workoutToShare = workout },
+                                        onClick = { viewModel.setWorkoutToShare(workout) },
                                         modifier = Modifier.size(24.dp).testTag("share_record_btn_${workout.id}")
                                     ) {
                                         Icon(
@@ -483,7 +484,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                         )
                                     }
                                     IconButton(
-                                        onClick = { recordToDelete = workout },
+                                        onClick = { viewModel.setRecordToDelete(workout) },
                                         modifier = Modifier.size(24.dp)
                                     ) {
                                         Icon(
@@ -504,20 +505,20 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
     if (recordToDelete != null) {
         AlertDialog(
-            onDismissRequest = { recordToDelete = null },
+            onDismissRequest = { viewModel.setRecordToDelete(null) },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        recordToDelete?.let { viewModel.deleteWorkoutRecord(it) }
-                        recordToDelete = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF93000A))
+                     onClick = {
+                         recordToDelete.let { viewModel.deleteWorkoutRecord(it) }
+                         viewModel.setRecordToDelete(null)
+                     },
+                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF93000A))
                 ) {
                     Text(stringResource(id = R.string.delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { recordToDelete = null }) {
+                TextButton(onClick = { viewModel.setRecordToDelete(null) }) {
                     Text(stringResource(id = R.string.cancel), color = secondaryGray)
                 }
             },
@@ -534,12 +535,12 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
     if (showDeleteAllDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteAllDialog = false },
+            onDismissRequest = { viewModel.setShowDeleteAllDialog(false) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.deleteWorkoutRecords(selectedDayWorkouts)
-                        showDeleteAllDialog = false
+                        viewModel.setShowDeleteAllDialog(false)
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF93000A))
                 ) {
@@ -547,7 +548,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteAllDialog = false }) {
+                TextButton(onClick = { viewModel.setShowDeleteAllDialog(false) }) {
                     Text(stringResource(id = R.string.cancel), color = secondaryGray)
                 }
             },
@@ -564,8 +565,8 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
     if (workoutToShare != null) {
         SocialShareDialog(
-            shareData = ShareData.SingleWorkout(workoutToShare!!),
-            onDismiss = { workoutToShare = null }
+            shareData = ShareData.SingleWorkout(workoutToShare),
+            onDismiss = { viewModel.setWorkoutToShare(null) }
         )
     }
 }
