@@ -1077,17 +1077,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             viewModel.resetTimer()
                         }
                     },
-                    enabled = uiState.isRoutineActive || !isRunning,
+                    enabled = !uiState.isRoutineActive && !isRunning,
                     modifier = Modifier
                         .size(56.dp)
                         .background(
-                            if (isRunning && !uiState.isRoutineActive) Color(0xFFEAEAEA)
+                            if (isRunning || uiState.isRoutineActive) Color(0xFFEAEAEA)
                             else Color(0xFFE6F3F1),
                             CircleShape
                         )
                         .border(
                             1.dp,
-                            if (isRunning && !uiState.isRoutineActive) Color(0xFFDDDDDD)
+                            if (isRunning || uiState.isRoutineActive) Color(0xFFDDDDDD)
                             else Color(0xFFDCE5E2),
                             CircleShape
                         )
@@ -1096,7 +1096,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = if (uiState.isRoutineActive) "Stop" else stringResource(id = R.string.desc_reset_timer),
-                        tint = if (isRunning && !uiState.isRoutineActive) Color.Gray.copy(alpha = 0.5f) else tealActive,
+                        tint = if (isRunning || uiState.isRoutineActive) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
                 }
