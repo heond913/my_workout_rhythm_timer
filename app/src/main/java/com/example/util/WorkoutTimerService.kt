@@ -290,12 +290,14 @@ class WorkoutTimerService : Service() {
                                 if (currentExType == com.example.data.ExerciseType.PLANK && newRemaining in 1..10) {
                                     speakText = ttsHelper.getCountdownWord(newRemaining)
                                 } else {
-                                    // Check coaching alerts
-                                    val targetHalf = targetTotal / 2
-                                    if (newRemaining == targetHalf && targetHalf >= 10) {
-                                        coachingText = getString(R.string.tts_workout_half)
-                                    } else if (newRemaining == 10 && targetTotal > 15) {
-                                        coachingText = getString(R.string.tts_workout_last10)
+                                    // Check coaching alerts (Only for PLANK and OTHER)
+                                    if (currentExType == com.example.data.ExerciseType.PLANK || currentExType == com.example.data.ExerciseType.OTHER) {
+                                        val targetHalf = targetTotal / 2
+                                        if (newRemaining == targetHalf && targetHalf >= 10) {
+                                            coachingText = getString(R.string.tts_workout_half)
+                                        } else if (newRemaining == 10 && targetTotal > 15) {
+                                            coachingText = getString(R.string.tts_workout_last10)
+                                        }
                                     }
 
                                     // Rhythm counts
@@ -348,7 +350,7 @@ class WorkoutTimerService : Service() {
                                              newRestRemaining = currentStep.restSeconds
                                              newElapsed = 0
                                              startTime = System.currentTimeMillis()
-                                             soundHelper.playSetFinished()
+                                             soundHelper.playStrongBeep()
                                              speakText = currentStep.exerciseName + " 완료! " + currentStep.restSeconds + "초간 휴식하세요."
                                          } else {
                                              val nextStepIdx = currentStepIdx + 1
