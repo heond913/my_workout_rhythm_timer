@@ -61,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -238,77 +239,153 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             val currentIdx = uiState.routineCurrentStepIndex
             
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
-                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFECF5F3)),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
-                    .border(1.dp, Color(0xFFCCE8E3), RoundedCornerShape(12.dp))
+                    .border(1.dp, Color(0xFFD0E2DE), RoundedCornerShape(16.dp))
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = if (isKo) "🔄 커스텀 루틴: ${uiState.routineName}" else "🔄 Routine: ${uiState.routineName}",
-                        fontWeight = FontWeight.ExtraBold,
-                        color = tealActive,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        steps.forEachIndexed { index, step ->
-                            val isCurrent = index == currentIdx
-                            val isCompleted = index < currentIdx
-                            
-                            val stepColor = when (step.exerciseName) {
-                                "스쿼트" -> Color(0xFFE65100)
-                                "런지" -> Color(0xFF3F5F90)
-                                "플랭크" -> Color(0xFF93000A)
-                                else -> Color(0xFF006A60)
-                            }
-                            
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(
-                                        if (isCurrent) stepColor.copy(alpha = 0.2f) else if (isCompleted) Color.LightGray.copy(alpha = 0.3f) else Color.White,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .border(
-                                        if (isCurrent) 2.dp else 1.dp,
-                                        if (isCurrent) stepColor else if (isCompleted) Color.Gray.copy(alpha = 0.5f) else Color.LightGray,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(vertical = 6.dp, horizontal = 4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .background(Color(0xFF7A9390), RoundedCornerShape(6.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = if (isKo) "커스텀 루틴: ${uiState.routineName}" else "Custom Routine: ${uiState.routineName}",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00564E),
+                            fontSize = 14.sp
+                        )
+                    }
+                    
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        thickness = 1.dp,
+                        color = Color(0xFFD0E1DE)
+                    )
+                    
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        // Background connector line running through vertical center of circles (22.dp)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp)
+                                .padding(top = 22.dp)
+                                .height(2.dp)
+                                .background(Color(0xFFD2DBD9))
+                        )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            steps.forEachIndexed { index, step ->
+                                val isCurrent = index == currentIdx
+                                val isCompleted = index < currentIdx
+                                
+                                val stepColor = when (step.exerciseName) {
+                                    "스쿼트", "Squat" -> Color(0xFFE65100) // Orange
+                                    "런지", "Lunge" -> Color(0xFF3F5F90)     // Blue
+                                    "플랭크", "Plank" -> Color(0xFF93000A)   // Red
+                                    else -> Color(0xFF006A60)                // Teal
+                                }
+                                
+                                val circleBgColor = if (isCurrent) {
+                                    when (step.exerciseName) {
+                                        "스쿼트", "Squat" -> Color(0xFFFFECCC)
+                                        "런지", "Lunge" -> Color(0xFFE8F0FE)
+                                        "플랭크", "Plank" -> Color(0xFFFFDAD6)
+                                        else -> Color(0xFFE6F3F1)
+                                    }
+                                } else {
+                                    Color.White
+                                }
+                                
+                                val circleBorderColor = if (isCurrent) {
+                                    stepColor
+                                } else {
+                                    Color(0xFFD0D7D5)
+                                }
+                                
+                                val iconColor = if (isCurrent) {
+                                    stepColor
+                                } else {
+                                    if (isCompleted) Color(0xFFB5C0BE) else Color(0xFF859290)
+                                }
+                                
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .background(circleBgColor, CircleShape)
+                                            .border(
+                                                width = if (isCurrent) 1.5.dp else 1.dp,
+                                                color = circleBorderColor,
+                                                shape = CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        DrawExerciseIcon(
+                                            exerciseName = step.exerciseName,
+                                            iconColor = iconColor,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    val exerciseLabel = when (step.exerciseName) {
+                                        "스쿼트" -> stringResource(id = R.string.preset_squat)
+                                        "런지" -> stringResource(id = R.string.preset_lunge)
+                                        "플랭크" -> stringResource(id = R.string.preset_plank)
+                                        else -> step.exerciseName
+                                    }
+                                    
+                                    val statusStr = if (isKo) "운동" else "work"
+                                    val restStr = if (isKo) "휴식" else "rest"
+                                    
                                     Text(
-                                        text = step.exerciseName,
+                                        text = "$exerciseLabel: ${step.durationSeconds}s ($statusStr)",
                                         fontSize = 11.sp,
-                                        fontWeight = if (isCurrent) FontWeight.Black else FontWeight.Bold,
-                                        color = if (isCurrent) stepColor else if (isCompleted) Color.Gray else charcoalDark
+                                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isCurrent) stepColor else Color(0xFF4A5553),
+                                        textAlign = TextAlign.Center
                                     )
-                                    Text(
-                                        text = "${step.durationSeconds}s",
-                                        fontSize = 9.sp,
-                                        color = if (isCurrent) stepColor.copy(alpha = 0.8f) else Color.Gray
-                                    )
+                                    
                                     if (step.restSeconds > 0) {
                                         Text(
-                                            text = "+${step.restSeconds}s rest",
-                                            fontSize = 8.sp,
-                                            color = Color(0xFF00796B),
-                                            fontWeight = FontWeight.Medium
+                                            text = "/ +${step.restSeconds}s ($restStr)",
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isCurrent) Color(0xFF00796B) else Color(0xFF7A8682),
+                                            textAlign = TextAlign.Center
                                         )
                                     }
                                 }
-                            }
-                            if (index < steps.size - 1) {
-                                Text("➡️", fontSize = 10.sp, color = secondaryGray)
                             }
                         }
                     }
@@ -1755,6 +1832,219 @@ fun ExerciseSettingsCard(
                         Text("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val strokeWidth = 2.5.dp.toPx()
+        
+        when (exerciseName) {
+            "스쿼트", "Squat" -> {
+                // Head
+                drawCircle(
+                    color = iconColor,
+                    radius = w * 0.12f,
+                    center = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.22f)
+                )
+                // Torso
+                val torsoStart = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.34f)
+                val hip = androidx.compose.ui.geometry.Offset(w * 0.35f, h * 0.52f)
+                drawLine(
+                    color = iconColor,
+                    start = torsoStart,
+                    end = hip,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Thigh
+                val knee = androidx.compose.ui.geometry.Offset(w * 0.62f, h * 0.56f)
+                drawLine(
+                    color = iconColor,
+                    start = hip,
+                    end = knee,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Calf
+                val ankle = androidx.compose.ui.geometry.Offset(w * 0.45f, h * 0.78f)
+                drawLine(
+                    color = iconColor,
+                    start = knee,
+                    end = ankle,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Foot
+                drawLine(
+                    color = iconColor,
+                    start = ankle,
+                    end = androidx.compose.ui.geometry.Offset(w * 0.58f, h * 0.78f),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Arms reaching forward
+                drawLine(
+                    color = iconColor,
+                    start = torsoStart,
+                    end = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.34f),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+            }
+            "런지", "Lunge" -> {
+                // Head
+                drawCircle(
+                    color = iconColor,
+                    radius = w * 0.12f,
+                    center = androidx.compose.ui.geometry.Offset(w * 0.48f, h * 0.22f)
+                )
+                // Torso
+                val torsoStart = androidx.compose.ui.geometry.Offset(w * 0.48f, h * 0.34f)
+                val hip = androidx.compose.ui.geometry.Offset(w * 0.45f, h * 0.52f)
+                drawLine(
+                    color = iconColor,
+                    start = torsoStart,
+                    end = hip,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Front leg (hip -> front knee -> front foot)
+                val frontKnee = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.54f)
+                val frontAnkle = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.76f)
+                drawLine(
+                    color = iconColor,
+                    start = hip,
+                    end = frontKnee,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = frontKnee,
+                    end = frontAnkle,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = frontAnkle,
+                    end = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.76f),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Back leg (hip -> back knee -> back foot)
+                val backKnee = androidx.compose.ui.geometry.Offset(w * 0.32f, h * 0.66f)
+                val backAnkle = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.74f)
+                drawLine(
+                    color = iconColor,
+                    start = hip,
+                    end = backKnee,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = backKnee,
+                    end = backAnkle,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Arms
+                drawLine(
+                    color = iconColor,
+                    start = torsoStart,
+                    end = androidx.compose.ui.geometry.Offset(w * 0.58f, h * 0.42f),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+            }
+            "플랭크", "Plank" -> {
+                // Head
+                drawCircle(
+                    color = iconColor,
+                    radius = w * 0.12f,
+                    center = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.34f)
+                )
+                // Torso & legs (plank line)
+                val hip = androidx.compose.ui.geometry.Offset(w * 0.44f, h * 0.48f)
+                val shoulder = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.44f)
+                val ankle = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.52f)
+                drawLine(
+                    color = iconColor,
+                    start = shoulder,
+                    end = ankle,
+                    strokeWidth = strokeWidth + 0.5.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+                // Support arms
+                val elbow = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.66f)
+                val hand = androidx.compose.ui.geometry.Offset(w * 0.74f, h * 0.66f)
+                drawLine(
+                    color = iconColor,
+                    start = shoulder,
+                    end = elbow,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = elbow,
+                    end = hand,
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+                // Feet toes
+                drawLine(
+                    color = iconColor,
+                    start = ankle,
+                    end = androidx.compose.ui.geometry.Offset(w * 0.20f, h * 0.62f),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+            }
+            else -> {
+                // Dumbbell Icon drawing
+                drawLine(
+                    color = iconColor,
+                    start = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.5f),
+                    end = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.5f),
+                    strokeWidth = strokeWidth + 1.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.32f),
+                    end = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.68f),
+                    strokeWidth = strokeWidth * 2f,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.36f),
+                    end = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.64f),
+                    strokeWidth = strokeWidth * 1.5f,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = androidx.compose.ui.geometry.Offset(w * 0.7f, h * 0.32f),
+                    end = androidx.compose.ui.geometry.Offset(w * 0.7f, h * 0.68f),
+                    strokeWidth = strokeWidth * 2f,
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = iconColor,
+                    start = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.36f),
+                    end = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.64f),
+                    strokeWidth = strokeWidth * 1.5f,
+                    cap = StrokeCap.Round
+                )
             }
         }
     }
