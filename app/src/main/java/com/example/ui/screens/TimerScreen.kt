@@ -1004,41 +1004,24 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     modifier = Modifier
                         .size(56.dp)
                         .background(
-                            if (uiState.isRoutineActive) Color(0xFFFFDAD6)
-                            else if (isRunning) Color(0xFFEAEAEA)
+                            if (isRunning && !uiState.isRoutineActive) Color(0xFFEAEAEA)
                             else Color(0xFFE6F3F1),
                             CircleShape
                         )
                         .border(
                             1.dp,
-                            if (uiState.isRoutineActive) Color(0xFFFFDAD6)
-                            else if (isRunning) Color(0xFFDDDDDD)
+                            if (isRunning && !uiState.isRoutineActive) Color(0xFFDDDDDD)
                             else Color(0xFFDCE5E2),
                             CircleShape
                         )
                         .testTag("reset_timer_button")
                 ) {
-                    if (uiState.isRoutineActive) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh, // base target, drawn box over it
-                            contentDescription = "Stop",
-                            tint = Color(0xFFBA1A1A),
-                            modifier = Modifier.size(24.dp).drawBehind {
-                                drawRect(
-                                    color = Color(0xFFBA1A1A),
-                                    topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.25f, size.height * 0.25f),
-                                    size = androidx.compose.ui.geometry.Size(size.width * 0.5f, size.height * 0.5f)
-                                )
-                            }
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = stringResource(id = R.string.desc_reset_timer),
-                            tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = if (uiState.isRoutineActive) "Stop" else stringResource(id = R.string.desc_reset_timer),
+                        tint = if (isRunning && !uiState.isRoutineActive) Color.Gray.copy(alpha = 0.5f) else tealActive,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(24.dp))
