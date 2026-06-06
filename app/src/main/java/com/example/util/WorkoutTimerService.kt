@@ -153,6 +153,17 @@ class WorkoutTimerService : Service() {
                 val state = TimerRepository.timerState.value
                 val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
                 val diff = targetTotalElapsed - state.elapsedSeconds
+                if (diff >= 5) {
+                    // Robust bulk time drift detection (Time Skipping Prevention)
+                    // If a drastic jump of >= 5 seconds occurs (e.g. system slowdown or recovery from CPU Doze mode),
+                    // we immediately pause the timer to protect user data coherence, prevent rapid coroutine triggers,
+                    // and gracefully inform the user to resume manually.
+                    TimerRepository.updateState { it.copy(isRunning = false, manualInputEnabled = true) }
+                    soundHelper.playDoubleBeep()
+                    ttsHelper.speak("시간 편차가 감지되어 타이머가 일시정지되었습니다. 확인 후 재개해 주세요.")
+                    updateNotification()
+                    break
+                }
                 if (diff > 0) {
                     for (i in 1..diff) {
                         val currentLoopState = TimerRepository.timerState.value
