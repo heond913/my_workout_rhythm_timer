@@ -13,6 +13,7 @@ import com.example.data.WorkoutRepository
 import com.example.data.CustomRoutine
 import com.example.data.RoutineStep
 import com.example.util.WorkoutTimerService
+import com.example.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -106,7 +107,12 @@ data class WorkoutUiState(
     val manualInputEnabled: Boolean = true,
     val recordToDelete: WorkoutRecord? = null,
     val workoutToShare: WorkoutRecord? = null,
-    val showDeleteAllDialog: Boolean = false
+    val showDeleteAllDialog: Boolean = false,
+    val repsError: Int? = null,
+    val setsError: Int? = null,
+    val weightError: Int? = null,
+    val durationError: Int? = null,
+    val customExerciseError: Int? = null
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -550,31 +556,31 @@ class WorkoutViewModel @JvmOverloads constructor(
     val inputExerciseName: String
         get() = _uiState.value.inputExerciseName
     fun updateInputExerciseName(value: String) {
-        _uiState.update { it.copy(inputExerciseName = value) }
+        _uiState.update { it.copy(inputExerciseName = value, customExerciseError = null) }
     }
 
     val inputReps: String
         get() = _uiState.value.inputReps
     fun updateInputReps(value: String) {
-        _uiState.update { it.copy(inputReps = value) }
+        _uiState.update { it.copy(inputReps = value, repsError = null) }
     }
 
     val inputSets: String
         get() = _uiState.value.inputSets
     fun updateInputSets(value: String) {
-        _uiState.update { it.copy(inputSets = value) }
+        _uiState.update { it.copy(inputSets = value, setsError = null) }
     }
 
     val inputWeightKg: String
         get() = _uiState.value.inputWeightKg
     fun updateInputWeightKg(value: String) {
-        _uiState.update { it.copy(inputWeightKg = value) }
+        _uiState.update { it.copy(inputWeightKg = value, weightError = null) }
     }
 
     val inputDurationSeconds: String
         get() = _uiState.value.inputDurationSeconds
     fun updateInputDurationSeconds(value: String) {
-        _uiState.update { it.copy(inputDurationSeconds = value) }
+        _uiState.update { it.copy(inputDurationSeconds = value, durationError = null) }
     }
 
     val inputRating: Int
@@ -587,6 +593,88 @@ class WorkoutViewModel @JvmOverloads constructor(
         get() = _uiState.value.inputNote
     fun updateInputNote(value: String) {
         _uiState.update { it.copy(inputNote = value) }
+    }
+
+    fun validateAndSaveWorkoutRecord(timestamp: Long = System.currentTimeMillis()): Boolean {
+        val exercise = inputExerciseName.trim()
+        val repsStr = inputReps.trim()
+        val setsStr = inputSets.trim()
+        val weightStr = inputWeightKg.trim()
+        val durationStr = inputDurationSeconds.trim()
+
+        var hasError = false
+        var repsErrRes: Int? = null
+        var setsErrRes: Int? = null
+        var weightErrRes: Int? = null
+        var durationErrRes: Int? = null
+        var customExerciseErrRes: Int? = null
+
+        val exerciseType = com.example.data.ExerciseType.fromString(exercise)
+        if (exerciseType == com.example.data.ExerciseType.OTHER && 
+            (exercise.isEmpty() || exercise.equals("OTHER", ignoreCase = true) || exercise == "기타")
+        ) {
+            customExerciseErrRes = R.string.error_empty_custom_exercise
+            hasError = true
+        }
+
+        val parsedReps = repsStr.toIntOrNull()
+        if (parsedReps == null || parsedReps < 0) {
+            repsErrRes = R.string.error_invalid_reps
+            hasError = true
+        }
+
+        val parsedSets = setsStr.toIntOrNull()
+        if (parsedSets == null || parsedSets < 0) {
+            setsErrRes = R.string.error_invalid_sets
+            hasError = true
+        }
+
+        val parsedWeight = weightStr.toDoubleOrNull()
+        if (parsedWeight == null || parsedWeight < 0.0) {
+            weightErrRes = R.string.error_invalid_weight
+            hasError = true
+        }
+
+        val parsedDuration = durationStr.toIntOrNull()
+        if (parsedDuration == null || parsedDuration < 0) {
+            durationErrRes = R.string.error_invalid_duration
+            hasError = true
+        }
+
+        if (hasError) {
+            _uiState.update { 
+                it.copy(
+                    repsError = repsErrRes,
+                    setsError = setsErrRes,
+                    weightError = weightErrRes,
+                    durationError = durationErrRes,
+                    customExerciseError = customExerciseErrRes
+                )
+            }
+            return false
+        }
+
+        saveWorkoutRecord(
+            exercise = exercise,
+            reps = parsedReps,
+            sets = parsedSets,
+            weightKg = parsedWeight,
+            duration = parsedDuration,
+            rating = inputRating,
+            note = inputNote,
+            timestamp = timestamp
+        )
+
+        _uiState.update {
+            it.copy(
+                repsError = null,
+                setsError = null,
+                weightError = null,
+                durationError = null,
+                customExerciseError = null
+            )
+        }
+        return true
     }
 
     fun saveWorkoutRecord(

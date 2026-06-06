@@ -230,4 +230,11 @@
     <string name="share_card_style_coral">Warm Coral</string>
     <string name="share_text_success_format">🔥 %1$s Complete! 🔥\n🗓 Date: %2$s\n%3$s⏱ Duration: %4$s\n⭐ Level: %5$s\n🚀 Feel the groove with #MyWorkoutRhythm!</string>
     <string name="share_text_stats_format">🏆 Workout Rhythm Stats! 🏆\n🔥 Workout Streak: %1$d Days!\n💪 Total workouts: %2$d times / %3$d sets\n🏋️‍♂️ Max lifting: %4$skg\n⏱ Total time: %5$d min %6$d sec\n📊 Custom habits on #MyWorkoutRhythm with #TikTok workouts!</string>
+
+    <!-- Form Validation Errors -->
+    <string name="error_invalid_reps">Please enter a valid integer for reps (e.g., 15)</string>
+    <string name="error_invalid_sets">Please enter a valid integer for sets (e.g., 3)</string>
+    <string name="error_invalid_weight">Please enter a valid decimal for weight (e.g., 10 or 12.5)</string>
+    <string name="error_invalid_duration">Please enter a valid integer for duration in seconds (e.g., 60)</string>
+    <string name="error_empty_custom_exercise">Please enter a custom exercise name</string>
 </resources>

@@ -165,6 +165,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         // Custom exercise name field (only shown if OTHER is selected)
         AnimatedVisibility(visible = ExerciseType.fromString(selectedExercise) == ExerciseType.OTHER) {
             var customName by remember { mutableStateOf("") }
+            val hasCustomError = uiState.customExerciseError != null
             OutlinedTextField(
                 value = customName,
                 onValueChange = {
@@ -172,6 +173,10 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     viewModel.updateInputExerciseName(it)
                 },
                 label = { Text(stringResource(id = R.string.lbl_custom_exercise), color = secondaryGray) },
+                isError = hasCustomError,
+                supportingText = if (hasCustomError) {
+                    { uiState.customExerciseError?.let { errResId -> Text(stringResource(id = errResId), color = Color(0xFF93000A)) } }
+                } else null,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = tealActive,
                     unfocusedBorderColor = borderColor,
@@ -180,10 +185,13 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     focusedTextColor = charcoalDark,
                     unfocusedTextColor = charcoalDark,
                     focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    unfocusedContainerColor = Color.White,
+                    errorBorderColor = Color(0xFF93000A),
+                    errorLabelColor = Color(0xFF93000A),
+                    errorSupportingTextColor = Color(0xFF93000A)
                 ),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).testTag("custom_exercise_input_field")
             )
         }
 
@@ -279,7 +287,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                .border(
+                    1.dp, 
+                    if (uiState.repsError != null) Color(0xFF93000A) else borderColor, 
+                    RoundedCornerShape(16.dp)
+                )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -317,6 +329,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onValueChange = { viewModel.updateInputReps(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("reps_input_field"),
+                        isError = uiState.repsError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
                             color = charcoalDark,
@@ -327,7 +340,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
                             focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedContainerColor = Color.White,
+                            errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
                     )
@@ -343,6 +357,17 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_reps), tint = Color.White)
                     }
                 }
+
+                uiState.repsError?.let { errResId ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = errResId),
+                        color = Color(0xFF93000A),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 4.dp)
+                    )
+                }
             }
         }
 
@@ -353,7 +378,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                .border(
+                    1.dp, 
+                    if (uiState.setsError != null) Color(0xFF93000A) else borderColor, 
+                    RoundedCornerShape(16.dp)
+                )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -391,6 +420,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onValueChange = { viewModel.updateInputSets(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("sets_input_field"),
+                        isError = uiState.setsError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
                             color = charcoalDark,
@@ -401,7 +431,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
                             focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedContainerColor = Color.White,
+                            errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
                     )
@@ -417,6 +448,17 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_sets), tint = Color.White)
                     }
                 }
+
+                uiState.setsError?.let { errResId ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = errResId),
+                        color = Color(0xFF93000A),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 4.dp)
+                    )
+                }
             }
         }
 
@@ -427,7 +469,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                .border(
+                    1.dp, 
+                    if (uiState.weightError != null) Color(0xFF93000A) else borderColor, 
+                    RoundedCornerShape(16.dp)
+                )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -465,6 +511,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onValueChange = { viewModel.updateInputWeightKg(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("weight_input_field"),
+                        isError = uiState.weightError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
                             color = charcoalDark,
@@ -475,7 +522,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
                             focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedContainerColor = Color.White,
+                            errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
                     )
@@ -491,6 +539,17 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_weight), tint = Color.White)
                     }
                 }
+
+                uiState.weightError?.let { errResId ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = errResId),
+                        color = Color(0xFF93000A),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 4.dp)
+                    )
+                }
             }
         }
 
@@ -501,7 +560,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                .border(
+                    1.dp, 
+                    if (uiState.durationError != null) Color(0xFF93000A) else borderColor, 
+                    RoundedCornerShape(16.dp)
+                )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -539,6 +602,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         onValueChange = { viewModel.updateInputDurationSeconds(it) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(120.dp).testTag("duration_input_field"),
+                        isError = uiState.durationError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
                             color = charcoalDark,
@@ -549,7 +613,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
                             focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedContainerColor = Color.White,
+                            errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
                     )
@@ -564,6 +629,17 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_duration), tint = Color.White)
                     }
+                }
+
+                uiState.durationError?.let { errResId ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = errResId),
+                        color = Color(0xFF93000A),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 4.dp)
+                    )
                 }
             }
         }
@@ -661,7 +737,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
         // Large Save Button
         Button(
             onClick = {
-                viewModel.saveWorkoutRecord(timestamp = logCalendar.timeInMillis)
+                viewModel.validateAndSaveWorkoutRecord(timestamp = logCalendar.timeInMillis)
             },
             modifier = Modifier
                 .fillMaxWidth()
