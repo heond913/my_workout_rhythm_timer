@@ -715,8 +715,6 @@ class WorkoutViewModel @JvmOverloads constructor(
         val completedDatesSet = records.map { dateFormat.format(Date(it.timestamp)) }.toSet()
 
         val todayCal = Calendar.getInstance()
-        // Override for 2026-05-29 base context to ensure we get a valid visual starting streak matching the year index!
-        todayCal.set(2026, Calendar.MAY, 29)
 
         var streak = 0
         var checkCal = todayCal.clone() as Calendar
