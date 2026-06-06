@@ -311,7 +311,13 @@ class WorkoutViewModel @JvmOverloads constructor(
         get() = _uiState.value.showCompletionDialog
 
     fun updateShowCompletionDialog(show: Boolean) {
-        TimerRepository.updateState { it.copy(showCompletionDialog = show) }
+        TimerRepository.updateState {
+            if (!show) {
+                it.copy(showCompletionDialog = show, routineHistoryJson = "")
+            } else {
+                it.copy(showCompletionDialog = show)
+            }
+        }
     }
 
     val showLanguageSelection: Boolean

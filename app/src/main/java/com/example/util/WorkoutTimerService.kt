@@ -100,36 +100,43 @@ class WorkoutTimerService : Service() {
         val currentState = TimerRepository.timerState.value
         if (currentState.isRunning && timerJob?.isActive == true) return
 
-        val isFreshStart = (currentState.elapsedSeconds == 0)
+        var elapsed = currentState.elapsedSeconds
+        var remaining = currentState.remainingSeconds
+        var workoutCount = currentState.workoutCount
+        var rhythmTickCount = currentState.rhythmTickCount
+        var showCompletionDialog = currentState.showCompletionDialog
 
-        // If timer is already at 0 in Countdown mode, reset it automatically before starting again
-        if (currentState.timerMode == TimerMode.Countdown && currentState.remainingSeconds <= 0) {
-            TimerRepository.updateState {
-                it.copy(
-                    elapsedSeconds = 0,
-                    remainingSeconds = it.totalTargetSeconds,
-                    rhythmTickCount = 0,
-                    workoutCount = 0,
-                    showCompletionDialog = false
-                )
-            }
+        val isAutoResetNeeded = (currentState.timerMode == TimerMode.Countdown && currentState.remainingSeconds <= 0)
+
+        if (isAutoResetNeeded) {
+            elapsed = 0
+            remaining = currentState.totalTargetSeconds
+            rhythmTickCount = 0
+            workoutCount = 0
+            showCompletionDialog = false
         }
+
+        val isFreshStart = (elapsed == 0)
 
         if (sessionStartTime == 0L) {
             sessionStartTime = System.currentTimeMillis()
         }
 
         val freshRemaining = if (isFreshStart) {
-            currentState.totalTargetSeconds + 3
+            remaining + 3
         } else {
-            currentState.remainingSeconds
+            remaining
         }
 
         // Set state running with correct remainingSeconds accounting for preparation phase
         TimerRepository.updateState {
             it.copy(
                 isRunning = true,
-                remainingSeconds = freshRemaining
+                elapsedSeconds = elapsed,
+                remainingSeconds = freshRemaining,
+                rhythmTickCount = rhythmTickCount,
+                workoutCount = workoutCount,
+                showCompletionDialog = showCompletionDialog
             )
         }
 
