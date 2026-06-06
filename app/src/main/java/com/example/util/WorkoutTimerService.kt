@@ -340,20 +340,6 @@ class WorkoutTimerService : Service() {
                                                  soundHelper.playSetFinished()
                                              }
                                          }
-                                    } else if (false) {
-                                        newIsResting = true
-                                        val restSecs = when (currentLoopState.timerPresetType) {
-                                            "스쿼트" -> currentLoopState.squatRestSeconds
-                                            "런지" -> currentLoopState.lungeRestSeconds
-                                            "플랭크" -> currentLoopState.plankRestSeconds
-                                            "기타" -> currentLoopState.otherRestSeconds
-                                            else -> 30
-                                        }
-                                        newRestTotal = restSecs
-                                        newRestRemaining = restSecs
-                                        soundHelper.playSetFinished()
-                                        speakText = getString(R.string.set_completed_rest_starting, restSecs)
-                                        logCurrentTimerWorkout()
                                     } else {
                                         newRunning = false
                                         soundHelper.playSetFinished()
