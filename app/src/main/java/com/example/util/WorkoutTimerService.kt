@@ -414,7 +414,8 @@ class WorkoutTimerService : Service() {
                                 isRoutineActive = newIsRoutineActive,
                                 timerPresetType = newPresetType,
                                 rhythmIntervalSeconds = newInterval,
-                                totalTargetSeconds = newTotalTarget
+                                totalTargetSeconds = newTotalTarget,
+                                manualInputEnabled = if (!newRunning) true else it.manualInputEnabled
                             )
                         }
 
@@ -442,7 +443,7 @@ class WorkoutTimerService : Service() {
     }
 
     private fun pauseTimerLoop() {
-        TimerRepository.updateState { it.copy(isRunning = false) }
+        TimerRepository.updateState { it.copy(isRunning = false, manualInputEnabled = true) }
         timerJob?.cancel()
         soundHelper.playDoubleBeep()
         ttsHelper.speak(getString(R.string.tts_workout_paused))
