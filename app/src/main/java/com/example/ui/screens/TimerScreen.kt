@@ -135,9 +135,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
     val scrollState = rememberScrollState()
 
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val scrollToOffsetPx = with(density) { 110.dp.toPx().toInt() }
+
     LaunchedEffect(uiState.isRoutineActive) {
         if (uiState.isRoutineActive) {
-            scrollState.animateScrollTo(0)
+            scrollState.animateScrollTo(scrollToOffsetPx)
         }
     }
 
@@ -162,68 +165,70 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 140.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-        // Language Toggle Panel
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 4.dp),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-            val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
-            val isKo = currentLocale == "ko"
-            
-            TextButton(
-                onClick = {
-                    val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("ko")
-                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
-                },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = if (isKo) tealActive else secondaryGray
-                ),
-                modifier = Modifier.height(36.dp)
+        if (!uiState.isRoutineActive) {
+            // Language Toggle Panel
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "한국어",
-                    fontWeight = if (isKo) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp
-                )
+                val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+                val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
+                val isKo = currentLocale == "ko"
+                
+                TextButton(
+                    onClick = {
+                        val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("ko")
+                        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = if (isKo) tealActive else secondaryGray
+                    ),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = "한국어",
+                        fontWeight = if (isKo) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 11.sp
+                    )
+                }
+                Text(text = "|", color = secondaryGray.copy(alpha = 0.5f), fontSize = 11.sp)
+                TextButton(
+                    onClick = {
+                        val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("en")
+                        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = if (!isKo) tealActive else secondaryGray
+                    ),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = "English",
+                        fontWeight = if (!isKo) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 11.sp
+                    )
+                }
             }
-            Text(text = "|", color = secondaryGray.copy(alpha = 0.5f), fontSize = 11.sp)
-            TextButton(
-                onClick = {
-                    val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("en")
-                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
-                },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = if (!isKo) tealActive else secondaryGray
-                ),
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text(
-                    text = "English",
-                    fontWeight = if (!isKo) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp
-                )
-            }
-        }
 
-        // Upper Title block
-        Text(
-            text = stringResource(id = R.string.title_timer),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = tealActive,
-            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-        )
-        Text(
-            text = stringResource(id = R.string.subtitle_timer),
-            fontSize = 12.sp,
-            color = secondaryGray,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+            // Upper Title block
+            Text(
+                text = stringResource(id = R.string.title_timer),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = tealActive,
+                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+            )
+            Text(
+                text = stringResource(id = R.string.subtitle_timer),
+                fontSize = 12.sp,
+                color = secondaryGray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
 
         // Custom Routine active playback visual track progress banner
         if (uiState.isRoutineActive) {
