@@ -411,10 +411,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             presets.forEach { (exeType, secs, desc) ->
                 val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
                 val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
-                    ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100)) // Swapped to Orange
+                    ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
                     ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
                     ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60)) // Swapped to Teal
+                    ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
                 }
 
                 Column(

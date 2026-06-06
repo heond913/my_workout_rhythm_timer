@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.data.ExerciseType
 import com.example.ui.models.exercisePreset
 
 /**
@@ -131,7 +132,7 @@ fun TimerVisualizer(
                         stringResource(id = R.string.rest_timer_status)
                     } else if (isPreparing) {
                         stringResource(id = R.string.timer_preparing)
-                    } else if (interval > 0) {
+                    } else if (interval > 0 && ExerciseType.fromString(presetType) != ExerciseType.PLANK) {
                         stringResource(id = R.string.rhythm_interval_notifying, interval)
                     } else {
                         stringResource(id = R.string.timer_in_progress)
