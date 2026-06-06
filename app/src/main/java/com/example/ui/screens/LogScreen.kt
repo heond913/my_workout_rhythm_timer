@@ -35,6 +35,7 @@ import com.example.viewmodel.WorkoutViewModel
 import androidx.compose.ui.res.stringResource
 import com.example.R
 import com.example.ui.components.DrawExerciseIcon
+import com.example.ui.models.exercisePreset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,13 +106,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             exercises.forEach { exe ->
                 val isSelected = selectedExercise == exe
                 
-                // Exercise-specific colorful styling matching Vibrant Palette HTML
-                val (itemBg, itemBorder, itemAccent) = when (exe) {
-                    "스쿼트" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
-                    "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
-                    "플랭크" -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    else -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
-                }
+                // Isolate preset presentation colors & metadata using the UI presenter model
+                val preset = exe.exercisePreset
+                val itemBg = preset.bgColor
+                val itemBorder = preset.themeColor
+                val itemAccent = preset.themeColor
 
                 Card(
                     colors = CardDefaults.cardColors(
@@ -147,12 +146,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        val exeDisplay = when (exe) {
-                            "스쿼트" -> stringResource(id = R.string.preset_squat)
-                            "런지" -> stringResource(id = R.string.preset_lunge)
-                            "플랭크" -> stringResource(id = R.string.preset_plank)
-                            else -> stringResource(id = R.string.preset_other)
-                        }
+                        val exeDisplay = stringResource(id = preset.displayNameResId)
                         Text(
                             text = exeDisplay,
                             color = if (isSelected) charcoalDark else secondaryGray,

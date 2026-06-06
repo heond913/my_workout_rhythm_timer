@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.viewmodel.WorkoutViewModel
 import com.example.ui.components.DrawExerciseIcon
+import com.example.ui.models.exercisePreset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,22 +120,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
         }
     }
 
-    // Dynamic color matching based on currently active preset (with swapped Squat <-> Other colors)
-    val activePresetColor = when (uiState.timerPresetType) {
-        "스쿼트" -> Color(0xFFE65100) // Swapped to Orange
-        "런지" -> Color(0xFF3F5F90)
-        "플랭크" -> Color(0xFF93000A)
-        "기타" -> Color(0xFF006A60) // Swapped to Teal
-        else -> Color(0xFF006A60)
-    }
-
-    val activePresetBgColor = when (uiState.timerPresetType) {
-        "스쿼트" -> Color(0xFFFFECCC) // Swapped to Orange background
-        "런지" -> Color(0xFFD7E3FF)
-        "플랭크" -> Color(0xFFFFDAD6)
-        "기타" -> Color(0xFFCCE8E3) // Swapped to Teal background
-        else -> Color(0xFFCCE8E3)
-    }
+    // Isolate preset presentation colors & metadata using the UI presenter model
+    val activePreset = uiState.timerPresetType.exercisePreset
+    val activePresetColor = activePreset.themeColor
+    val activePresetBgColor = activePreset.bgColor
 
     // Color Theme mappings - Vibrant Palette
     val tealActive = Color(0xFF006A60)
@@ -1154,24 +1143,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     }
 
     if (uiState.showCompletionDialog) {
-        val encouragementRes = when (uiState.timerPresetType) {
-            "스쿼트" -> R.string.squat_encouragement
-            "런지" -> R.string.lunge_encouragement
-            "플랭크" -> R.string.plank_encouragement
-            else -> R.string.other_encouragement
-        }
-        val tip1Res = when (uiState.timerPresetType) {
-            "스쿼트" -> R.string.squat_tip1
-            "런지" -> R.string.lunge_tip1
-            "플랭크" -> R.string.plank_tip1
-            else -> R.string.other_tip1
-        }
-        val tip2Res = when (uiState.timerPresetType) {
-            "스쿼트" -> R.string.squat_tip2
-            "런지" -> R.string.lunge_tip2
-            "플랭크" -> R.string.plank_tip2
-            else -> R.string.other_tip2
-        }
+        val preset = uiState.timerPresetType.exercisePreset
+        val encouragementRes = preset.encouragementResId
+        val tip1Res = preset.tip1ResId
+        val tip2Res = preset.tip2ResId
 
         AlertDialog(
             onDismissRequest = { viewModel.updateShowCompletionDialog(false) },
@@ -1196,12 +1171,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    val exercise = when (uiState.timerPresetType) {
-                        "스쿼트" -> stringResource(id = R.string.preset_squat)
-                        "런지" -> stringResource(id = R.string.preset_lunge)
-                        "플랭크" -> stringResource(id = R.string.preset_plank)
-                        else -> stringResource(id = R.string.preset_other)
-                    }
+                    val exercise = stringResource(id = preset.displayNameResId)
 
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),

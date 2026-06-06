@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.ui.components.DrawExerciseIcon
+import com.example.ui.models.exercisePreset
 import com.example.data.WorkoutRecord
 import com.example.viewmodel.WorkoutViewModel
 import java.text.SimpleDateFormat
@@ -361,13 +362,10 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                             modifier = Modifier.padding(14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Circular icon wrapper - categorized to exercises!
-                            val (taskIconBg, taskIconAccent) = when (workout.exerciseName) {
-                                "스쿼트" -> Pair(Color(0xFFFFECCC), Color(0xFFE65100))
-                                "런지" -> Pair(Color(0xFFD7E3FF), Color(0xFF3F5F90))
-                                "플랭크" -> Pair(Color(0xFFFFDAD6), Color(0xFF93000A))
-                                else -> Pair(Color(0xFFCCE8E3), Color(0xFF006A60))
-                            }
+                            // Isolate preset presentation elements using the UI presenter model
+                            val preset = workout.exerciseName.exercisePreset
+                            val taskIconBg = preset.bgColor
+                            val taskIconAccent = preset.themeColor
 
                             Box(
                                 modifier = Modifier
@@ -386,11 +384,10 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
                             // Details text
                             Column(modifier = Modifier.weight(1f)) {
-                                val workoutExerciseDisplay = when (workout.exerciseName) {
-                                    "스쿼트" -> stringResource(id = R.string.preset_squat)
-                                    "런지" -> stringResource(id = R.string.preset_lunge)
-                                    "플랭크" -> stringResource(id = R.string.preset_plank)
-                                    else -> workout.exerciseName
+                                val workoutExerciseDisplay = if (workout.exerciseName == "스쿼트" || workout.exerciseName == "런지" || workout.exerciseName == "플랭크") {
+                                    stringResource(id = preset.displayNameResId)
+                                } else {
+                                    workout.exerciseName
                                 }
                                 Text(
                                     text = workoutExerciseDisplay,
