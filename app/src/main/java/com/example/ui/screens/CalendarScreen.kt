@@ -94,23 +94,6 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
     val charcoalDark = Color(0xFF191C1B) // Deep dark text
     val borderColor = Color(0xFFDCE5E2) // Soft borders
 
-    // Calculate grid for the current month representation
-    val tempCal = currentMonthCal.clone() as Calendar
-    tempCal.set(Calendar.DAY_OF_MONTH, 1)
-    val maxDays = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH)
-    val dayOfWeekOffset = tempCal.get(Calendar.DAY_OF_WEEK) - 1 // 0-based index for Sun-Sat
-
-    // Days Grid Array construction
-    val daysList = mutableListOf<Calendar?>()
-    for (i in 0 until dayOfWeekOffset) {
-        daysList.add(null) // Empty days at beginning of month grid
-    }
-    for (day in 1..maxDays) {
-        val entry = currentMonthCal.clone() as Calendar
-        entry.set(Calendar.DAY_OF_MONTH, day)
-        daysList.add(entry)
-    }
-
     // Selected day formatted string helper
     val daySelectedFormat = stringResource(id = R.string.day_selected_format)
     val daySelectedFormatter = remember(daySelectedFormat) { SimpleDateFormat(daySelectedFormat, Locale.getDefault()) }
@@ -205,7 +188,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
 
         // Calendar grid cells
         Column(modifier = Modifier.fillMaxWidth()) {
-            val chunks = daysList.chunked(7)
+            val chunks = uiState.calendarGrid
             chunks.forEach { week ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),

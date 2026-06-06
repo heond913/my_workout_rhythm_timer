@@ -25,6 +25,24 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+fun buildCalendarGrid(currentMonthCal: Calendar): List<List<Calendar?>> {
+    val tempCal = currentMonthCal.clone() as Calendar
+    tempCal.set(Calendar.DAY_OF_MONTH, 1)
+    val maxDays = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH)
+    val dayOfWeekOffset = tempCal.get(Calendar.DAY_OF_WEEK) - 1 // 0-based index for Sun-Sat
+
+    val daysList = mutableListOf<Calendar?>()
+    for (i in 0 until dayOfWeekOffset) {
+        daysList.add(null) // Empty days at beginning of month grid
+    }
+    for (day in 1..maxDays) {
+        val entry = currentMonthCal.clone() as Calendar
+        entry.set(Calendar.DAY_OF_MONTH, day)
+        daysList.add(entry)
+    }
+    return daysList.chunked(7)
+}
+
 enum class AppTab {
     Timer,
     Log,
@@ -59,6 +77,7 @@ data class WorkoutUiState(
     val showCompletionDialog: Boolean = false,
     val showLanguageSelection: Boolean = false,
     val calendarYearMonth: Calendar = Calendar.getInstance(),
+    val calendarGrid: List<List<Calendar?>> = buildCalendarGrid(Calendar.getInstance()),
     val inputExerciseName: String = "스쿼트",
     val inputReps: String = "15",
     val inputSets: String = "3",
@@ -681,7 +700,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         get() = _uiState.value.calendarYearMonth
 
     fun updateCalendarYearMonth(value: Calendar) {
-        _uiState.update { it.copy(calendarYearMonth = value) }
+        _uiState.update { it.copy(calendarYearMonth = value, calendarGrid = buildCalendarGrid(value)) }
     }
 
     fun changeMonth(amount: Int) {
@@ -689,7 +708,7 @@ class WorkoutViewModel @JvmOverloads constructor(
             timeInMillis = calendarYearMonth.timeInMillis
             add(Calendar.MONTH, amount)
         }
-        _uiState.update { it.copy(calendarYearMonth = newCal) }
+        _uiState.update { it.copy(calendarYearMonth = newCal, calendarGrid = buildCalendarGrid(newCal)) }
     }
 
     fun getWorkoutsForDay(day: Calendar, records: List<WorkoutRecord>): List<WorkoutRecord> {
