@@ -183,6 +183,7 @@ class WorkoutTimerService : Service() {
                         var newPresetType = currentLoopState.timerPresetType
                         var newInterval = currentLoopState.rhythmIntervalSeconds
                         var newTotalTarget = currentLoopState.totalTargetSeconds
+                        var newRoutineHistoryJson = currentLoopState.routineHistoryJson
 
                         var speakText: String? = null
                         var coachingText: String? = null
@@ -308,6 +309,14 @@ class WorkoutTimerService : Service() {
                                          val currentStep = steps[currentStepIdx]
                                          
                                          logCurrentTimerWorkout()
+
+                                         val oldHistory = com.example.data.RoutineStepResult.deserializeList(newRoutineHistoryJson)
+                                         val newHistory = oldHistory + com.example.data.RoutineStepResult(
+                                             exerciseName = currentStep.exerciseName,
+                                             count = newWorkoutCount,
+                                             targetSeconds = currentStep.durationSeconds
+                                         )
+                                         newRoutineHistoryJson = com.example.data.RoutineStepResult.serializeList(newHistory)
                                          
                                          if (currentStep.restSeconds > 0) {
                                              newIsResting = true
@@ -414,6 +423,7 @@ class WorkoutTimerService : Service() {
                                 timerPresetType = newPresetType,
                                 rhythmIntervalSeconds = newInterval,
                                 totalTargetSeconds = newTotalTarget,
+                                routineHistoryJson = newRoutineHistoryJson,
                                 manualInputEnabled = if (!newRunning) true else it.manualInputEnabled
                             )
                         }

@@ -103,6 +103,7 @@ data class WorkoutUiState(
     val routineName: String = "",
     val routineStepsJson: String = "",
     val routineCurrentStepIndex: Int = 0,
+    val routineHistoryJson: String = "",
     val customRoutines: List<CustomRoutine> = emptyList(),
     val manualInputEnabled: Boolean = true,
     val recordToDelete: WorkoutRecord? = null,
@@ -227,6 +228,7 @@ class WorkoutViewModel @JvmOverloads constructor(
                         routineName = timerState.routineName,
                         routineStepsJson = timerState.routineStepsJson,
                         routineCurrentStepIndex = timerState.routineCurrentStepIndex,
+                        routineHistoryJson = timerState.routineHistoryJson,
                         manualInputEnabled = timerState.manualInputEnabled
                     )
                 }
@@ -749,6 +751,7 @@ class WorkoutViewModel @JvmOverloads constructor(
                 routineName = routine.name,
                 routineStepsJson = routine.serializeSteps(),
                 routineCurrentStepIndex = 0,
+                routineHistoryJson = "",
                 timerPresetType = firstStep.exerciseName,
                 rhythmIntervalSeconds = firstStep.rhythmIntervalSeconds,
                 totalTargetSeconds = firstStep.durationSeconds,
@@ -769,7 +772,8 @@ class WorkoutViewModel @JvmOverloads constructor(
                 isRoutineActive = false,
                 routineName = "",
                 routineStepsJson = "",
-                routineCurrentStepIndex = 0
+                routineCurrentStepIndex = 0,
+                routineHistoryJson = ""
             )
         }
         resetTimer()

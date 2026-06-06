@@ -84,3 +84,68 @@ data class CustomRoutine(
         }
     }
 }
+
+@JsonClass(generateAdapter = true)
+data class RoutineStepResult(
+    val exerciseName: String,
+    val count: Int,
+    val targetSeconds: Int
+) : java.io.Serializable {
+    fun serialize(): String {
+        return try {
+            val moshi = Moshi.Builder().addLast(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
+            val adapter = moshi.adapter(RoutineStepResult::class.java)
+            adapter.toJson(this)
+        } catch (e: Exception) {
+            "$exerciseName,$count,$targetSeconds"
+        }
+    }
+
+    companion object {
+        fun deserialize(str: String): RoutineStepResult? {
+            if (str.isBlank()) return null
+            if (str.trim().startsWith("{")) {
+                return try {
+                    val moshi = Moshi.Builder().addLast(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
+                    val adapter = moshi.adapter(RoutineStepResult::class.java)
+                    adapter.fromJson(str)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            val parts = str.split(",")
+            if (parts.size < 3) return null
+            return RoutineStepResult(
+                exerciseName = parts[0],
+                count = parts[1].toIntOrNull() ?: 0,
+                targetSeconds = parts[2].toIntOrNull() ?: 0
+            )
+        }
+
+        fun serializeList(list: List<RoutineStepResult>): String {
+            return try {
+                val moshi = Moshi.Builder().addLast(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
+                val type = Types.newParameterizedType(List::class.java, RoutineStepResult::class.java)
+                val adapter = moshi.adapter<List<RoutineStepResult>>(type)
+                adapter.toJson(list)
+            } catch (e: Exception) {
+                list.joinToString(";") { it.serialize() }
+            }
+        }
+
+        fun deserializeList(str: String): List<RoutineStepResult> {
+            if (str.isBlank()) return emptyList()
+            if (str.trim().startsWith("[")) {
+                return try {
+                    val moshi = Moshi.Builder().addLast(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
+                    val type = Types.newParameterizedType(List::class.java, RoutineStepResult::class.java)
+                    val adapter = moshi.adapter<List<RoutineStepResult>>(type)
+                    adapter.fromJson(str) ?: emptyList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            }
+            return str.split(";").mapNotNull { deserialize(it) }
+        }
+    }
+}

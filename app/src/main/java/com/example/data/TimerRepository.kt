@@ -32,6 +32,7 @@ data class TimerState(
     val routineName: String = "",
     val routineStepsJson: String = "",
     val routineCurrentStepIndex: Int = 0,
+    val routineHistoryJson: String = "",
     val manualInputEnabled: Boolean = true
 )
 

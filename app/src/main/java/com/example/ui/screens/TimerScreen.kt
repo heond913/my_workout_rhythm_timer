@@ -1064,10 +1064,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     }
 
     if (uiState.showCompletionDialog) {
-        val preset = uiState.timerPresetType.exercisePreset
-        val encouragementRes = preset.encouragementResId
-        val tip1Res = preset.tip1ResId
-        val tip2Res = preset.tip2ResId
+        val completedSteps = remember(uiState.routineHistoryJson) {
+            com.example.data.RoutineStepResult.deserializeList(uiState.routineHistoryJson)
+        }
+
+        val chosenPreset = remember(uiState.routineHistoryJson, uiState.timerPresetType) {
+            if (completedSteps.isNotEmpty()) {
+                val uniqueNames = completedSteps.map { it.exerciseName }.distinct()
+                val randomName = uniqueNames.random()
+                randomName.exercisePreset
+            } else {
+                uiState.timerPresetType.exercisePreset
+            }
+        }
+
+        val encouragementRes = chosenPreset.encouragementResId
+        val tip1Res = chosenPreset.tip1ResId
+        val tip2Res = chosenPreset.tip2ResId
 
         AlertDialog(
             onDismissRequest = { viewModel.updateShowCompletionDialog(false) },
@@ -1092,37 +1105,94 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    val exercise = stringResource(id = preset.displayNameResId)
+                    if (completedSteps.isNotEmpty()) {
+                        completedSteps.forEachIndexed { index, stepResult ->
+                            val exePreset = stepResult.exerciseName.exercisePreset
+                            val exerciseDisplay = stringResource(id = exePreset.displayNameResId)
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(14.dp)) {
+                                    // Header with step number
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(tealActive, RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "${index + 1}단계",
+                                                color = Color.White,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(text = stringResource(id = R.string.label_exercise_category), color = secondaryGray, fontSize = 13.sp)
+                                        Text(text = exerciseDisplay, fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(text = stringResource(id = R.string.label_total_count), color = secondaryGray, fontSize = 13.sp)
+                                        Text(text = stringResource(id = R.string.workout_count_format, stepResult.count), fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 17.sp)
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(text = stringResource(id = R.string.label_target_duration), color = secondaryGray, fontSize = 13.sp)
+                                        Text(text = stringResource(id = R.string.seconds_format, stepResult.targetSeconds), fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        val exercise = stringResource(id = uiState.timerPresetType.exercisePreset.displayNameResId)
 
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = stringResource(id = R.string.label_exercise_category), color = secondaryGray, fontSize = 13.sp)
-                                Text(text = exercise, fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text = stringResource(id = R.string.label_total_count), color = secondaryGray, fontSize = 13.sp)
-                                Text(text = stringResource(id = R.string.workout_count_format, uiState.workoutCount), fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = stringResource(id = R.string.label_target_duration), color = secondaryGray, fontSize = 13.sp)
-                                Text(text = stringResource(id = R.string.seconds_format, uiState.totalTargetSeconds), fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = stringResource(id = R.string.label_exercise_category), color = secondaryGray, fontSize = 13.sp)
+                                    Text(text = exercise, fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = stringResource(id = R.string.label_total_count), color = secondaryGray, fontSize = 13.sp)
+                                    Text(text = stringResource(id = R.string.workout_count_format, uiState.workoutCount), fontWeight = FontWeight.ExtraBold, color = tealActive, fontSize = 18.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = stringResource(id = R.string.label_target_duration), color = secondaryGray, fontSize = 13.sp)
+                                    Text(text = stringResource(id = R.string.seconds_format, uiState.totalTargetSeconds), fontWeight = FontWeight.Bold, color = charcoalDark, fontSize = 14.sp)
+                                }
                             }
                         }
                     }
