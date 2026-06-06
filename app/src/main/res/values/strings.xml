@@ -190,6 +190,10 @@
     <string name="language_korean">한국어 (Korean)</string>
     <string name="language_english">English</string>
 
+    <!-- Default routines names -->
+    <string name="default_routine_1_name">Full-Body Rhythm Set</string>
+    <string name="default_routine_2_name">Lower Body Strengthening Set</string>
+
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">Rest ended! Next exercise is %1$s. Prepare yourself!</string>
     <string name="tts_routine_completed_congratulations">Congratulations! You have completed all routines!</string>

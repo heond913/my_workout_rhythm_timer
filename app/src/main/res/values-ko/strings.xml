@@ -190,6 +190,10 @@
     <string name="language_korean">한국어 (Korean)</string>
     <string name="language_english">English</string>
 
+    <!-- Default routines names -->
+    <string name="default_routine_1_name">전신 리듬 세트</string>
+    <string name="default_routine_2_name">하체 단련 세트</string>
+
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">쉬는 시간 끝! 다음 운동은 %1$s입니다. 준비하세요!</string>
     <string name="tts_routine_completed_congratulations">축하합니다! 모든 루틴을 완료하였습니다!</string>

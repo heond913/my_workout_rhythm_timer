@@ -166,7 +166,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
         if (!uiState.isRoutineActive) {
-            // Language Toggle Panel
+            // Language Selection Panel
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,41 +174,19 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-                val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
-                val isKo = currentLocale == "ko"
-                
                 TextButton(
                     onClick = {
-                        val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("ko")
-                        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+                        viewModel.updateShowLanguageSelection(true)
                     },
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = if (isKo) tealActive else secondaryGray
+                        contentColor = tealActive
                     ),
                     modifier = Modifier.height(36.dp)
                 ) {
                     Text(
-                        text = "한국어",
-                        fontWeight = if (isKo) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 11.sp
-                    )
-                }
-                Text(text = "|", color = secondaryGray.copy(alpha = 0.5f), fontSize = 11.sp)
-                TextButton(
-                    onClick = {
-                        val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags("en")
-                        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = if (!isKo) tealActive else secondaryGray
-                    ),
-                    modifier = Modifier.height(36.dp)
-                ) {
-                    Text(
-                        text = "English",
-                        fontWeight = if (!isKo) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 11.sp
+                        text = "🌐 Language Selection",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp
                     )
                 }
             }

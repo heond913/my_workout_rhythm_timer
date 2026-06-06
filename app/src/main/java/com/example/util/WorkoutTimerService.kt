@@ -68,7 +68,8 @@ class WorkoutTimerService : Service() {
         ttsHelper = TtsHelper(this)
         repository = WorkoutRepository(
             AppDatabase.getDatabase(this).workoutDao(),
-            getSharedPreferences("workout_rhythm_prefs", MODE_PRIVATE)
+            getSharedPreferences("workout_rhythm_prefs", MODE_PRIVATE),
+            this
         )
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()

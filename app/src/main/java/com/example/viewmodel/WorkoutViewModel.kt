@@ -120,7 +120,8 @@ class WorkoutViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: WorkoutRepository = WorkoutRepository(
         AppDatabase.getDatabase(application).workoutDao(),
-        application.getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE)
+        application.getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE),
+        application
     )
 ) : AndroidViewModel(application) {
 

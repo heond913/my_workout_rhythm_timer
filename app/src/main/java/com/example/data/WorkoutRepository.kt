@@ -1,12 +1,15 @@
 package com.example.data
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.R
 import kotlinx.coroutines.flow.Flow
 
 class WorkoutRepository(
     private val workoutDao: WorkoutDao,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val context: Context
 ) {
     val allRecords: Flow<List<WorkoutRecord>> = workoutDao.getAllRecords()
 
@@ -137,55 +140,38 @@ class WorkoutRepository(
     }
 
     // --- Custom Routines Persistence ---
+    private fun getLocalizedString(resId: Int, isKo: Boolean): String {
+        val locale = if (isKo) java.util.Locale.KOREAN else java.util.Locale.ENGLISH
+        val configuration = android.content.res.Configuration(context.resources.configuration)
+        configuration.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(configuration)
+        return localizedContext.getString(resId)
+    }
+
     private fun localizeDefaultRoutine(routine: CustomRoutine, isKo: Boolean): CustomRoutine {
         return when (routine.id) {
             "default_1" -> {
-                if (isKo) {
-                    CustomRoutine(
-                        id = "default_1",
-                        name = "전신 리듬 세트 (스쿼트 & 런지)",
-                        steps = listOf(
-                            RoutineStep("스쿼트", 60, 4, 15),
-                            RoutineStep("런지", 60, 5, 0)
-                        ),
-                        timestamp = routine.timestamp
-                    )
-                } else {
-                    CustomRoutine(
-                        id = "default_1",
-                        name = "Full-Body Rhythm Set (Squat & Lunge)",
-                        steps = listOf(
-                            RoutineStep("SQUAT", 60, 4, 15),
-                            RoutineStep("LUNGE", 60, 5, 0)
-                        ),
-                        timestamp = routine.timestamp
-                    )
-                }
+                CustomRoutine(
+                    id = "default_1",
+                    name = getLocalizedString(R.string.default_routine_1_name, isKo),
+                    steps = listOf(
+                        RoutineStep(getLocalizedString(R.string.preset_squat, isKo), 60, 4, 15),
+                        RoutineStep(getLocalizedString(R.string.preset_lunge, isKo), 60, 5, 0)
+                    ),
+                    timestamp = routine.timestamp
+                )
             }
             "default_2" -> {
-                if (isKo) {
-                    CustomRoutine(
-                        id = "default_2",
-                        name = "하체 단련 세트",
-                        steps = listOf(
-                            RoutineStep("스쿼트", 45, 3, 20),
-                            RoutineStep("런지", 45, 4, 20),
-                            RoutineStep("기타", 60, 6, 0)
-                        ),
-                        timestamp = routine.timestamp
-                    )
-                } else {
-                    CustomRoutine(
-                        id = "default_2",
-                        name = "Lower Body Strengthening Set",
-                        steps = listOf(
-                            RoutineStep("SQUAT", 45, 3, 20),
-                            RoutineStep("LUNGE", 45, 4, 20),
-                            RoutineStep("OTHER", 60, 6, 0)
-                        ),
-                        timestamp = routine.timestamp
-                    )
-                }
+                CustomRoutine(
+                    id = "default_2",
+                    name = getLocalizedString(R.string.default_routine_2_name, isKo),
+                    steps = listOf(
+                        RoutineStep(getLocalizedString(R.string.preset_squat, isKo), 45, 3, 20),
+                        RoutineStep(getLocalizedString(R.string.preset_lunge, isKo), 45, 4, 20),
+                        RoutineStep(getLocalizedString(R.string.preset_other, isKo), 60, 6, 0)
+                    ),
+                    timestamp = routine.timestamp
+                )
             }
             else -> routine
         }

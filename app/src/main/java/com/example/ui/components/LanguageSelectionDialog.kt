@@ -60,9 +60,9 @@ fun LanguageSelectionDialog(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 LanguageOption(
-                    label = stringResource(id = R.string.language_korean),
+                    label = stringResource(id = R.string.language_english),
                     onClick = {
-                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ko")
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("en")
                         AppCompatDelegate.setApplicationLocales(appLocale)
                         onLanguageSelected()
                     }
@@ -71,9 +71,9 @@ fun LanguageSelectionDialog(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 LanguageOption(
-                    label = stringResource(id = R.string.language_english),
+                    label = stringResource(id = R.string.language_korean),
                     onClick = {
-                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("en")
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ko")
                         AppCompatDelegate.setApplicationLocales(appLocale)
                         onLanguageSelected()
                     }
