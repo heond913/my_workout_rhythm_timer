@@ -261,7 +261,8 @@ class WorkoutTimerService : Service() {
                                 newRhythmTick = 0
                             } else {
                                 // --- NORMAL WORKOUT COUNTDOWN ---
-                                if (currentLoopState.timerPresetType == "플랭크" && newRemaining in 1..10) {
+                                val currentExType = com.example.data.ExerciseType.fromString(currentLoopState.timerPresetType)
+                                if (currentExType == com.example.data.ExerciseType.PLANK && newRemaining in 1..10) {
                                     speakText = ttsHelper.getCountdownWord(newRemaining)
                                 } else {
                                     // Check coaching alerts
@@ -275,7 +276,7 @@ class WorkoutTimerService : Service() {
                                     // Rhythm counts
                                     val interval = currentLoopState.rhythmIntervalSeconds
                                     var repTriggered = false
-                                    if (interval > 0) {
+                                    if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
                                         newRhythmTick++
                                         if (newRhythmTick >= interval) {
                                             if (newRemaining > 0) {
@@ -376,9 +377,10 @@ class WorkoutTimerService : Service() {
                             } else {
                                 // --- NORMAL WORKOUT COUNT-UP ---
                                 newElapsed++
+                                val currentExType = com.example.data.ExerciseType.fromString(currentLoopState.timerPresetType)
                                 val interval = currentLoopState.rhythmIntervalSeconds
                                 var repTriggered = false
-                                if (interval > 0) {
+                                if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
                                     newRhythmTick++
                                     if (newRhythmTick >= interval) {
                                         soundHelper.playTick()
@@ -469,11 +471,18 @@ class WorkoutTimerService : Service() {
 
     private fun logCurrentTimerWorkout() {
         val state = TimerRepository.timerState.value
-        val exercise = when (state.timerPresetType) {
-            "스쿼트" -> "스쿼트"
-            "런지" -> "런지"
-            "플랭크" -> "플랭크"
-            else -> "기타"
+        val type = com.example.data.ExerciseType.fromString(state.timerPresetType)
+        val exercise = when (type) {
+            com.example.data.ExerciseType.SQUAT -> "스쿼트"
+            com.example.data.ExerciseType.LUNGE -> "런지"
+            com.example.data.ExerciseType.PLANK -> "플랭크"
+            com.example.data.ExerciseType.OTHER -> {
+                if (state.timerPresetType == "기타" || state.timerPresetType == "OTHER" || state.timerPresetType.isBlank()) {
+                    "기타"
+                } else {
+                    state.timerPresetType
+                }
+            }
         }
         val duration = if (state.timerMode == TimerMode.Countdown) state.totalTargetSeconds else state.elapsedSeconds
         serviceScope.launch {
@@ -526,12 +535,18 @@ class WorkoutTimerService : Service() {
 
     private fun buildNotification(): android.app.Notification {
         val state = TimerRepository.timerState.value
-        val exerciseDisplay = when (state.timerPresetType) {
-            "스쿼트" -> getString(R.string.preset_squat)
-            "런지" -> getString(R.string.preset_lunge)
-            "플랭크" -> getString(R.string.preset_plank)
-            "기타" -> getString(R.string.preset_other)
-            else -> state.timerPresetType
+        val type = com.example.data.ExerciseType.fromString(state.timerPresetType)
+        val exerciseDisplay = when (type) {
+            com.example.data.ExerciseType.SQUAT -> getString(R.string.preset_squat)
+            com.example.data.ExerciseType.LUNGE -> getString(R.string.preset_lunge)
+            com.example.data.ExerciseType.PLANK -> getString(R.string.preset_plank)
+            com.example.data.ExerciseType.OTHER -> {
+                if (state.timerPresetType == "기타" || state.timerPresetType == "OTHER" || state.timerPresetType.isBlank()) {
+                    getString(R.string.preset_other)
+                } else {
+                    state.timerPresetType
+                }
+            }
         }
         val titleText = if (state.isRoutineActive) {
             "[${state.routineName}] ${state.routineCurrentStepIndex + 1}단계 - $exerciseDisplay"

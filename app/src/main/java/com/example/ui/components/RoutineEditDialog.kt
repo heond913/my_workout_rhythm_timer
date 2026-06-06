@@ -81,6 +81,7 @@ fun RoutineStepRowItem(
     isKo: Boolean,
     isMoveUpEnabled: Boolean,
     isMoveDownEnabled: Boolean,
+    isLastStep: Boolean,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onDelete: () -> Unit,
@@ -253,52 +254,54 @@ fun RoutineStepRowItem(
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
-            // Recovery/Rest restSeconds controller
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (isKo) "운동 끝난 후 휴식시간" else "Rest Duration After",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = secondaryGray
-                )
+            // Recovery/Rest restSeconds controller (Hidden for the last step of the routine)
+            if (!isLastStep) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(26.dp)
-                            .background(Color.White, CircleShape)
-                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
-                            .clickable {
-                                onStepChange(step.copy(restSeconds = (step.restSeconds - 5).coerceAtLeast(0)))
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("-", color = tealActive, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    }
                     Text(
-                        text = "${step.restSeconds}초",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = charcoalDark,
-                        modifier = Modifier.widthIn(min = 36.dp),
-                        textAlign = TextAlign.Center
+                        text = if (isKo) "운동 끝난 후 휴식시간" else "Rest Duration After",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = secondaryGray
                     )
-                    Box(
-                        modifier = Modifier
-                            .size(26.dp)
-                            .background(tealActive, CircleShape)
-                            .clickable {
-                                onStepChange(step.copy(restSeconds = (step.restSeconds + 5).coerceAtMost(120)))
-                            },
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Box(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .background(Color.White, CircleShape)
+                                .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                .clickable {
+                                    onStepChange(step.copy(restSeconds = (step.restSeconds - 5).coerceAtLeast(0)))
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("-", color = tealActive, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text(
+                            text = "${step.restSeconds}초",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = charcoalDark,
+                            modifier = Modifier.widthIn(min = 36.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .background(tealActive, CircleShape)
+                                .clickable {
+                                    onStepChange(step.copy(restSeconds = (step.restSeconds + 5).coerceAtMost(120)))
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -409,6 +412,7 @@ fun RoutineEditDialog(
                         isKo = isKo,
                         isMoveUpEnabled = index > 0,
                         isMoveDownEnabled = index < steps.size - 1,
+                        isLastStep = index == steps.size - 1,
                         onMoveUp = {
                             if (index > 0) {
                                 val mutable = steps.toMutableList()
@@ -443,7 +447,15 @@ fun RoutineEditDialog(
             Button(
                 onClick = {
                     if (name.isNotBlank()) {
-                        onSave(name, steps)
+                        // Dynamically force the very last step's rest duration to 0 as it terminates the workout
+                        val sanitizedSteps = steps.mapIndexed { index, step ->
+                            if (index == steps.size - 1) {
+                                step.copy(restSeconds = 0)
+                            } else {
+                                step
+                            }
+                        }
+                        onSave(name, sanitizedSteps)
                     }
                 },
                 enabled = name.isNotBlank() && steps.isNotEmpty(),
