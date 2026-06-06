@@ -137,7 +137,65 @@ class WorkoutRepository(
     }
 
     // --- Custom Routines Persistence ---
+    private fun localizeDefaultRoutine(routine: CustomRoutine, isKo: Boolean): CustomRoutine {
+        return when (routine.id) {
+            "default_1" -> {
+                if (isKo) {
+                    CustomRoutine(
+                        id = "default_1",
+                        name = "전신 리듬 세트 (스쿼트 & 런지)",
+                        steps = listOf(
+                            RoutineStep("스쿼트", 60, 4, 15),
+                            RoutineStep("런지", 60, 5, 0)
+                        ),
+                        timestamp = routine.timestamp
+                    )
+                } else {
+                    CustomRoutine(
+                        id = "default_1",
+                        name = "Full-Body Rhythm Set (Squat & Lunge)",
+                        steps = listOf(
+                            RoutineStep("SQUAT", 60, 4, 15),
+                            RoutineStep("LUNGE", 60, 5, 0)
+                        ),
+                        timestamp = routine.timestamp
+                    )
+                }
+            }
+            "default_2" -> {
+                if (isKo) {
+                    CustomRoutine(
+                        id = "default_2",
+                        name = "하체 단련 세트",
+                        steps = listOf(
+                            RoutineStep("스쿼트", 45, 3, 20),
+                            RoutineStep("런지", 45, 4, 20),
+                            RoutineStep("기타", 60, 6, 0)
+                        ),
+                        timestamp = routine.timestamp
+                    )
+                } else {
+                    CustomRoutine(
+                        id = "default_2",
+                        name = "Lower Body Strengthening Set",
+                        steps = listOf(
+                            RoutineStep("SQUAT", 45, 3, 20),
+                            RoutineStep("LUNGE", 45, 4, 20),
+                            RoutineStep("OTHER", 60, 6, 0)
+                        ),
+                        timestamp = routine.timestamp
+                    )
+                }
+            }
+            else -> routine
+        }
+    }
+
     fun getCustomRoutines(): List<CustomRoutine> {
+        val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+        val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
+        val isKo = currentLocale == "ko"
+
         val ids = sharedPreferences.getStringSet("custom_routines_ids", null)
         if (ids == null) {
             // Provide default presets if none saved yet
@@ -161,10 +219,10 @@ class WorkoutRepository(
                 )
             )
             saveCustomRoutines(defaultRoutines)
-            return defaultRoutines
+            return defaultRoutines.map { localizeDefaultRoutine(it, isKo) }
         }
         
-        return ids.map { id ->
+        val rawRoutines = ids.map { id ->
             val name = sharedPreferences.getString("custom_routine_name_$id", "") ?: ""
             val stepsStr = sharedPreferences.getString("custom_routine_steps_$id", "") ?: ""
             val timestamp = sharedPreferences.getLong("custom_routine_time_$id", System.currentTimeMillis())
@@ -174,7 +232,9 @@ class WorkoutRepository(
                 steps = CustomRoutine.deserializeSteps(stepsStr),
                 timestamp = timestamp
             )
-        }.sortedBy { it.timestamp }
+        }
+
+        return rawRoutines.map { localizeDefaultRoutine(it, isKo) }.sortedBy { it.timestamp }
     }
 
     fun saveCustomRoutines(routines: List<CustomRoutine>) {

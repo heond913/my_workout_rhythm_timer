@@ -167,7 +167,7 @@ class WorkoutTimerService : Service() {
                     // and gracefully inform the user to resume manually.
                     TimerRepository.updateState { it.copy(isRunning = false, manualInputEnabled = true) }
                     soundHelper.playDoubleBeep()
-                    ttsHelper.speak("시간 편차가 감지되어 타이머가 일시정지되었습니다. 확인 후 재개해 주세요.")
+                    ttsHelper.speak(getString(R.string.tts_timer_paused_deviation))
                     updateNotification()
                     break
                 }
@@ -226,14 +226,14 @@ class WorkoutTimerService : Service() {
                                         newWorkoutCount = 0
                                         newRemaining = nextStep.durationSeconds + 3
                                         
-                                        speakText = "쉬는 시간 끝! 다음 운동은 " + nextStep.exerciseName + "입니다. 준비하세요!"
+                                        speakText = getString(R.string.tts_rest_ended_next_exercise, getLocalizedExerciseName(nextStep.exerciseName))
                                         soundHelper.playStrongBeep()
                                     } else {
                                         newIsResting = false
                                         newRunning = false
                                         newIsRoutineActive = false
                                         newShowDialog = true
-                                        speakText = "축하합니다! 모든 루틴을 완료하였습니다!"
+                                        speakText = getString(R.string.tts_routine_completed_congratulations)
                                         logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
                                         val originalPreset = repository.getTimerPresetType()
                                         newPresetType = originalPreset
@@ -352,7 +352,7 @@ class WorkoutTimerService : Service() {
                                              newElapsed = 0
                                              startTime = System.currentTimeMillis()
                                              soundHelper.playStrongBeep()
-                                             speakText = currentStep.exerciseName + " 완료! " + currentStep.restSeconds + "초간 휴식하세요."
+                                             speakText = getString(R.string.tts_step_completed_resting_format, getLocalizedExerciseName(currentStep.exerciseName), currentStep.restSeconds)
                                          } else {
                                              val nextStepIdx = currentStepIdx + 1
                                              if (nextStepIdx < steps.size) {
@@ -367,13 +367,13 @@ class WorkoutTimerService : Service() {
                                                  newRhythmTick = 0
                                                  newWorkoutCount = 0
                                                  
-                                                 speakText = currentStep.exerciseName + " 완료! 다음은 " + nextStep.exerciseName + "입니다. 준비하세요!"
+                                                 speakText = getString(R.string.tts_step_completed_next_exercise, getLocalizedExerciseName(currentStep.exerciseName), getLocalizedExerciseName(nextStep.exerciseName))
                                                  soundHelper.playStrongBeep()
                                              } else {
                                                  newRunning = false
                                                  newIsRoutineActive = false
                                                  newShowDialog = true
-                                                 speakText = "축하합니다! 모든 루틴을 완주하셨습니다!"
+                                                 speakText = getString(R.string.tts_routine_finished_congratulations)
                                                  logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
                                                  val originalPreset = repository.getTimerPresetType()
                                                  newPresetType = originalPreset
@@ -629,6 +629,22 @@ class WorkoutTimerService : Service() {
                 }
             } catch (e: Exception) {
                 Log.e("WorkoutTimerService", "Error logging custom routine summary", e)
+            }
+        }
+    }
+
+    private fun getLocalizedExerciseName(name: String): String {
+        val norm = name.trim().uppercase()
+        return when {
+            norm == "SQUAT" || norm == "스쿼트" -> getString(R.string.preset_squat)
+            norm == "LUNGE" || norm == "런지" -> getString(R.string.preset_lunge)
+            norm == "PLANK" || norm == "플랭크" -> getString(R.string.preset_plank)
+            else -> {
+                if (norm == "OTHER" || norm == "기타" || norm.isBlank()) {
+                    getString(R.string.preset_other)
+                } else {
+                    name
+                }
             }
         }
     }

@@ -190,6 +190,14 @@
     <string name="language_korean">한국어 (Korean)</string>
     <string name="language_english">English</string>
 
+    <!-- Localized TTS strings -->
+    <string name="tts_rest_ended_next_exercise">Rest ended! Next exercise is %1$s. Prepare yourself!</string>
+    <string name="tts_routine_completed_congratulations">Congratulations! You have completed all routines!</string>
+    <string name="tts_step_completed_resting_format">%1$s completed! Please rest for %2$d seconds.</string>
+    <string name="tts_step_completed_next_exercise">%1$s completed! Next is %2$s. Prepare yourself!</string>
+    <string name="tts_routine_finished_congratulations">Congratulations! You completed the entire routine!</string>
+    <string name="tts_timer_paused_deviation">Timer paused due to time discrepancy. Please check and resume.</string>
+
     <!-- Timer Preparing / Counting strings -->
     <string name="timer_preparing">Preparing...</string>
     <string name="tts_prep_3">Three</string>
