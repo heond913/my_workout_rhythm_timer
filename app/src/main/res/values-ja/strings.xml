@@ -1,0 +1,258 @@
+<resources>
+    <string name="app_name">マイワークアウトリズム</string>
+    <string name="routine_step_format">ステップ %1$d</string>
+
+    <!-- Navigation Tab Labels in BottomBar -->
+    <string name="tab_timer">タイマー</string>
+    <string name="tab_log">ログ</string>
+    <string name="tab_calendar">カレンダー</string>
+    <string name="tab_stats">統計</string>
+
+    <string name="splash_subtitle">一定のテンポ、健康的な習慣</string>
+    <string name="splash_title">My Workout\nRhythm Timer</string>
+
+    <!-- Timer Screen -->
+    <string name="title_timer">My Workout Rhythm Timer</string>
+    <string name="subtitle_timer">リズムに合わせてホームワークアウトをこなしましょう</string>
+    <string name="desc_timer_clock">タイマークロック</string>
+    <string name="workout_count_format">%1$d 回</string>
+    <string name="rhythm_interval_notifying">%1$d 秒ごとに通知します...</string>
+    <string name="timer_in_progress">タイマー計測中</string>
+    <string name="ready">READY</string>
+    <string name="target_workout_time">目標トレーニング時間</string>
+    <string name="target_time_format">%1$d 秒 (%2$d 分 %3$d 秒)</string>
+    <string name="target_time_format_minute_only">%1$d 秒 (%2$d 分)</string>
+    <string name="target_time_format_seconds_only">%1$d 秒</string>
+    <string name="desc_decrease_5_sec">5秒減らす</string>
+    <string name="desc_increase_5_sec">5秒増やす</string>
+    <string name="desc_system_volume">システム音量</string>
+    <string name="timer_sound_volume">タイマー音量</string>
+    <string name="desc_decrease_volume">音量を下げる</string>
+    <string name="desc_increase_volume">音量を上げる</string>
+    <string name="rhythm_individ_config_title">個別リズム速度 (秒)</string>
+    <string name="desc_reset_timer">タイマーをリセット</string>
+    <string name="desc_pause">一時停止</string>
+    <string name="desc_start">スタート</string>
+    <string name="desc_manual_log_write">手動ログ作成</string>
+    <string name="goal_completed_title">🎉 ワークアウト目標達成！</string>
+    <string name="goal_completed_msg">目標時間に達しました！カスタマイズされた運動レップが安全に保存されました。</string>
+    <string name="label_exercise_category">エクササイズ</string>
+    <string name="label_total_count">総レップ数</string>
+    <string name="label_target_duration">目標時間</string>
+    <string name="confirm">確認</string>
+
+    <!-- Common Preset Names (Used in Timer and Log and List display) -->
+    <string name="preset_squat">スクワット</string>
+    <string name="preset_lunge">ランジ</string>
+    <string name="preset_plank">プランク</string>
+    <string name="preset_other">その他</string>
+    <string name="preset_interval_format">%1$d 秒リズム</string>
+    <string name="preset_check_format">%1$d 秒チェック</string>
+
+    <!-- Log Screen -->
+    <string name="title_log">ワークアウトを記録する</string>
+    <string name="subtitle_log">セッションの詳細と疲労度を簡単に入力できます</string>
+    <string name="select_exercise">運動カテゴリーを選択</string>
+    <string name="lbl_custom_exercise">カスタム運動名を入力</string>
+    <string name="select_date">日付を選択</string>
+    <string name="lbl_record_date">記録日</string>
+    <string name="change_date">日付を変更</string>
+    <string name="label_reps">反復回数 (レップ数)</string>
+    <string name="sub_reps">完了した反復回数を入力してください</string>
+    <string name="desc_decrease_reps">回数を減らす</string>
+    <string name="desc_increase_reps">回数を増やす</string>
+    <string name="label_sets">セット数</string>
+    <string name="sub_sets">完了したセット数を入力してください</string>
+    <string name="desc_decrease_sets">セット数を減らす</string>
+    <string name="desc_increase_sets">セット数を増やす</string>
+    <string name="label_weight">重量 (kg)</string>
+    <string name="sub_weight">使用したトレーニング重量を入力してください</string>
+    <string name="desc_decrease_weight">重量を減らす</string>
+    <string name="desc_increase_weight">重量を増やす</string>
+    <string name="unit_sets">セット</string>
+    <string name="unit_weight">kg</string>
+    <string name="label_duration_secs">継続時間 (秒)</string>
+    <string name="sub_duration_secs">継続秒数を入力してください (例: 60s = 1m)</string>
+    <string name="desc_decrease_duration">継続時間を減らす</string>
+    <string name="desc_increase_duration">継続時間を増やす</string>
+    <string name="label_fatigue_satisfaction">疲労度と満足度</string>
+    <string name="intensity_score_format">強度: %1$s</string>
+    <string name="intensity_very_light">非常に軽度 (ウォーミングアップ)</string>
+    <string name="intensity_moderate">適度 (かなり楽)</string>
+    <string name="intensity_perfect">完璧なリズム (満足のいく刺激)</string>
+    <string name="intensity_hard">ハードなトレーニング (かなりの汗)</string>
+    <string name="intensity_extreme">極限のトレーニング (完全な疲労)</string>
+    <string name="intensity_general">通常</string>
+    <string name="label_memo">ワークアウトフィードバック (任意)</string>
+    <string name="placeholder_memo">姿勢、コンディション、または次の目標について書き留めてください...</string>
+    <string name="save_workout_log">ワークアウトを保存する</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_calendar">ワークアウト完了カレンダー</string>
+    <string name="subtitle_calendar">ミント色で強調表示された日付に、タイマーまたはログからの記録があります。</string>
+    <string name="desc_prev_month">前月</string>
+    <string name="desc_next_month">翌月</string>
+    <string name="sun">日</string>
+    <string name="mon">月</string>
+    <string name="tue">火</string>
+    <string name="wed">水</string>
+    <string name="thu">木</string>
+    <string name="fri">金</string>
+    <string name="sat">土</string>
+    <string name="day_selected_format">yyyy年M月d日</string>
+    <string name="month_format">yyyy年 MMMM</string>
+    <string name="selected_day_record_title">%1$s のワークアウト記録</string>
+    <string name="completed_count_format">%1$d 項目完了</string>
+    <string name="no_records">記録なし</string>
+    <string name="desc_selected_date">選択された日付</string>
+    <string name="empty_calendar_msg">この日のワークアウト記録はありません</string>
+    <string name="empty_calendar_sub">ワークアウトを完了するか、手動ログを作成してカレンダーを埋めましょう！</string>
+    <string name="desc_delete_record">記録を削除</string>
+    <string name="desc_delete_all">この日のすべての記録を削除</string>
+    <string name="delete_confirm_msg">このワークアウト記録を削除してもよろしいですか？</string>
+    <string name="delete_all_confirm_msg">この日のすべてのワークアウト記録を削除してもよろしいですか？</string>
+    <string name="delete">削除</string>
+    <string name="delete_all">すべて削除</string>
+    <string name="cancel">キャンセル</string>
+
+    <!-- Stats Screen -->
+    <string name="title_stats">統計ダッシュボード</string>
+    <string name="subtitle_stats">詳細な統計データで、継続的なフィットネスの進捗を監視しましょう</string>
+    <string name="desc_streak_fire">連続記録表示</string>
+    <string name="streak_reached_format">%1$d 日連続達成！</string>
+    <string name="streak_broken">連続記録が途切れました</string>
+    <string name="streak_reached_sub">日々の継続的な努力の成果です。このリズムを維持しましょう！</string>
+    <string name="streak_broken_sub">今日ワークアウトを完了して、1日目の連続記録を開始しましょう！</string>
+    <string name="desc_total_sessions">総セッション数</string>
+    <string name="label_total_sessions">完了した総セッション数</string>
+    <string name="sessions_count_format">%1$d 回</string>
+    <string name="desc_total_reps">総レップ数</string>
+    <string name="label_accumulated_reps">累積レップ数</string>
+    <string name="reps_count_format">%1$d 回</string>
+    <string name="desc_total_duration">総継続時間</string>
+    <string name="label_accumulated_duration">累積継続時間</string>
+    <string name="minutes_format">%1$d 分</string>
+    <string name="seconds_format">%1$d 秒</string>
+    <string name="minutes_seconds_format">%1$d 分 %2$d 秒</string>
+    <string name="title_7days_consistency">7日間のワークアウト継続性</string>
+    <string name="title_exercise_proportion">エクササイズ比率分析</string>
+    <string name="records_count_format">%1$d 件の記録</string>
+    <string name="exercise_reps_sets_format">計 %1$d 回, %2$d セット</string>
+    <string name="exercise_secs_sets_format">計 %1$d 秒, %2$d セット</string>
+
+    <!-- Statistics Periods & Metrics -->
+    <string name="tab_daily">日別</string>
+    <string name="tab_weekly">週別</string>
+    <string name="tab_monthly">月別</string>
+    <string name="stat_metric_count">ワークアウト件数</string>
+    <string name="stat_metric_duration">総時間</string>
+    <string name="unit_times">回</string>
+    <string name="unit_minutes">分</string>
+    <string name="unit_seconds">秒</string>
+    <string name="label_overall_habit">カスタムトレンド分析</string>
+    <string name="no_data_for_period">この期間のワークアウト記録はありません</string>
+    <string name="this_week">今週</string>
+    <string name="weeks_ago_format">%1$d週間前</string>
+    <string name="current_month_short">今月</string>
+
+    <!-- TTS Messages (TtsHelper / TimerService) -->
+    <string name="tts_workout_start">ワークアウトを開始します。</string>
+    <string name="tts_workout_paused">ワークアウトを一時停止しました。</string>
+    <string name="tts_workout_completed">お疲れ様でした！</string>
+    <string name="tts_workout_half">半分経過しました！</string>
+    <string name="tts_workout_last10">残り10秒です！</string>
+    <string name="log_timer_auto_completed">リズムタイマー自動完了</string>
+    <string name="rest_10_seconds_left">残り10秒の休憩です。</string>
+    <string name="rest_finished_prepare">休憩が終了しました。次のセットの準備をしてください。</string>
+    <string name="set_completed_rest_starting">セット完了。 %1$d 秒の休憩を開始します。</string>
+    <string name="auto_rest_timer_label">自動休憩タイマー</string>
+    <string name="auto_rest_timer_desc">セット間でカスタマイズされた休憩カウントダウンを自動的に開始します。</string>
+    <string name="rest_duration_label">休憩時間</string>
+    <string name="rhythm_pace_label">リズムペース</string>
+    <string name="hold_duration_label">キープ時間</string>
+    <string name="rest_title_format">%1$s 休憩</string>
+    <string name="rest_timer_status">休憩中</string>
+    <string name="notification_content_resting">休憩中: 残り %1$d 秒</string>
+
+    <!-- Notification Service -->
+    <string name="notification_channel_name">ワークアウトリズムタイマー</string>
+    <string name="notification_channel_desc">バックグラウンドでのワークアウトタイマーと通知機能を提供します。</string>
+    <string name="notification_training_prefix">ワークアウト</string>
+    <string name="notification_content_countdown">残り: %1$d 秒 | 回数: %2$d</string>
+    <string name="notification_content_countup">経過: %1$d 秒 | 回数: %2$d</string>
+    <string name="notification_action_pause">一時停止</string>
+    <string name="notification_action_resume">再開</string>
+    <string name="notification_action_reset">リセット</string>
+
+    <!-- Language Selection -->
+    <string name="language_selection_title">言語を選択</string>
+    <string name="language_selection_subtitle">続けるには希望する言語を選択してください。</string>
+    <string name="language_english">English</string>
+    <string name="language_korean">한국어 (Korean)</string>
+    <string name="language_japanese">日本語 (Japanese)</string>
+    <string name="language_spanish">Español (Spanish)</string>
+    <string name="language_german">Deutsch (German)</string>
+    <string name="language_french">Français (French)</string>
+
+    <!-- Default routines names -->
+    <string name="default_routine_1_name">全身リズムセット</string>
+    <string name="default_routine_2_name">下半身強化セット</string>
+
+    <!-- Localized TTS strings -->
+    <string name="tts_rest_ended_next_exercise">休憩終了です！次の運動は %1$s です。準備してください！</string>
+    <string name="tts_routine_completed_congratulations">おめでとうございます！すべてのルーティンを完了しました！</string>
+    <string name="tts_step_completed_resting_format">%1$s 完了！ %2$d 秒間休憩してください。</string>
+    <string name="tts_step_completed_next_exercise">%1$s 完了！次は %2$s です。準備してください！</string>
+    <string name="tts_routine_finished_congratulations">おめでとうございます！すべてのルーティンを完走しました！</string>
+    <string name="tts_timer_paused_deviation">時間の不一致によりタイマーが一時停止しました。確認して再開してください。</string>
+
+    <!-- Timer Preparing / Counting strings -->
+    <string name="timer_preparing">準備中...</string>
+    <string name="tts_prep_3">さん</string>
+    <string name="tts_prep_2">に</string>
+    <string name="tts_prep_1">いち</string>
+    <string name="tts_prep_start">スタート！</string>
+
+    <!-- Completion Tips & Encouragement -->
+    <string name="squat_encouragement">完璧な下半身への刺激です！お尻と太ももが鍛えられているのを実感しましょう！</string>
+    <string name="squat_tip1">足を肩幅に開き、膝がつま先より前に出すぎないように意識してください。</string>
+    <string name="squat_tip2">立ち上がるときは主にかかとに力を入れ、お尻に最大の負荷をかけます。</string>
+
+    <string name="lunge_encouragement">完璧なバランスです！対称的で頑丈な下半身を鍛え上げています！</string>
+    <string name="lunge_tip1">胸を高く張り、背筋を伸ばし、両膝がきれいな90度になることを目指します。</string>
+    <string name="lunge_tip2">かかとに7割の体重を乗せることで、膝関節への負担を保護します。</string>
+
+    <string name="plank_encouragement">素晴らしい耐久力です！あなたの体幹は安定の要となっています！</string>
+    <string name="plank_tip1">肩からかかとまでが一直線になるように保ち、骨盤が下がらないように引き締めましょう。</string>
+    <string name="plank_tip2">肘と前腕で床を強く押し、肩甲骨が浮き上がるのを防ぎます。</string>
+
+    <string name="other_encouragement">ルーティン完了です！継続こそが最高の結果へとつながる鍵です！</string>
+    <string name="other_tip1">セッションの前後には、動的ストレッチと整理体操を必ず行いましょう。</string>
+    <string name="other_tip2">体の声に耳を傾け、十分に水分を補給し、疲労度に応じて努力を調整してください。</string>
+
+    <string name="title_useful_tips">💡 トレーニングの役立つヒント</string>
+
+    <!-- Social Share Feature -->
+    <string name="social_share_title">運動ステータスを共有</string>
+    <string name="social_share_subtitle">SNSで共有するための美しいカードを作成します</string>
+    <string name="social_share_card_tag">#MyWorkoutRhythm</string>
+    <string name="btn_share_instagram">Instagramで共有</string>
+    <string name="btn_share_tiktok">TikTokで共有</string>
+    <string name="btn_share_system">他のアプリで共有</string>
+    <string name="toast_copied_and_opening_app">クリップボードにコピーしました。 %1$s を起動します！</string>
+    <string name="toast_app_not_installed">%1$s がインストールされていません。通常の共有を起動します。</string>
+    <string name="share_card_style">カードスタイル</string>
+    <string name="share_card_style_neon">ネオンアクティブ</string>
+    <string name="share_card_style_cosmic">コズミックスレート</string>
+    <string name="share_card_style_forest">ミントフォレスト</string>
+    <string name="share_card_style_coral">ウォームコーラル</string>
+    <string name="share_text_success_format">🔥 %1$s 完了！ 🔥\n🗓 日付: %2$s\n%3$s⏱ 時間: %4$s\n⭐ レベル: %5$s\n🚀 #MyWorkoutRhythm で自分のリズムを感じましょう！</string>
+    <string name="share_text_stats_format">🏆 ワークアウトリズム統計！ 🏆\n🔥 継続日数: %1$d 日！\n💪 総ワークアウト: %2$d 回 / %3$d セット\n🏋️‍♂️ 最大重量: %4$skg\n⏱ 総時間: %5$d 分 %6$d 秒\n📊 #MyWorkoutRhythm のカスタム習慣で #TikTok トレーニング！</string>
+
+    <!-- Form Validation Errors -->
+    <string name="error_invalid_reps">反復回数には有効な整数を入力してください (例: 15)</string>
+    <string name="error_invalid_sets">セット数には有効な整数を入力してください (例: 3)</string>
+    <string name="error_invalid_weight">重量には有効な数値を入力してください (例: 10 または 12.5)</string>
+    <string name="error_invalid_duration">継続秒数には有効な整数を入力してください (例: 60)</string>
+    <string name="error_empty_custom_exercise">カスタム運動名を入力してください</string>
+</resources>

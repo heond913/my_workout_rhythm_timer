@@ -669,6 +669,7 @@ class WorkoutTimerService : Service() {
 
     private fun updateNotification() {
         try {
+            createNotificationChannel()
             val notification = buildNotification()
             notificationManager.notify(NOTIFICATION_ID, notification)
         } catch (e: Exception) {
@@ -692,7 +693,7 @@ class WorkoutTimerService : Service() {
             }
         }
         val titleText = if (state.isRoutineActive) {
-            "[${state.routineName}] ${state.routineCurrentStepIndex + 1}단계 - $exerciseDisplay"
+            "[${state.routineName}] ${getString(R.string.routine_step_format, state.routineCurrentStepIndex + 1)} - $exerciseDisplay"
         } else {
             "${getString(R.string.notification_training_prefix)} - $exerciseDisplay"
         }

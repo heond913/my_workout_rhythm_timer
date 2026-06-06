@@ -140,23 +140,30 @@ class WorkoutRepository(
     }
 
     // --- Custom Routines Persistence ---
-    private fun getLocalizedString(resId: Int, isKo: Boolean): String {
-        val locale = if (isKo) java.util.Locale.KOREAN else java.util.Locale.ENGLISH
+    private fun getLocalizedString(resId: Int, langCode: String): String {
+        val locale = when (langCode) {
+            "ko" -> java.util.Locale.KOREAN
+            "ja" -> java.util.Locale.JAPANESE
+            "es" -> java.util.Locale("es")
+            "de" -> java.util.Locale.GERMAN
+            "fr" -> java.util.Locale.FRENCH
+            else -> java.util.Locale.ENGLISH
+        }
         val configuration = android.content.res.Configuration(context.resources.configuration)
         configuration.setLocale(locale)
         val localizedContext = context.createConfigurationContext(configuration)
         return localizedContext.getString(resId)
     }
 
-    private fun localizeDefaultRoutine(routine: CustomRoutine, isKo: Boolean): CustomRoutine {
+    private fun localizeDefaultRoutine(routine: CustomRoutine, langCode: String): CustomRoutine {
         return when (routine.id) {
             "default_1" -> {
                 CustomRoutine(
                     id = "default_1",
-                    name = getLocalizedString(R.string.default_routine_1_name, isKo),
+                    name = getLocalizedString(R.string.default_routine_1_name, langCode),
                     steps = listOf(
-                        RoutineStep(getLocalizedString(R.string.preset_squat, isKo), 60, 4, 15),
-                        RoutineStep(getLocalizedString(R.string.preset_lunge, isKo), 60, 5, 0)
+                        RoutineStep(getLocalizedString(R.string.preset_squat, langCode), 60, 4, 15),
+                        RoutineStep(getLocalizedString(R.string.preset_lunge, langCode), 60, 5, 0)
                     ),
                     timestamp = routine.timestamp
                 )
@@ -164,11 +171,11 @@ class WorkoutRepository(
             "default_2" -> {
                 CustomRoutine(
                     id = "default_2",
-                    name = getLocalizedString(R.string.default_routine_2_name, isKo),
+                    name = getLocalizedString(R.string.default_routine_2_name, langCode),
                     steps = listOf(
-                        RoutineStep(getLocalizedString(R.string.preset_squat, isKo), 45, 3, 20),
-                        RoutineStep(getLocalizedString(R.string.preset_lunge, isKo), 45, 4, 20),
-                        RoutineStep(getLocalizedString(R.string.preset_other, isKo), 60, 6, 0)
+                        RoutineStep(getLocalizedString(R.string.preset_squat, langCode), 45, 3, 20),
+                        RoutineStep(getLocalizedString(R.string.preset_lunge, langCode), 45, 4, 20),
+                        RoutineStep(getLocalizedString(R.string.preset_other, langCode), 60, 6, 0)
                     ),
                     timestamp = routine.timestamp
                 )
@@ -179,8 +186,8 @@ class WorkoutRepository(
 
     fun getCustomRoutines(): List<CustomRoutine> {
         val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-        val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
-        val isKo = currentLocale == "ko"
+        val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language ?: "en" else java.util.Locale.getDefault().language
+        val langCode = currentLocale
 
         val ids = sharedPreferences.getStringSet("custom_routines_ids", null)
         if (ids == null) {
@@ -188,7 +195,7 @@ class WorkoutRepository(
             val defaultRoutines = listOf(
                 CustomRoutine(
                     id = "default_1",
-                    name = "전신 리듬 세트 (스쿼트 & 런지)",
+                    name = "전신 리듬 세트",
                     steps = listOf(
                         RoutineStep("스쿼트", 60, 4, 15),
                         RoutineStep("런지", 60, 5, 0)
@@ -205,7 +212,7 @@ class WorkoutRepository(
                 )
             )
             saveCustomRoutines(defaultRoutines)
-            return defaultRoutines.map { localizeDefaultRoutine(it, isKo) }
+            return defaultRoutines.map { localizeDefaultRoutine(it, langCode) }
         }
         
         val rawRoutines = ids.map { id ->
@@ -220,7 +227,7 @@ class WorkoutRepository(
             )
         }
 
-        return rawRoutines.map { localizeDefaultRoutine(it, isKo) }.sortedBy { it.timestamp }
+        return rawRoutines.map { localizeDefaultRoutine(it, langCode) }.sortedBy { it.timestamp }
     }
 
     fun saveCustomRoutines(routines: List<CustomRoutine>) {

@@ -78,6 +78,50 @@ fun LanguageSelectionDialog(
                         onLanguageSelected()
                     }
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LanguageOption(
+                    label = stringResource(id = R.string.language_japanese),
+                    onClick = {
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ja")
+                        AppCompatDelegate.setApplicationLocales(appLocale)
+                        onLanguageSelected()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LanguageOption(
+                    label = stringResource(id = R.string.language_spanish),
+                    onClick = {
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("es")
+                        AppCompatDelegate.setApplicationLocales(appLocale)
+                        onLanguageSelected()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LanguageOption(
+                    label = stringResource(id = R.string.language_german),
+                    onClick = {
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("de")
+                        AppCompatDelegate.setApplicationLocales(appLocale)
+                        onLanguageSelected()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LanguageOption(
+                    label = stringResource(id = R.string.language_french),
+                    onClick = {
+                        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("fr")
+                        AppCompatDelegate.setApplicationLocales(appLocale)
+                        onLanguageSelected()
+                    }
+                )
             }
         }
     }

@@ -71,10 +71,61 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
             context.resources.configuration.locale
         } ?: Locale.getDefault()
 
-        return if (currentLocale.language == "ko") {
-            getKoreanNumberWord(count)
-        } else {
-            when (count) {
+        return when (currentLocale.language) {
+            "ko" -> getKoreanNumberWord(count)
+            "ja" -> when (count) {
+                1 -> "いち"
+                2 -> "に"
+                3 -> "さん"
+                4 -> "よん"
+                5 -> "ご"
+                6 -> "ろく"
+                7 -> "なな"
+                8 -> "はち"
+                9 -> "きゅう"
+                10 -> "じゅう"
+                else -> "$count"
+            }
+            "es" -> when (count) {
+                1 -> "uno"
+                2 -> "dos"
+                3 -> "tres"
+                4 -> "cuatro"
+                5 -> "cinco"
+                6 -> "seis"
+                7 -> "siete"
+                8 -> "ocho"
+                9 -> "nueve"
+                10 -> "diez"
+                else -> "$count"
+            }
+            "de" -> when (count) {
+                1 -> "eins"
+                2 -> "zwei"
+                3 -> "drei"
+                4 -> "vier"
+                5 -> "fünf"
+                6 -> "sechs"
+                7 -> "sieben"
+                8 -> "acht"
+                9 -> "neun"
+                10 -> "zehn"
+                else -> "$count"
+            }
+            "fr" -> when (count) {
+                1 -> "un"
+                2 -> "deux"
+                3 -> "trois"
+                4 -> "quatre"
+                5 -> "cinq"
+                6 -> "six"
+                7 -> "sept"
+                8 -> "huit"
+                9 -> "neuf"
+                10 -> "dix"
+                else -> "$count"
+            }
+            else -> when (count) {
                 1 -> "one"
                 2 -> "two"
                 3 -> "three"
@@ -121,8 +172,8 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
             context.resources.configuration.locale
         } ?: Locale.getDefault()
 
-        return if (currentLocale.language == "ko") {
-            when (count) {
+        return when (currentLocale.language) {
+            "ko" -> when (count) {
                 10 -> "십"
                 9 -> "구"
                 8 -> "팔"
@@ -135,8 +186,59 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
                 1 -> "일"
                 else -> ""
             }
-        } else {
-            when (count) {
+            "ja" -> when (count) {
+                10 -> "じゅう"
+                9 -> "きゅう"
+                8 -> "はち"
+                7 -> "なな"
+                6 -> "ろく"
+                5 -> "ご"
+                4 -> "よん"
+                3 -> "さん"
+                2 -> "に"
+                1 -> "いち"
+                else -> ""
+            }
+            "es" -> when (count) {
+                10 -> "Diez"
+                9 -> "Nueve"
+                8 -> "Ocho"
+                7 -> "Siete"
+                6 -> "Seis"
+                5 -> "Cinco"
+                4 -> "Cuatro"
+                3 -> "Tres"
+                2 -> "Dos"
+                1 -> "Uno"
+                else -> ""
+            }
+            "de" -> when (count) {
+                10 -> "Zehn"
+                9 -> "Neun"
+                8 -> "Acht"
+                7 -> "Sieben"
+                6 -> "Sechs"
+                5 -> "Fünf"
+                4 -> "Vier"
+                3 -> "Drei"
+                2 -> "Zwei"
+                1 -> "Eins"
+                else -> ""
+            }
+            "fr" -> when (count) {
+                10 -> "Dix"
+                9 -> "Neuf"
+                8 -> "Huit"
+                7 -> "Sept"
+                6 -> "Six"
+                5 -> "Cinq"
+                4 -> "Quatre"
+                3 -> "Trois"
+                2 -> "Deux"
+                1 -> "Un"
+                else -> ""
+            }
+            else -> when (count) {
                 10 -> "Ten"
                 9 -> "Nine"
                 8 -> "Eight"

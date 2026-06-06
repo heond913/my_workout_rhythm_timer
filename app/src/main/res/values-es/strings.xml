@@ -1,0 +1,259 @@
+<resources>
+    <string name="app_name">Mi ritmo de entrenamiento</string>
+    <string name="routine_step_format">Paso %1$d</string>
+
+    <!-- Navigation Tab Labels in BottomBar -->
+    <string name="tab_timer">Temporizador</string>
+    <string name="tab_log">Registro</string>
+    <string name="tab_calendar">Calendario</string>
+    <string name="tab_stats">Esdadísticas</string>
+
+    <string name="splash_subtitle">Ritmo constante, hábitos saludables</string>
+    <string name="splash_title">My Workout\nRhythm Timer</string>
+
+    <!-- Timer Screen -->
+    <string name="title_timer">My Workout Rhythm Timer</string>
+    <string name="subtitle_timer">Completa tus entrenamientos en casa sincronizados con tu ritmo</string>
+    <string name="desc_timer_clock">Reloj temporizador</string>
+    <string name="workout_count_format">%1$d Reps</string>
+    <string name="rhythm_interval_notifying">Notificando cada %1$d segundos...</string>
+    <string name="timer_in_progress">Temporizador en curso</string>
+    <string name="ready">LISTO</string>
+    <string name="target_workout_time">Tiempo de entrenamiento objetivo</string>
+    <string name="target_time_format">%1$d seg (%2$d min %3$d seg)</string>
+    <string name="target_time_format_minute_only">%1$d seg (%2$d min)</string>
+    <string name="target_time_format_seconds_only">%1$d seg</string>
+    <string name="desc_decrease_5_sec">Disminuir 5 segundos</string>
+    <string name="desc_increase_5_sec">Incrementar 5 segundos</string>
+    <string name="desc_system_volume">Volumen del sistema</string>
+    <string name="timer_sound_volume">Volumen del temporizador</string>
+    <string name="desc_decrease_volume">Disminuir volumen</string>
+    <string name="desc_increase_volume">Incrementar volumen</string>
+    <string name="rhythm_individ_config_title">Velocidad de ritmo individual (seg)</string>
+    <string name="desc_reset_timer">Restablecer temporizador</string>
+    <string name="desc_pause">Pausa</string>
+    <string name="desc_start">Iniciar</string>
+    <string name="desc_manual_log_write">Escribir registro manual</string>
+    <string name="goal_completed_title">🎉 ¡Objetivo de entrenamiento completado!</string>
+    <string name="goal_completed_msg">¡Tiempo objetivo alcanzado! Tus repeticiones personalizadas se han guardado de forma segura.</string>
+    <string name="label_exercise_category">Ejercicio</string>
+    <string name="label_total_count">Repeticiones totales</string>
+    <string name="label_target_duration">Duración objetivo</string>
+    <string name="confirm">Aceptar</string>
+
+    <!-- Common Preset Names (Used in Timer and Log and List display) -->
+    <string name="preset_squat">Sentadilla</string>
+    <string name="preset_lunge">Zancada</string>
+    <string name="preset_plank">Plancha</string>
+    <string name="preset_other">Otro</string>
+    <string name="preset_interval_format">Ritmo de %1$d seg</string>
+    <string name="preset_check_format">Comprobación de %1$d seg</string>
+
+    <!-- Log Screen -->
+    <string name="title_log">Registra tu entrenamiento</string>
+    <string name="subtitle_log">Envía los detalles de tu sesión y niveles de fatiga fácilmente</string>
+    <string name="select_exercise">Selecciona la categoría de ejercicio</string>
+    <string name="lbl_custom_exercise">Ingresa nombre de ejercicio personalizado</string>
+    <string name="select_date">Selecciona fecha</string>
+    <string name="lbl_record_date">Fecha a registrar</string>
+    <string name="change_date">Cambiar fecha</string>
+    <string name="label_reps">Repeticiones (Reps)</string>
+    <string name="sub_reps">Ingresa el número de repeticiones completadas</string>
+    <string name="desc_decrease_reps">Disminuir repeticiones</string>
+    <string name="desc_increase_reps">Incrementar repeticiones</string>
+    <string name="label_sets">Número de series</string>
+    <string name="sub_sets">Ingresa el número de series completadas</string>
+    <string name="desc_decrease_sets">Disminuir series</string>
+    <string name="desc_increase_sets">Incrementar series</string>
+    <string name="label_weight">Peso (kg)</string>
+    <string name="sub_weight">Ingresa el peso de entrenamiento utilizado</string>
+    <string name="desc_decrease_weight">Disminuir peso</string>
+    <string name="desc_increase_weight">Incrementar peso</string>
+    <string name="unit_sets">series</string>
+    <string name="unit_weight">kg</string>
+    <string name="label_duration_secs">Duración (segundos)</string>
+    <string name="sub_duration_secs">Ingresa la duración en segundos (ej. 60s = 1m)</string>
+    <string name="desc_decrease_duration">Disminuir duración</string>
+    <string name="desc_increase_duration">Incrementar duración</string>
+    <string name="label_fatigue_satisfaction">Nivel de fatiga y satisfacción</string>
+    <string name="intensity_score_format">Intensidad: %1$s</string>
+    <string name="intensity_very_light">Ejercicio muy ligero (calentamiento)</string>
+    <string name="intensity_moderate">Ejercicio moderado (bastante fácil)</string>
+    <string name="intensity_perfect">Ritmo perfecto (estímulo satisfactorio)</string>
+    <string name="intensity_hard">Entrenamiento duro (mucho sudor)</string>
+    <string name="intensity_extreme">Entrenamiento extremo (agotamiento total)</string>
+    <string name="intensity_general">General</string>
+    <string name="label_memo">Comentarios/Feedback del entrenamiento (Opcional)</string>
+    <string name="placeholder_memo">Escribe sobre tu postura, condición física o próximos objetivos...</string>
+    <string name="save_workout_log">Enviar registro de entrenamiento</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_calendar">Calendario de entrenamientos</string>
+    <string name="subtitle_calendar">Los días resaltados en menta tienen registros de entrenamientos.</string>
+    <string name="desc_prev_month">Mes anterior</string>
+    <string name="desc_next_month">Mes siguiente</string>
+    <string name="sun">Dom</string>
+    <string name="mon">Lun</string>
+    <string name="tue">Mar</string>
+    <string name="wed">Mié</string>
+    <string name="thu">Jue</string>
+    <string name="fri">Vie</string>
+    <string name="sat">Sáb</string>
+    <string name="day_selected_format">d \'de\' MMMM \'de\' yyyy</string>
+    <string name="month_format">MMMM \'de\' yyyy</string>
+    <string name="selected_day_record_title">Entrenamientos del %1$s</string>
+    <string name="completed_count_format">%1$d completados</string>
+    <string name="no_records">Sin registros</string>
+    <string name="desc_selected_date">Fecha seleccionada</string>
+    <string name="empty_calendar_msg">No hay entrenamientos registrados para este día</string>
+    <string name="empty_calendar_sub">¡Completa entrenamientos o registra sesiones manualmente para llenar tu calendario!</string>
+    <string name="desc_delete_record">Eliminar registro</string>
+    <string name="desc_delete_all">Eliminar todos los registros del día</string>
+    <string name="delete_confirm_msg">¿Estás seguro de que quieres eliminar este registro de entrenamiento?</string>
+    <string name="delete_all_confirm_msg">¿Estás seguro de que deseas eliminar todos los registros de este día?</string>
+    <string name="delete">Eliminar</string>
+    <string name="delete_all">Eliminar todo</string>
+    <string name="cancel">Cancelar</string>
+
+    <!-- Stats Screen -->
+    <string name="title_stats">Panel de estadísticas totales</string>
+    <string name="subtitle_stats">Monitorea tu progreso físico con estadísticas detalladas</string>
+    <string name="desc_streak_fire">Indicador de racha activa</string>
+    <string name="streak_reached_format">¡Racha de %1$d días alcanzada!</string>
+    <string name="streak_broken">Racha rota</string>
+    <string name="streak_reached_sub">Fruto de tu esfuerzo diario constante. ¡Sigue manteniendo tu ritmo!</string>
+    <string name="streak_broken_sub">¡Completa un entrenamiento hoy para comenzar tu racha activa del día 1!</string>
+    <string name="desc_total_sessions">Sesiones totales</string>
+    <string name="label_total_sessions">Sesiones totales completadas</string>
+    <string name="sessions_count_format">%1$d Reps</string>
+    <string name="desc_total_reps">Repeticiones totales</string>
+    <string name="label_accumulated_reps">Repeticiones acumuladas</string>
+    <string name="reps_count_format">%1$d reps</string>
+    <string name="desc_total_duration">Duración total</string>
+    <string name="label_accumulated_duration">Duración acumulada</string>
+    <string name="minutes_format">%1$d min</string>
+    <string name="seconds_format">%1$d seg</string>
+    <string name="minutes_seconds_format">%1$d min %2$d seg</string>
+    <string name="title_7days_consistency">Consistencia de entrenamiento de 7 días</string>
+    <string name="title_exercise_proportion">Análisis de proporción de ejercicios</string>
+    <string name="records_count_format">%1$d registros</string>
+    <string name="exercise_reps_sets_format">Total %1$d reps, %2$d series</string>
+    <string name="exercise_secs_sets_format">Total %1$d seg, %2$d series</string>
+
+    <!-- Statistics Periods & Metrics -->
+    <string name="tab_daily">Diario</string>
+    <string name="tab_weekly">Semanal</string>
+    <string name="tab_monthly">Mensual</string>
+    <string name="stat_metric_count">Cantidad de entrenamientos</string>
+    <string name="stat_metric_duration">Duración total</string>
+    <string name="unit_times">veces</string>
+    <string name="unit_minutes">min</string>
+    <string name="unit_seconds">seg</string>
+    <string name="label_overall_habit">Análisis de tendencias personalizadas</string>
+    <string name="no_data_for_period">No hay entrenamientos registrados para este período</string>
+    <string name="this_week">Esta sem.</string>
+    <string name="weeks_ago_format">hace %1$d sem.</string>
+    <string name="current_month_short">Este mes</string>
+
+
+    <!-- TTS Messages (TtsHelper / TimerService) -->
+    <string name="tts_workout_start">Comienza el entrenamiento.</string>
+    <string name="tts_workout_paused">Entrenamiento pausado.</string>
+    <string name="tts_workout_completed">¡Buen trabajo!</string>
+    <string name="tts_workout_half">¡Ya ha pasado la mitad!</string>
+    <string name="tts_workout_last10">¡Últimos 10 segundos!</string>
+    <string name="log_timer_auto_completed">Temporizador de ritmo completado automáticamente</string>
+    <string name="rest_10_seconds_left">Quedan 10 segundos de descanso.</string>
+    <string name="rest_finished_prepare">Descanso completado. Prepárate para la siguiente serie.</string>
+    <string name="set_completed_rest_starting">Serie completada. Comenzando %1$d segundos de descanso.</string>
+    <string name="auto_rest_timer_label">Temporizador de descanso automático</string>
+    <string name="auto_rest_timer_desc">Activa automáticamente una cuenta regresiva de descanso personalizada entre series.</string>
+    <string name="rest_duration_label">Duración del descanso</string>
+    <string name="rhythm_pace_label">Ritmo de paso</string>
+    <string name="hold_duration_label">Duración de retención</string>
+    <string name="rest_title_format">Descanso %1$s</string>
+    <string name="rest_timer_status">Descansando</string>
+    <string name="notification_content_resting">Descansando: quedan %1$d seg</string>
+
+    <!-- Notification Service -->
+    <string name="notification_channel_name">Temporizador de ritmo de entrenamiento</string>
+    <string name="notification_channel_desc">Proporciona temporizador en segundo plano y función de notificación.</string>
+    <string name="notification_training_prefix">Entrenamiento</string>
+    <string name="notification_content_countdown">Restante: %1$d seg | Reps: %2$d</string>
+    <string name="notification_content_countup">Transcurrido: %1$d seg | Reps: %2$d</string>
+    <string name="notification_action_pause">Pausa</string>
+    <string name="notification_action_resume">Reanudar</string>
+    <string name="notification_action_reset">Reiniciar</string>
+
+    <!-- Language Selection -->
+    <string name="language_selection_title">Seleccionar idioma</string>
+    <string name="language_selection_subtitle">Elige tu idioma preferido para continuar.</string>
+    <string name="language_english">English</string>
+    <string name="language_korean">한국어 (Korean)</string>
+    <string name="language_japanese">日本語 (Japanese)</string>
+    <string name="language_spanish">Español (Spanish)</string>
+    <string name="language_german">Deutsch (German)</string>
+    <string name="language_french">Français (French)</string>
+
+    <!-- Default routines names -->
+    <string name="default_routine_1_name">Grupo de Ritmo Corporal Total</string>
+    <string name="default_routine_2_name">Grupo de Fortalecimiento Inferior</string>
+
+    <!-- Localized TTS strings -->
+    <string name="tts_rest_ended_next_exercise">¡Descanso terminado! El siguiente ejercicio es %1$s. ¡Prepárate!</string>
+    <string name="tts_routine_completed_congratulations">¡Felicitaciones! ¡Has completado todas las rutinas!</string>
+    <string name="tts_step_completed_resting_format">¡%1$s completado! Descansa por %2$d segundos.</string>
+    <string name="tts_step_completed_next_exercise">¡%1$s completado! El siguiente es %2$s. ¡Prepárate!</string>
+    <string name="tts_routine_finished_congratulations">¡Felicitaciones! ¡Completaste toda la rutina!</string>
+    <string name="tts_timer_paused_deviation">Temporizador pausado debido a una discrepancia de tiempo. Comprueba y reanuda.</string>
+
+    <!-- Timer Preparing / Counting strings -->
+    <string name="timer_preparing">Preparando...</string>
+    <string name="tts_prep_3">Tres</string>
+    <string name="tts_prep_2">Dos</string>
+    <string name="tts_prep_1">Uno</string>
+    <string name="tts_prep_start">¡Comenzar!</string>
+
+    <!-- Completion Tips & Encouragement -->
+    <string name="squat_encouragement">¡Estímulo perfecto para la parte inferior del cuerpo! ¡Siente tus glúteos fortaleciéndose!</string>
+    <string name="squat_tip1">Mantén los pies a la anchura de los hombros y asegúrate de que tus rodillas no pasen las puntas de tus pies.</string>
+    <string name="squat_tip2">Presiona principalmente a través de tus talones al levantarte para dirigir la carga a tus glúteos.</string>
+
+    <string name="lunge_encouragement">¡Equilibrio impecable! ¡Estás desarrollando simetría y fuerza en las piernas!</string>
+    <string name="lunge_tip1">Mantén el pecho erguido, la columna recta y busca doblar ambas rodillas a 90 grados.</string>
+    <string name="lunge_tip2">Mantén el 70% del peso en tu talón delantero para proteger las articulaciones de la rodilla.</string>
+
+    <string name="plank_encouragement">¡Resistencia sobresaliente! ¡Tu core se está convirtiendo en una potencia de estabilidad!</string>
+    <string name="plank_tip1">Mantén una línea recta desde los hombros hasta los talones, manteniendo la pelvis firme.</string>
+    <string name="plank_tip2">Presiona activamente con tus codos y antebrazos para mantener los hombros estables.</string>
+
+    <string name="other_encouragement">¡Rutina completa! ¡La consistencia es la contraseña para desbloquear el máximo rendimiento!</string>
+    <string name="other_tip1">Las sesiones siempre deben comenzar con calentamiento y acabar con estiramientos de enfriamiento.</string>
+    <string name="other_tip2">Escucha a tu cuerpo, mantente hidratado y adapta el esfuerzo a tu nivel de fatiga.</string>
+
+    <string name="title_useful_tips">💡 Consejos prácticos de entrenamiento</string>
+
+    <!-- Social Share Feature -->
+    <string name="social_share_title">Compartir estado de entrenamiento</string>
+    <string name="social_share_subtitle">Crea una hermosa tarjeta para compartir en tus redes sociales</string>
+    <string name="social_share_card_tag">#MyWorkoutRhythm</string>
+    <string name="btn_share_instagram">Compartir en Instagram</string>
+    <string name="btn_share_tiktok">Compartir en TikTok</string>
+    <string name="btn_share_system">Compartir en otra app</string>
+    <string name="toast_copied_and_opening_app">Copiado al portapapeles. ¡Abriendo %1$s!</string>
+    <string name="toast_app_not_installed">¡%1$s no está instalado, se abrió la función de compartir estándar!</string>
+    <string name="share_card_style">Estilo de tarjeta</string>
+    <string name="share_card_style_neon">Neón Activo</string>
+    <string name="share_card_style_cosmic">Pizarra Cósmica</string>
+    <string name="share_card_style_forest">Bosque de Menta</string>
+    <string name="share_card_style_coral">Coral Cálido</string>
+    <string name="share_text_success_format">🔥 ¡%1$s completado! 🔥\n🗓 Fecha: %2$s\n%3$s⏱ Duración: %4$s\n⭐ Nivel: %5$s\n🚀 ¡Siente el ritmo con #MyWorkoutRhythm!</string>
+    <string name="share_text_stats_format">🏆 ¡Estadísticas de Workout Rhythm! 🏆\n🔥 Racha de entrenamiento: %1$d Días!\n💪 Entrenamientos totales: %2$d veces / %3$d series\n🏋️‍♂️ Peso máximo: %4$skg\n⏱ Tiempo total: %5$d min %6$d seg\n📊 ¡Crea tus hábitos en #MyWorkoutRhythm con entrenamientos de #TikTok!</string>
+
+    <!-- Form Validation Errors -->
+    <string name="error_invalid_reps">Ingresa un número entero válido para las repeticiones (ej. 15)</string>
+    <string name="error_invalid_sets">Ingresa un número entero válido para las series (ej. 3)</string>
+    <string name="error_invalid_weight">Ingresa un peso decimal válido (ej. 10 o 12.5)</string>
+    <string name="error_invalid_duration">Ingresa un número entero válido para la duración en segundos (ej. 60)</string>
+    <string name="error_empty_custom_exercise">Ingresa un nombre para el ejercicio personalizado</string>
+</resources>

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">My Workout Rhythm</string>
+    <string name="routine_step_format">Step %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
     <string name="tab_timer">Timer</string>
@@ -187,8 +188,12 @@
     <!-- Language Selection -->
     <string name="language_selection_title">Select Language</string>
     <string name="language_selection_subtitle">Choose your preferred language to continue.</string>
-    <string name="language_korean">한국어 (Korean)</string>
     <string name="language_english">English</string>
+    <string name="language_korean">한국어 (Korean)</string>
+    <string name="language_japanese">日本語 (Japanese)</string>
+    <string name="language_spanish">Español (Spanish)</string>
+    <string name="language_german">Deutsch (German)</string>
+    <string name="language_french">Français (French)</string>
 
     <!-- Default routines names -->
     <string name="default_routine_1_name">Full-Body Rhythm Set</string>
