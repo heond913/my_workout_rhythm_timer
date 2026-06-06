@@ -460,7 +460,8 @@ class WorkoutTimerService : Service() {
                 elapsedSeconds = 0,
                 remainingSeconds = it.totalTargetSeconds,
                 rhythmTickCount = 0,
-                workoutCount = 0
+                workoutCount = 0,
+                manualInputEnabled = true
             )
         }
         ttsHelper.stop()

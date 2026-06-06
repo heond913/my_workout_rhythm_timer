@@ -542,6 +542,12 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun resetTimer() {
+        TimerRepository.updateState {
+            it.copy(manualInputEnabled = true)
+        }
+        _uiState.update {
+            it.copy(manualInputEnabled = true)
+        }
         val context = getApplication<Application>().applicationContext
         val intent = Intent(context, WorkoutTimerService::class.java).apply {
             action = WorkoutTimerService.ACTION_RESET
