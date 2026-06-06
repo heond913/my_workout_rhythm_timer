@@ -12,7 +12,7 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout_records ORDER BY timestamp DESC")
     fun getAllRecords(): Flow<List<WorkoutRecord>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertRecord(record: WorkoutRecord)
 
     @Delete
