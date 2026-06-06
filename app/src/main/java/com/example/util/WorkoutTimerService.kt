@@ -145,7 +145,7 @@ class WorkoutTimerService : Service() {
         }
 
         val finalState = TimerRepository.timerState.value
-        val startTime = System.currentTimeMillis() - finalState.elapsedSeconds * 1000L
+        var startTime = System.currentTimeMillis() - finalState.elapsedSeconds * 1000L
 
         timerJob = serviceScope.launch {
             while (TimerRepository.timerState.value.isRunning) {
@@ -179,6 +179,7 @@ class WorkoutTimerService : Service() {
                         val targetTotal = newTotalTarget
 
                         if (currentLoopState.isResting) {
+                            newElapsed++
                             if (newRestRemaining > 0) {
                                 newRestRemaining--
                             }
@@ -201,6 +202,7 @@ class WorkoutTimerService : Service() {
                                         
                                         newIsResting = false
                                         newElapsed = 0
+                                        startTime = System.currentTimeMillis()
                                         newRhythmTick = 0
                                         newWorkoutCount = 0
                                         newRemaining = nextStep.durationSeconds + 3
@@ -218,6 +220,7 @@ class WorkoutTimerService : Service() {
                                 } else {
                                     newIsResting = false
                                     newElapsed = 0
+                                    startTime = System.currentTimeMillis()
                                     newRhythmTick = 0
                                     newWorkoutCount = 0
                                     newRemaining = targetTotal + 3
