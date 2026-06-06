@@ -738,7 +738,7 @@ class WorkoutTimerService : Service() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(titleText)
             .setContentText(contentText)
-            .setSubText(getString(R.string.app_name))
+            .setSubText(getString(R.string.timer_in_progress))
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentIntent(openAppPendingIntent)
             .setOnlyAlertOnce(true)
