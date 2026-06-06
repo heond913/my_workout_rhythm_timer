@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.ui.components.DrawExerciseIcon
 import com.example.data.WorkoutRecord
 import com.example.viewmodel.WorkoutViewModel
 import java.text.SimpleDateFormat
@@ -391,11 +392,10 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                     .background(taskIconBg, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.FitnessCenter,
-                                    contentDescription = workout.exerciseName,
-                                    tint = taskIconAccent,
-                                    modifier = Modifier.size(20.dp)
+                                DrawExerciseIcon(
+                                    exerciseName = workout.exerciseName,
+                                    iconColor = taskIconAccent,
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
 

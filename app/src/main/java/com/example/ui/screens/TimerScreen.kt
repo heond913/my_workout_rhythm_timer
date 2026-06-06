@@ -76,18 +76,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.viewmodel.WorkoutViewModel
+import com.example.ui.components.DrawExerciseIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(viewModel: WorkoutViewModel) {
     val context = LocalContext.current
     val audioManager = remember(context) {
-        val resolvedContext = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            context.createAttributionContext("timer")
-        } else {
-            context
-        }
-        resolvedContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
     var systemVolume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
@@ -1077,17 +1073,17 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             viewModel.resetTimer()
                         }
                     },
-                    enabled = !uiState.isRoutineActive && !isRunning,
+                    enabled = !isRunning,
                     modifier = Modifier
                         .size(56.dp)
                         .background(
-                            if (isRunning || uiState.isRoutineActive) Color(0xFFEAEAEA)
+                            if (isRunning) Color(0xFFEAEAEA)
                             else Color(0xFFE6F3F1),
                             CircleShape
                         )
                         .border(
                             1.dp,
-                            if (isRunning || uiState.isRoutineActive) Color(0xFFDDDDDD)
+                            if (isRunning) Color(0xFFDDDDDD)
                             else Color(0xFFDCE5E2),
                             CircleShape
                         )
@@ -1096,7 +1092,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = if (uiState.isRoutineActive) "Stop" else stringResource(id = R.string.desc_reset_timer),
-                        tint = if (isRunning || uiState.isRoutineActive) Color.Gray.copy(alpha = 0.5f) else tealActive,
+                        tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -1837,215 +1833,4 @@ fun ExerciseSettingsCard(
     }
 }
 
-@Composable
-fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val strokeWidth = 2.5.dp.toPx()
-        
-        when (exerciseName) {
-            "스쿼트", "Squat" -> {
-                // Head
-                drawCircle(
-                    color = iconColor,
-                    radius = w * 0.12f,
-                    center = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.22f)
-                )
-                // Torso
-                val torsoStart = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.34f)
-                val hip = androidx.compose.ui.geometry.Offset(w * 0.35f, h * 0.52f)
-                drawLine(
-                    color = iconColor,
-                    start = torsoStart,
-                    end = hip,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Thigh
-                val knee = androidx.compose.ui.geometry.Offset(w * 0.62f, h * 0.56f)
-                drawLine(
-                    color = iconColor,
-                    start = hip,
-                    end = knee,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Calf
-                val ankle = androidx.compose.ui.geometry.Offset(w * 0.45f, h * 0.78f)
-                drawLine(
-                    color = iconColor,
-                    start = knee,
-                    end = ankle,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Foot
-                drawLine(
-                    color = iconColor,
-                    start = ankle,
-                    end = androidx.compose.ui.geometry.Offset(w * 0.58f, h * 0.78f),
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Arms reaching forward
-                drawLine(
-                    color = iconColor,
-                    start = torsoStart,
-                    end = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.34f),
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-            }
-            "런지", "Lunge" -> {
-                // Head
-                drawCircle(
-                    color = iconColor,
-                    radius = w * 0.12f,
-                    center = androidx.compose.ui.geometry.Offset(w * 0.48f, h * 0.22f)
-                )
-                // Torso
-                val torsoStart = androidx.compose.ui.geometry.Offset(w * 0.48f, h * 0.34f)
-                val hip = androidx.compose.ui.geometry.Offset(w * 0.45f, h * 0.52f)
-                drawLine(
-                    color = iconColor,
-                    start = torsoStart,
-                    end = hip,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Front leg (hip -> front knee -> front foot)
-                val frontKnee = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.54f)
-                val frontAnkle = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.76f)
-                drawLine(
-                    color = iconColor,
-                    start = hip,
-                    end = frontKnee,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = frontKnee,
-                    end = frontAnkle,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = frontAnkle,
-                    end = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.76f),
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Back leg (hip -> back knee -> back foot)
-                val backKnee = androidx.compose.ui.geometry.Offset(w * 0.32f, h * 0.66f)
-                val backAnkle = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.74f)
-                drawLine(
-                    color = iconColor,
-                    start = hip,
-                    end = backKnee,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = backKnee,
-                    end = backAnkle,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Arms
-                drawLine(
-                    color = iconColor,
-                    start = torsoStart,
-                    end = androidx.compose.ui.geometry.Offset(w * 0.58f, h * 0.42f),
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-            }
-            "플랭크", "Plank" -> {
-                // Head
-                drawCircle(
-                    color = iconColor,
-                    radius = w * 0.12f,
-                    center = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.34f)
-                )
-                // Torso & legs (plank line)
-                val hip = androidx.compose.ui.geometry.Offset(w * 0.44f, h * 0.48f)
-                val shoulder = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.44f)
-                val ankle = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.52f)
-                drawLine(
-                    color = iconColor,
-                    start = shoulder,
-                    end = ankle,
-                    strokeWidth = strokeWidth + 0.5.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-                // Support arms
-                val elbow = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.66f)
-                val hand = androidx.compose.ui.geometry.Offset(w * 0.74f, h * 0.66f)
-                drawLine(
-                    color = iconColor,
-                    start = shoulder,
-                    end = elbow,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = elbow,
-                    end = hand,
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-                // Feet toes
-                drawLine(
-                    color = iconColor,
-                    start = ankle,
-                    end = androidx.compose.ui.geometry.Offset(w * 0.20f, h * 0.62f),
-                    strokeWidth = strokeWidth,
-                    cap = StrokeCap.Round
-                )
-            }
-            else -> {
-                // Dumbbell Icon drawing
-                drawLine(
-                    color = iconColor,
-                    start = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.5f),
-                    end = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.5f),
-                    strokeWidth = strokeWidth + 1.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.32f),
-                    end = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.68f),
-                    strokeWidth = strokeWidth * 2f,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.36f),
-                    end = androidx.compose.ui.geometry.Offset(w * 0.22f, h * 0.64f),
-                    strokeWidth = strokeWidth * 1.5f,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = androidx.compose.ui.geometry.Offset(w * 0.7f, h * 0.32f),
-                    end = androidx.compose.ui.geometry.Offset(w * 0.7f, h * 0.68f),
-                    strokeWidth = strokeWidth * 2f,
-                    cap = StrokeCap.Round
-                )
-                drawLine(
-                    color = iconColor,
-                    start = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.36f),
-                    end = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.64f),
-                    strokeWidth = strokeWidth * 1.5f,
-                    cap = StrokeCap.Round
-                )
-            }
-        }
-    }
-}
+

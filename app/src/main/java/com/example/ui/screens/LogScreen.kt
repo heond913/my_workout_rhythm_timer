@@ -34,6 +34,7 @@ import java.util.Locale
 import com.example.viewmodel.WorkoutViewModel
 import androidx.compose.ui.res.stringResource
 import com.example.R
+import com.example.ui.components.DrawExerciseIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,10 +141,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             .padding(vertical = 12.dp, horizontal = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.FitnessCenter,
-                            contentDescription = exe,
-                            tint = if (isSelected) itemAccent else secondaryGray,
+                        DrawExerciseIcon(
+                            exerciseName = exe,
+                            iconColor = if (isSelected) itemAccent else secondaryGray,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
