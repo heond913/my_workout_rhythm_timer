@@ -594,22 +594,31 @@ class WorkoutTimerService : Service() {
                 val historyList = com.example.data.RoutineStepResult.deserializeList(historyJson)
                 if (historyList.isEmpty()) return@launch
 
-                // 운동명(exerciseName) 기준으로 Group By 연산 수행
-                val groupedByExercise = historyList.groupBy { it.exerciseName }
+                // 1. Group By normalized exercise name so different forms (e.g. "SQUAT" and "스쿼트") are merged!
+                val groupedByExercise = historyList.groupBy { stepResult ->
+                    when (com.example.data.ExerciseType.fromString(stepResult.exerciseName)) {
+                        com.example.data.ExerciseType.SQUAT -> "스쿼트"
+                        com.example.data.ExerciseType.LUNGE -> "런지"
+                        com.example.data.ExerciseType.PLANK -> "플랭크"
+                        com.example.data.ExerciseType.OTHER -> {
+                            val name = stepResult.exerciseName.trim()
+                            if (name.equals("other", ignoreCase = true) || name.equals("기타", ignoreCase = true) || name.isBlank()) {
+                                "기타"
+                            } else {
+                                name
+                            }
+                        }
+                    }
+                }
 
                 groupedByExercise.forEach { (exerciseName, steps) ->
                     val totalReps = steps.sumOf { it.count }
                     val totalDuration = steps.sumOf { it.targetSeconds }
                     val totalSets = steps.size // 해당 운동의 등장 횟수 = 세트(Set) 수!
 
-                    val normalizedExercise = when (exerciseName) {
-                        "스쿼트", "런지", "플랭크" -> exerciseName
-                        else -> if (exerciseName == "기타" || exerciseName == "OTHER" || exerciseName.isBlank()) "기타" else exerciseName
-                    }
-
                     repository.insert(
                         WorkoutRecord(
-                            exerciseName = normalizedExercise,
+                            exerciseName = exerciseName,
                             reps = if (totalReps > 0) totalReps else null,
                             sets = totalSets, // 계산된 총 세트 수 반영
                             durationSeconds = totalDuration,

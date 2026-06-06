@@ -761,7 +761,7 @@ class WorkoutViewModel @JvmOverloads constructor(
                 timerPresetType = firstStep.exerciseName,
                 rhythmIntervalSeconds = firstStep.rhythmIntervalSeconds,
                 totalTargetSeconds = firstStep.durationSeconds,
-                remainingSeconds = firstStep.durationSeconds + 3, // prep phase included on start
+                remainingSeconds = firstStep.durationSeconds, // prep phase will be added by WorkoutTimerService on start
                 elapsedSeconds = 0,
                 rhythmTickCount = 0,
                 workoutCount = 0,
