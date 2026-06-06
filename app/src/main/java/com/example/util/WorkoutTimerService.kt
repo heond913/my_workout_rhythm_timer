@@ -234,6 +234,23 @@ class WorkoutTimerService : Service() {
                                         newIsRoutineActive = false
                                         newShowDialog = true
                                         speakText = "축하합니다! 모든 루틴을 완료하였습니다!"
+                                        val originalPreset = repository.getTimerPresetType()
+                                        newPresetType = originalPreset
+                                        newTotalTarget = when (originalPreset) {
+                                            "스쿼트" -> repository.getSquatTargetSeconds()
+                                            "런지" -> repository.getLungeTargetSeconds()
+                                            "플랭크" -> repository.getPlankTargetSeconds()
+                                            "기타" -> repository.getOtherTargetSeconds()
+                                            else -> 60
+                                        }
+                                        newInterval = when (originalPreset) {
+                                            "스쿼트" -> repository.getSquatInterval()
+                                            "런지" -> repository.getLungeInterval()
+                                            "플랭크" -> newTotalTarget
+                                            "기타" -> repository.getOtherInterval()
+                                            else -> 4
+                                        }
+                                        newRemaining = newTotalTarget
                                         soundHelper.playSetFinished()
                                     }
                                 } else {
@@ -354,6 +371,23 @@ class WorkoutTimerService : Service() {
                                                  newIsRoutineActive = false
                                                  newShowDialog = true
                                                  speakText = "축하합니다! 모든 루틴을 완주하셨습니다!"
+                                                 val originalPreset = repository.getTimerPresetType()
+                                                 newPresetType = originalPreset
+                                                 newTotalTarget = when (originalPreset) {
+                                                     "스쿼트" -> repository.getSquatTargetSeconds()
+                                                     "런지" -> repository.getLungeTargetSeconds()
+                                                     "플랭크" -> repository.getPlankTargetSeconds()
+                                                     "기타" -> repository.getOtherTargetSeconds()
+                                                     else -> 60
+                                                 }
+                                                 newInterval = when (originalPreset) {
+                                                     "스쿼트" -> repository.getSquatInterval()
+                                                     "런지" -> repository.getLungeInterval()
+                                                     "플랭크" -> newTotalTarget
+                                                     "기타" -> repository.getOtherInterval()
+                                                     else -> 4
+                                                 }
+                                                 newRemaining = newTotalTarget
                                                  soundHelper.playSetFinished()
                                              }
                                          }
@@ -471,14 +505,40 @@ class WorkoutTimerService : Service() {
         shutdownJob = null
         timerJob?.cancel()
         sessionStartTime = 0L
+
+        val isRoutineActiveBeforeReset = TimerRepository.timerState.value.isRoutineActive
+        val originalPreset = repository.getTimerPresetType()
+        val originalTotalTarget = when (originalPreset) {
+            "스쿼트" -> repository.getSquatTargetSeconds()
+            "런지" -> repository.getLungeTargetSeconds()
+            "플랭크" -> repository.getPlankTargetSeconds()
+            "기타" -> repository.getOtherTargetSeconds()
+            else -> 60
+        }
+        val originalInterval = when (originalPreset) {
+            "스쿼트" -> repository.getSquatInterval()
+            "런지" -> repository.getLungeInterval()
+            "플랭크" -> originalTotalTarget
+            "기타" -> repository.getOtherInterval()
+            else -> 4
+        }
+
         TimerRepository.updateState {
             it.copy(
                 isRunning = false,
                 elapsedSeconds = 0,
-                remainingSeconds = it.totalTargetSeconds,
+                remainingSeconds = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalTotalTarget else it.totalTargetSeconds,
                 rhythmTickCount = 0,
                 workoutCount = 0,
-                manualInputEnabled = true
+                manualInputEnabled = true,
+                isRoutineActive = false,
+                routineName = "",
+                routineStepsJson = "",
+                routineCurrentStepIndex = 0,
+                routineHistoryJson = "",
+                timerPresetType = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalPreset else it.timerPresetType,
+                totalTargetSeconds = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalTotalTarget else it.totalTargetSeconds,
+                rhythmIntervalSeconds = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalInterval else it.rhythmIntervalSeconds
             )
         }
         ttsHelper.stop()

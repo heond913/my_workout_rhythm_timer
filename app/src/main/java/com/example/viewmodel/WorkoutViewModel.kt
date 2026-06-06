@@ -773,13 +773,35 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun stopRoutine() {
+        val originalPreset = repository.getTimerPresetType()
+        val originalTotalTarget = when (originalPreset) {
+            "스쿼트" -> repository.getSquatTargetSeconds()
+            "런지" -> repository.getLungeTargetSeconds()
+            "플랭크" -> repository.getPlankTargetSeconds()
+            "기타" -> repository.getOtherTargetSeconds()
+            else -> 60
+        }
+        val originalInterval = when (originalPreset) {
+            "스쿼트" -> repository.getSquatInterval()
+            "런지" -> repository.getLungeInterval()
+            "플랭크" -> originalTotalTarget
+            "기타" -> repository.getOtherInterval()
+            else -> 4
+        }
         TimerRepository.updateState {
             it.copy(
                 isRoutineActive = false,
                 routineName = "",
                 routineStepsJson = "",
                 routineCurrentStepIndex = 0,
-                routineHistoryJson = ""
+                routineHistoryJson = "",
+                timerPresetType = originalPreset,
+                totalTargetSeconds = originalTotalTarget,
+                rhythmIntervalSeconds = originalInterval,
+                remainingSeconds = originalTotalTarget,
+                elapsedSeconds = 0,
+                workoutCount = 0,
+                rhythmTickCount = 0
             )
         }
         resetTimer()
