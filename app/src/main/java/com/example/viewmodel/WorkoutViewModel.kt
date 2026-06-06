@@ -82,7 +82,8 @@ data class WorkoutUiState(
     val routineName: String = "",
     val routineStepsJson: String = "",
     val routineCurrentStepIndex: Int = 0,
-    val customRoutines: List<CustomRoutine> = emptyList()
+    val customRoutines: List<CustomRoutine> = emptyList(),
+    val manualInputEnabled: Boolean = true
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -196,7 +197,8 @@ class WorkoutViewModel @JvmOverloads constructor(
                         isRoutineActive = timerState.isRoutineActive,
                         routineName = timerState.routineName,
                         routineStepsJson = timerState.routineStepsJson,
-                        routineCurrentStepIndex = timerState.routineCurrentStepIndex
+                        routineCurrentStepIndex = timerState.routineCurrentStepIndex,
+                        manualInputEnabled = timerState.manualInputEnabled
                     )
                 }
             }
@@ -362,7 +364,8 @@ class WorkoutViewModel @JvmOverloads constructor(
                 rhythmTickCount = 0,
                 workoutCount = 0,
                 restTotalSeconds = restSecs,
-                isResting = false
+                isResting = false,
+                manualInputEnabled = true
             )
         }
         _uiState.update {
@@ -374,7 +377,8 @@ class WorkoutViewModel @JvmOverloads constructor(
                 lungeTargetSeconds = repository.getLungeTargetSeconds(),
                 plankTargetSeconds = repository.getPlankTargetSeconds(),
                 otherTargetSeconds = repository.getOtherTargetSeconds(),
-                isResting = false
+                isResting = false,
+                manualInputEnabled = true
             )
         }
         repository.saveTimerPresetType(updatedPreset)
@@ -507,6 +511,9 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun startTimer() {
+        TimerRepository.updateState {
+            it.copy(manualInputEnabled = false)
+        }
         val context = getApplication<Application>().applicationContext
         val intent = Intent(context, WorkoutTimerService::class.java).apply {
             action = WorkoutTimerService.ACTION_START

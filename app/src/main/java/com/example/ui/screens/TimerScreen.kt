@@ -1130,21 +1130,22 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 Spacer(modifier = Modifier.width(24.dp))
 
                 // Navigate directly to manual logger with current timing prep
+                val isManualInputEnabled = !isRunning && uiState.manualInputEnabled
                 IconButton(
                     onClick = {
                         viewModel.inputDurationSeconds = totalSeconds.toString()
                         viewModel.setTab(com.example.viewmodel.AppTab.Log)
                     },
-                    enabled = !isRunning,
+                    enabled = isManualInputEnabled,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(if (isRunning) Color(0xFFEAEAEA) else Color(0xFFE6F3F1), CircleShape)
-                        .border(1.dp, if (isRunning) Color(0xFFDDDDDD) else Color(0xFFDCE5E2), CircleShape)
+                        .background(if (isManualInputEnabled) Color(0xFFE6F3F1) else Color(0xFFEAEAEA), CircleShape)
+                        .border(1.dp, if (isManualInputEnabled) Color(0xFFDCE5E2) else Color(0xFFDDDDDD), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = stringResource(id = R.string.desc_manual_log_write),
-                        tint = if (isRunning) Color.Gray.copy(alpha = 0.5f) else tealActive,
+                        tint = if (isManualInputEnabled) tealActive else Color.Gray.copy(alpha = 0.5f),
                         modifier = Modifier.size(24.dp)
                     )
                 }

@@ -31,7 +31,8 @@ data class TimerState(
     val isRoutineActive: Boolean = false,
     val routineName: String = "",
     val routineStepsJson: String = "",
-    val routineCurrentStepIndex: Int = 0
+    val routineCurrentStepIndex: Int = 0,
+    val manualInputEnabled: Boolean = true
 )
 
 object TimerRepository {
