@@ -234,6 +234,7 @@ class WorkoutTimerService : Service() {
                                         newIsRoutineActive = false
                                         newShowDialog = true
                                         speakText = "축하합니다! 모든 루틴을 완료하였습니다!"
+                                        logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
                                         val originalPreset = repository.getTimerPresetType()
                                         newPresetType = originalPreset
                                         newTotalTarget = when (originalPreset) {
@@ -334,7 +335,7 @@ class WorkoutTimerService : Service() {
                                          val currentStepIdx = currentLoopState.routineCurrentStepIndex
                                          val currentStep = steps[currentStepIdx]
                                          
-                                         logCurrentTimerWorkout()
+
 
                                          val oldHistory = com.example.data.RoutineStepResult.deserializeList(newRoutineHistoryJson)
                                          val newHistory = oldHistory + com.example.data.RoutineStepResult(
@@ -373,6 +374,7 @@ class WorkoutTimerService : Service() {
                                                  newIsRoutineActive = false
                                                  newShowDialog = true
                                                  speakText = "축하합니다! 모든 루틴을 완주하셨습니다!"
+                                                 logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
                                                  val originalPreset = repository.getTimerPresetType()
                                                  newPresetType = originalPreset
                                                  newTotalTarget = when (originalPreset) {
@@ -582,6 +584,42 @@ class WorkoutTimerService : Service() {
                 )
             } catch (e: Exception) {
                 Log.e("WorkoutTimerService", "Error logging workout", e)
+            }
+        }
+    }
+
+    private fun logCustomRoutineSummary(historyJson: String, routineName: String) {
+        serviceScope.launch {
+            try {
+                val historyList = com.example.data.RoutineStepResult.deserializeList(historyJson)
+                if (historyList.isEmpty()) return@launch
+
+                // 운동명(exerciseName) 기준으로 Group By 연산 수행
+                val groupedByExercise = historyList.groupBy { it.exerciseName }
+
+                groupedByExercise.forEach { (exerciseName, steps) ->
+                    val totalReps = steps.sumOf { it.count }
+                    val totalDuration = steps.sumOf { it.targetSeconds }
+                    val totalSets = steps.size // 해당 운동의 등장 횟수 = 세트(Set) 수!
+
+                    val normalizedExercise = when (exerciseName) {
+                        "스쿼트", "런지", "플랭크" -> exerciseName
+                        else -> if (exerciseName == "기타" || exerciseName == "OTHER" || exerciseName.isBlank()) "기타" else exerciseName
+                    }
+
+                    repository.insert(
+                        WorkoutRecord(
+                            exerciseName = normalizedExercise,
+                            reps = if (totalReps > 0) totalReps else null,
+                            sets = totalSets, // 계산된 총 세트 수 반영
+                            durationSeconds = totalDuration,
+                            note = "[$routineName] 루틴 완주 (총 $totalSets 세트 자동 기록)",
+                            rating = 4
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("WorkoutTimerService", "Error logging custom routine summary", e)
             }
         }
     }

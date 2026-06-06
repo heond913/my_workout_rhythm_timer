@@ -61,13 +61,33 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
 
     // Aggregate statistics
     val totalSessions = workoutRecords.size
-    val squatCount = workoutRecords.count { it.exerciseName.contains("스쿼트") }
-    val lungeCount = workoutRecords.count { it.exerciseName.contains("런지") }
-    val plankCount = workoutRecords.count { it.exerciseName.contains("플랭크") }
-    val otherCount = workoutRecords.count {
+
+    val squatList = workoutRecords.filter { it.exerciseName.contains("스쿼트") }
+    val lungeList = workoutRecords.filter { it.exerciseName.contains("런지") }
+    val plankList = workoutRecords.filter { it.exerciseName.contains("플랭크") }
+    val otherList = workoutRecords.filter {
         val name = it.exerciseName
         !name.contains("스쿼트") && !name.contains("런지") && !name.contains("플랭크")
     }
+
+    val squatCount = squatList.size
+    val lungeCount = lungeList.size
+    val plankCount = plankList.size
+    val otherCount = otherList.size
+
+    val squatReps = squatList.sumOf { it.reps ?: 0 }
+    val squatSets = squatList.sumOf { it.sets ?: 1 }.let { if (squatList.isEmpty()) 0 else it }
+
+    val lungeReps = lungeList.sumOf { it.reps ?: 0 }
+    val lungeSets = lungeList.sumOf { it.sets ?: 1 }.let { if (lungeList.isEmpty()) 0 else it }
+
+    val plankReps = plankList.sumOf { it.reps ?: 0 }
+    val plankDuration = plankList.sumOf { it.durationSeconds ?: 0 }
+    val plankSets = plankList.sumOf { it.sets ?: 1 }.let { if (plankList.isEmpty()) 0 else it }
+
+    val otherReps = otherList.sumOf { it.reps ?: 0 }
+    val otherDuration = otherList.sumOf { it.durationSeconds ?: 0 }
+    val otherSets = otherList.sumOf { it.sets ?: 1 }.let { if (otherList.isEmpty()) 0 else it }
 
     val totalReps = workoutRecords.sumOf { it.reps ?: 0 }
     val totalSets = workoutRecords.sumOf { it.sets ?: 0 }
@@ -749,14 +769,42 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                 val plankLabel = stringResource(id = R.string.preset_plank)
                 val otherLabel = stringResource(id = R.string.preset_other)
 
+                val squatDisplayText = if (squatList.isEmpty()) {
+                    stringResource(id = R.string.exercise_reps_sets_format, 0, 0)
+                } else {
+                    stringResource(id = R.string.exercise_reps_sets_format, squatReps, squatSets)
+                }
+
+                val lungeDisplayText = if (lungeList.isEmpty()) {
+                    stringResource(id = R.string.exercise_reps_sets_format, 0, 0)
+                } else {
+                    stringResource(id = R.string.exercise_reps_sets_format, lungeReps, lungeSets)
+                }
+
+                val plankDisplayText = if (plankList.isEmpty()) {
+                    stringResource(id = R.string.exercise_reps_sets_format, 0, 0)
+                } else if (plankReps == 0 && plankDuration > 0) {
+                    stringResource(id = R.string.exercise_secs_sets_format, plankDuration, plankSets)
+                } else {
+                    stringResource(id = R.string.exercise_reps_sets_format, plankReps, plankSets)
+                }
+
+                val otherDisplayText = if (otherList.isEmpty()) {
+                    stringResource(id = R.string.exercise_reps_sets_format, 0, 0)
+                } else if (otherReps == 0 && otherDuration > 0) {
+                    stringResource(id = R.string.exercise_secs_sets_format, otherDuration, otherSets)
+                } else {
+                    stringResource(id = R.string.exercise_reps_sets_format, otherReps, otherSets)
+                }
+
                 val breakdown = listOf(
-                    Triple("$squatLabel (Squats)", squatCount, Color(0xFFE65100)),
-                    Triple("$lungeLabel (Lunges)", lungeCount, Color(0xFF3F5F90)),
-                    Triple("$plankLabel (Planks)", plankCount, Color(0xFF93000A)),
-                    Triple("$otherLabel (Others)", otherCount, Color(0xFF006A60))
+                    Triple("$squatLabel (Squats)", squatDisplayText, Color(0xFFE65100)),
+                    Triple("$lungeLabel (Lunges)", lungeDisplayText, Color(0xFF3F5F90)),
+                    Triple("$plankLabel (Planks)", plankDisplayText, Color(0xFF93000A)),
+                    Triple("$otherLabel (Others)", otherDisplayText, Color(0xFF006A60))
                 )
 
-                breakdown.forEach { (label, count, color) ->
+                breakdown.forEach { (label, infoText, color) ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -774,7 +822,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                             Text(text = label, color = charcoalDark, fontSize = 12.sp)
                         }
                         Text(
-                            text = stringResource(id = R.string.records_count_format, count),
+                            text = infoText,
                             color = tealActive,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

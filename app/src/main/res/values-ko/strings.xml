@@ -136,6 +136,8 @@
     <string name="title_7days_consistency">최근 7일간의 운동 일관성</string>
     <string name="title_exercise_proportion">피트니스 종목별 비중 분석</string>
     <string name="records_count_format">%1$d회 기록</string>
+    <string name="exercise_reps_sets_format">총 %1$d회, %2$d세트</string>
+    <string name="exercise_secs_sets_format">총 %1$d초, %2$d세트</string>
 
     <!-- Statistics Periods & Metrics -->
     <string name="tab_daily">일별</string>
