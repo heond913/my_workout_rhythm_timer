@@ -63,30 +63,11 @@ import java.util.Locale
 fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>) {
     val uiState by viewModel.uiState.collectAsState()
     val currentMonthCal = uiState.calendarYearMonth
-    var selectedDayCal by remember { mutableStateOf(Calendar.getInstance()) }
+    val selectedDayCal = uiState.selectedCalendarDay
 
     val recordToDelete = uiState.recordToDelete
     val workoutToShare = uiState.workoutToShare
     val showDeleteAllDialog = uiState.showDeleteAllDialog
-
-    // Keep selectedDayCal in sync with currentMonthCal's month and year when month changes
-    LaunchedEffect(currentMonthCal) {
-        val selMonth = selectedDayCal.get(Calendar.MONTH)
-        val selYear = selectedDayCal.get(Calendar.YEAR)
-        val curMonth = currentMonthCal.get(Calendar.MONTH)
-        val curYear = currentMonthCal.get(Calendar.YEAR)
-
-        if (selMonth != curMonth || selYear != curYear) {
-            val today = Calendar.getInstance()
-            if (curMonth == today.get(Calendar.MONTH) && curYear == today.get(Calendar.YEAR)) {
-                selectedDayCal = today
-            } else {
-                selectedDayCal = (currentMonthCal.clone() as Calendar).apply {
-                    set(Calendar.DAY_OF_MONTH, 1)
-                }
-            }
-        }
-    }
 
     // Color Theme - Vibrant Palette
     val tealActive = Color(0xFF006A60)
@@ -229,7 +210,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                         },
                                         shape = RoundedCornerShape(12.dp)
                                     )
-                                    .clickable { selectedDayCal = dayCal }
+                                    .clickable { viewModel.selectCalendarDay(dayCal) }
                                     .testTag("calendar_day_${calDayText}"),
                                 contentAlignment = Alignment.Center
                             ) {

@@ -78,6 +78,7 @@ data class WorkoutUiState(
     val showLanguageSelection: Boolean = false,
     val calendarYearMonth: Calendar = Calendar.getInstance(),
     val calendarGrid: List<List<Calendar?>> = buildCalendarGrid(Calendar.getInstance()),
+    val selectedCalendarDay: Calendar = Calendar.getInstance(),
     val inputExerciseName: String = "스쿼트",
     val inputReps: String = "15",
     val inputSets: String = "3",
@@ -706,12 +707,31 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(calendarYearMonth = value, calendarGrid = buildCalendarGrid(value)) }
     }
 
+    fun selectCalendarDay(value: Calendar) {
+        _uiState.update { it.copy(selectedCalendarDay = value) }
+    }
+
     fun changeMonth(amount: Int) {
         val newCal = Calendar.getInstance().apply {
             timeInMillis = calendarYearMonth.timeInMillis
             add(Calendar.MONTH, amount)
         }
-        _uiState.update { it.copy(calendarYearMonth = newCal, calendarGrid = buildCalendarGrid(newCal)) }
+        val today = Calendar.getInstance()
+        val nextSelectedDay = if (newCal.get(Calendar.MONTH) == today.get(Calendar.MONTH) && 
+            newCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)) {
+            today
+        } else {
+            (newCal.clone() as Calendar).apply {
+                set(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+        _uiState.update { 
+            it.copy(
+                calendarYearMonth = newCal, 
+                calendarGrid = buildCalendarGrid(newCal),
+                selectedCalendarDay = nextSelectedDay
+            ) 
+        }
     }
 
     fun getWorkoutsForDay(day: Calendar, records: List<WorkoutRecord>): List<WorkoutRecord> {

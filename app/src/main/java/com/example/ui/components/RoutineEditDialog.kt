@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.ExerciseType
 import com.example.data.RoutineStep
 import com.example.ui.models.exercisePreset
 
@@ -26,19 +27,19 @@ import com.example.ui.models.exercisePreset
 @Composable
 fun ExerciseChipGroup(
     selectedExercise: String,
-    onExerciseSelected: (String) -> Unit,
+    onExerciseSelected: (ExerciseType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val exerciseTypes = listOf("스쿼트", "런지", "플랭크", "기타")
+    val exerciseTypes = ExerciseType.values()
     val charcoalDark = Color(0xFF191C1B)
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        exerciseTypes.forEach { exe ->
-            val isSelected = selectedExercise == exe
-            val preset = exe.exercisePreset
+        exerciseTypes.forEach { exeType ->
+            val isSelected = ExerciseType.fromString(selectedExercise) == exeType
+            val preset = exeType.exercisePreset
             val selectedBg = preset.bgColor
             val selectedBorder = preset.themeColor
             val txtColor = preset.themeColor
@@ -55,12 +56,12 @@ fun ExerciseChipGroup(
                         if (isSelected) selectedBorder else Color(0xFFDCE5E2),
                         RoundedCornerShape(8.dp)
                     )
-                    .clickable { onExerciseSelected(exe) }
+                    .clickable { onExerciseSelected(exeType) }
                     .padding(vertical = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = exe,
+                    text = androidx.compose.ui.res.stringResource(id = exeType.displayNameResId),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isSelected) txtColor else charcoalDark
@@ -141,7 +142,7 @@ fun RoutineStepRowItem(
             ExerciseChipGroup(
                 selectedExercise = step.exerciseName,
                 onExerciseSelected = { selected ->
-                    onStepChange(step.copy(exerciseName = selected))
+                    onStepChange(step.copy(exerciseName = selected.name))
                 }
             )
 
@@ -200,7 +201,7 @@ fun RoutineStepRowItem(
             Spacer(modifier = Modifier.height(6.dp))
 
             // Pulse/Beat pacing controls (Excluding plank)
-            if (step.exerciseName != "플랭크") {
+            if (ExerciseType.fromString(step.exerciseName) != ExerciseType.PLANK) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -377,7 +378,7 @@ fun RoutineEditDialog(
 
                     TextButton(
                         onClick = {
-                            steps = steps + RoutineStep("스쿼트", 60, 4, 15)
+                            steps = steps + RoutineStep(ExerciseType.SQUAT.name, 60, 4, 15)
                         }
                     ) {
                         Text(

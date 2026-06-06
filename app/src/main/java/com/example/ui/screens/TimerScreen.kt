@@ -75,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.data.ExerciseType
 import com.example.viewmodel.WorkoutViewModel
 import com.example.ui.components.DrawExerciseIcon
 import com.example.ui.components.RoutineEditDialog
@@ -289,19 +290,20 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 val isCurrent = index == currentIdx
                                 val isCompleted = index < currentIdx
                                 
-                                val stepColor = when (step.exerciseName) {
-                                    "스쿼트", "Squat" -> Color(0xFFE65100) // Orange
-                                    "런지", "Lunge" -> Color(0xFF3F5F90)     // Blue
-                                    "플랭크", "Plank" -> Color(0xFF93000A)   // Red
-                                    else -> Color(0xFF006A60)                // Teal
+                                val stepType = ExerciseType.fromString(step.exerciseName)
+                                val stepColor = when (stepType) {
+                                    ExerciseType.SQUAT -> Color(0xFFE65100) // Orange
+                                    ExerciseType.LUNGE -> Color(0xFF3F5F90)     // Blue
+                                    ExerciseType.PLANK -> Color(0xFF93000A)   // Red
+                                    ExerciseType.OTHER -> Color(0xFF006A60)                // Teal
                                 }
                                 
                                 val circleBgColor = if (isCurrent) {
-                                    when (step.exerciseName) {
-                                        "스쿼트", "Squat" -> Color(0xFFFFECCC)
-                                        "런지", "Lunge" -> Color(0xFFE8F0FE)
-                                        "플랭크", "Plank" -> Color(0xFFFFDAD6)
-                                        else -> Color(0xFFE6F3F1)
+                                    when (stepType) {
+                                        ExerciseType.SQUAT -> Color(0xFFFFECCC)
+                                        ExerciseType.LUNGE -> Color(0xFFE8F0FE)
+                                        ExerciseType.PLANK -> Color(0xFFFFDAD6)
+                                        ExerciseType.OTHER -> Color(0xFFE6F3F1)
                                     }
                                 } else {
                                     Color.White
@@ -343,11 +345,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     
                                     Spacer(modifier = Modifier.height(8.dp))
                                     
-                                    val exerciseLabel = when (step.exerciseName) {
-                                        "스쿼트" -> stringResource(id = R.string.preset_squat)
-                                        "런지" -> stringResource(id = R.string.preset_lunge)
-                                        "플랭크" -> stringResource(id = R.string.preset_plank)
-                                        else -> step.exerciseName
+                                    val exerciseLabel = if (stepType != ExerciseType.OTHER) {
+                                        stringResource(id = stepType.displayNameResId)
+                                    } else {
+                                        step.exerciseName
                                     }
                                     
                                     val statusStr = if (isKo) "운동" else "work"
@@ -401,20 +402,19 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val presets = listOf(
-                Triple("스쿼트", uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
-                Triple("런지", uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
-                Triple("플랭크", totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
-                Triple("기타", uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
+                Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
+                Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
+                Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
+                Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
             )
 
-            presets.forEach { (label, secs, desc) ->
-                val isSelected = uiState.timerPresetType == label
-                val (itemBgColor, itemBorderColor, itemTextColor) = when (label) {
-                    "스쿼트" -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100)) // Swapped to Orange
-                    "런지" -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
-                    "플랭크" -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                    "기타" -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60)) // Swapped to Teal
-                    else -> Triple(Color(0xFFE6F3F1), Color(0xFF3F4947), Color(0xFF3F4947))
+            presets.forEach { (exeType, secs, desc) ->
+                val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
+                val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
+                    ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100)) // Swapped to Orange
+                    ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
+                    ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
+                    ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60)) // Swapped to Teal
                 }
 
                 Column(
@@ -430,17 +430,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             RoundedCornerShape(12.dp)
                         )
                         .clickable(enabled = !isRunning) {
-                            viewModel.selectPreset(label)
+                            viewModel.selectPreset(exeType.name)
                         }
                         .padding(vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val labelDisplay = when (label) {
-                        "스쿼트" -> stringResource(id = R.string.preset_squat)
-                        "런지" -> stringResource(id = R.string.preset_lunge)
-                        "플랭크" -> stringResource(id = R.string.preset_plank)
-                        else -> stringResource(id = R.string.preset_other)
-                    }
+                    val labelDisplay = stringResource(id = exeType.displayNameResId)
                     Text(
                         text = labelDisplay,
                         color = if (isSelected) itemTextColor else charcoalDark,
@@ -723,7 +718,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         .clickable {
                             editingRoutineId = null
                             routineNameInput = ""
-                            routineStepsInput = listOf(com.example.data.RoutineStep("스쿼트", 60, 4, 15))
+                            routineStepsInput = listOf(com.example.data.RoutineStep(ExerciseType.SQUAT.name, 60, 4, 15))
                             showRoutineDialog = true
                         }
                         .padding(horizontal = 14.dp, vertical = 6.dp)
@@ -824,18 +819,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     routine.steps.forEachIndexed { index, step ->
-                                        val displayExerciseName = when (step.exerciseName) {
-                                            "스쿼트", "Squat" -> "Squat"
-                                            "런지", "Lunge" -> "Lunge"
-                                            "플랭크", "Plank" -> "Plank"
-                                            else -> "Etc."
+                                        val exType = ExerciseType.fromString(step.exerciseName)
+                                        val displayExerciseName = if (isKo) {
+                                            stringResource(id = exType.displayNameResId)
+                                        } else {
+                                            when (exType) {
+                                                ExerciseType.SQUAT -> "Squat"
+                                                ExerciseType.LUNGE -> "Lunge"
+                                                ExerciseType.PLANK -> "Plank"
+                                                ExerciseType.OTHER -> "Etc."
+                                            }
                                         }
                                         
-                                        val (chipBg, chipTx) = when (step.exerciseName) {
-                                            "스쿼트", "Squat" -> Pair(Color(0xFFD05404), Color.White)
-                                            "런지", "Lunge" -> Pair(Color(0xFF2B4D7E), Color.White)
-                                            "플랭크", "Plank" -> Pair(Color(0xFF93000A), Color.White)
-                                            else -> Pair(Color(0xFF0C6052), Color.White)
+                                        val (chipBg, chipTx) = when (exType) {
+                                            ExerciseType.SQUAT -> Pair(Color(0xFFD05404), Color.White)
+                                            ExerciseType.LUNGE -> Pair(Color(0xFF2B4D7E), Color.White)
+                                            ExerciseType.PLANK -> Pair(Color(0xFF93000A), Color.White)
+                                            ExerciseType.OTHER -> Pair(Color(0xFF0C6052), Color.White)
                                         }
                                         
                                         Box(

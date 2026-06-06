@@ -31,6 +31,7 @@ import android.app.DatePickerDialog
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import com.example.data.ExerciseType
 import com.example.viewmodel.WorkoutViewModel
 import androidx.compose.ui.res.stringResource
 import com.example.R
@@ -102,12 +103,12 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         ) {
-            val exercises = listOf("스쿼트", "런지", "플랭크", "기타")
-            exercises.forEach { exe ->
-                val isSelected = selectedExercise == exe
+            val exercises = ExerciseType.values()
+            exercises.forEach { exeType ->
+                val isSelected = ExerciseType.fromString(selectedExercise) == exeType
                 
                 // Isolate preset presentation colors & metadata using the UI presenter model
-                val preset = exe.exercisePreset
+                val preset = exeType.exercisePreset
                 val itemBg = preset.bgColor
                 val itemBorder = preset.themeColor
                 val itemAccent = preset.themeColor
@@ -124,11 +125,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             RoundedCornerShape(16.dp)
                         )
                         .clickable {
-                            viewModel.updateInputExerciseName(exe)
+                            viewModel.updateInputExerciseName(exeType.name)
                             // Set intelligent defaults for easy flow
-                            if (exe == "스쿼트" || exe == "런지") {
+                            if (exeType == ExerciseType.SQUAT || exeType == ExerciseType.LUNGE) {
                                 if (uiState.inputReps.isEmpty()) viewModel.updateInputReps("15")
-                            } else if (exe == "플랭크") {
+                            } else if (exeType == ExerciseType.PLANK) {
                                 if (uiState.inputDurationSeconds.isEmpty()) viewModel.updateInputDurationSeconds("60")
                             }
                         },
@@ -141,7 +142,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         DrawExerciseIcon(
-                            exerciseName = exe,
+                            exerciseName = exeType.name,
                             iconColor = if (isSelected) itemAccent else secondaryGray,
                             modifier = Modifier.size(24.dp)
                         )
@@ -161,8 +162,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Custom exercise name field (only shown if "기타" is selected)
-        AnimatedVisibility(visible = selectedExercise == "기타") {
+        // Custom exercise name field (only shown if OTHER is selected)
+        AnimatedVisibility(visible = ExerciseType.fromString(selectedExercise) == ExerciseType.OTHER) {
             var customName by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = customName,
@@ -269,6 +270,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        val currentExerciseType = ExerciseType.fromString(selectedExercise)
+
         // Repetitions input (Squats or Lunges highlight)
         Card(
             colors = CardDefaults.cardColors(containerColor = cardSurface),
@@ -281,7 +284,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.label_reps),
-                    color = if (selectedExercise == "스쿼트" || selectedExercise == "런지") tealActive else charcoalDark,
+                    color = if (currentExerciseType == ExerciseType.SQUAT || currentExerciseType == ExerciseType.LUNGE) tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -355,7 +358,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.label_sets),
-                    color = if (selectedExercise == "스쿼트" || selectedExercise == "런지" || selectedExercise == "플랭크") tealActive else charcoalDark,
+                    color = if (currentExerciseType == ExerciseType.SQUAT || currentExerciseType == ExerciseType.LUNGE || currentExerciseType == ExerciseType.PLANK) tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -429,7 +432,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.label_weight),
-                    color = if (selectedExercise == "스쿼트" || selectedExercise == "런지") tealActive else charcoalDark,
+                    color = if (currentExerciseType == ExerciseType.SQUAT || currentExerciseType == ExerciseType.LUNGE) tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -503,7 +506,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.label_duration_secs),
-                    color = if (selectedExercise == "플랭크" || selectedExercise == "기타") tealActive else charcoalDark,
+                    color = if (currentExerciseType == ExerciseType.PLANK || currentExerciseType == ExerciseType.OTHER) tealActive else charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )

@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 
+import com.example.data.ExerciseType
+
 @Composable
 fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
@@ -14,8 +16,8 @@ fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier 
         val h = size.height
         val strokeWidth = 3.dp.toPx()
         
-        when (exerciseName) {
-            "스쿼트", "Squat" -> {
+        when (ExerciseType.fromString(exerciseName)) {
+            ExerciseType.SQUAT -> {
                 // Head
                 drawCircle(
                     color = iconColor,
@@ -67,7 +69,7 @@ fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier 
                     cap = StrokeCap.Round
                 )
             }
-            "런지", "Lunge" -> {
+            ExerciseType.LUNGE -> {
                 // Head
                 drawCircle(
                     color = iconColor,
@@ -149,7 +151,7 @@ fun DrawExerciseIcon(exerciseName: String, iconColor: Color, modifier: Modifier 
                     cap = StrokeCap.Round
                 )
             }
-            "플랭크", "Plank" -> {
+            ExerciseType.PLANK -> {
                 // Head
                 drawCircle(
                     color = iconColor,

@@ -2,6 +2,7 @@ package com.example.ui.models
 
 import androidx.compose.ui.graphics.Color
 import com.example.R
+import com.example.data.ExerciseType
 
 /**
  * Presenter model that isolates exercise metadata, themes, colors, and string resources.
@@ -56,11 +57,18 @@ data class ExercisePresentation(
          * Returns corresponding [ExercisePresentation] based on exercise type name.
          */
         fun from(name: String): ExercisePresentation {
-            return when (name) {
-                "스쿼트", "Squat" -> SQUAT
-                "런지", "Lunge" -> LUNGE
-                "플랭크", "Plank" -> PLANK
-                else -> OTHER
+            return from(ExerciseType.fromString(name))
+        }
+
+        /**
+         * Returns corresponding [ExercisePresentation] based on strongly-typed [ExerciseType].
+         */
+        fun from(type: ExerciseType): ExercisePresentation {
+            return when (type) {
+                ExerciseType.SQUAT -> SQUAT
+                ExerciseType.LUNGE -> LUNGE
+                ExerciseType.PLANK -> PLANK
+                ExerciseType.OTHER -> OTHER
             }
         }
     }
@@ -70,4 +78,10 @@ data class ExercisePresentation(
  * Extension property to easily retrieve UI Presenter metadata from a String representation.
  */
 val String.exercisePreset: ExercisePresentation
+    get() = ExercisePresentation.from(this)
+
+/**
+ * Extension property to easily retrieve UI Presenter metadata from an [ExerciseType].
+ */
+val ExerciseType.exercisePreset: ExercisePresentation
     get() = ExercisePresentation.from(this)
