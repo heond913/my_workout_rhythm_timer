@@ -16,7 +16,7 @@
     <string name="subtitle_timer">Führe deine Workouts zu Hause im Einklang mit deinem Rhythmus aus</string>
     <string name="desc_timer_clock">Timer Uhr</string>
     <string name="workout_count_format">%1$d Wdh.</string>
-    <string name="rhythm_interval_notifying">Benachrichtigung alle %1$d Sekunden...</string>
+    <string name="rhythm_interval_notifying">Tempo: alle %1$d Sek.</string>
     <string name="timer_in_progress">Timer läuft</string>
     <string name="ready">BEREIT</string>
     <string name="target_workout_time">Ziel-Trainingszeit</string>

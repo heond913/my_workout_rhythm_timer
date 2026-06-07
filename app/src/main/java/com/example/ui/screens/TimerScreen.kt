@@ -81,6 +81,7 @@ import com.example.ui.components.DrawExerciseIcon
 import com.example.ui.components.RoutineEditDialog
 import com.example.ui.components.TimerVisualizer
 import com.example.ui.models.exercisePreset
+import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -388,7 +389,9 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
             // Preset Exercise quick interval speed suggestions (Vibrant Palette specific categorizations)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val presets = listOf(
@@ -409,7 +412,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                     Column(
                         modifier = Modifier
-                            .weight(1f)
+                            .width(125.dp)
                             .background(
                                 if (isSelected) itemBgColor else cardSurface,
                                 RoundedCornerShape(12.dp)
@@ -422,21 +425,25 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             .clickable(enabled = !isRunning) {
                                 viewModel.selectPreset(exeType.name)
                             }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         val labelDisplay = stringResource(id = exeType.displayNameResId)
                         Text(
                             text = labelDisplay,
                             color = if (isSelected) itemTextColor else charcoalDark,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = desc,
                             color = if (isSelected) itemTextColor.copy(alpha = 0.8f) else secondaryGray,
-                            fontSize = 10.sp
+                            fontSize = 10.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
