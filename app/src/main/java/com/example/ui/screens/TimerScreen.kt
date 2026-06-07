@@ -189,7 +189,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     modifier = Modifier.height(36.dp)
                 ) {
                     Text(
-                        text = "🌐 Language Selection",
+                        text = stringResource(id = R.string.label_language_selection),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp
                     )

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">나만의 운동 타이머</string>
+    <string name="label_language_selection">🌐 언어 선택</string>
     <string name="routine_step_format">%1$d단계</string>
 
     <!-- Navigation Tab Labels in BottomBar -->

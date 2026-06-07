@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Mon rythme d\'entraînement</string>
+    <string name="label_language_selection">🌐 Sélection de la langue</string>
     <string name="routine_step_format">Étape %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
