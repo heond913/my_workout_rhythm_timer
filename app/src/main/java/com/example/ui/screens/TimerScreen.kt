@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,6 +58,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -388,63 +392,158 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             Spacer(modifier = Modifier.height(28.dp))
 
             // Preset Exercise quick interval speed suggestions (Vibrant Palette specific categorizations)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val presets = listOf(
-                    Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
-                    Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
-                    Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
-                    Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
-                )
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val availableWidth = maxWidth
+                val spacing = 8.dp
+                // Perfect Peeking: we want exactly 3.15 cards to fit across the horizontal screen width.
+                // availableWidth = 3 * cardWidth + 2 * spacing + 0.15 * cardWidth = 3.15 * cardWidth + 16.dp
+                // Thus cardWidth = (availableWidth - 16.dp) / 3.15f
+                val calculatedWidth = (availableWidth - 16.dp) / 3.15f
+                val cardWidth = if (calculatedWidth < 100.dp) 100.dp else if (calculatedWidth > 125.dp) 125.dp else calculatedWidth
 
-                presets.forEach { (exeType, secs, desc) ->
-                    val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
-                    val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
-                        ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
-                        ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
-                        ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
-                        ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                val presetScrollState = rememberScrollState()
+                val coroutineScope = rememberCoroutineScope()
+                val densityVal = androidx.compose.ui.platform.LocalDensity.current
+                val cardWidthPx = with(densityVal) { cardWidth.toPx() }
+                val spacingPx = with(densityVal) { spacing.toPx() }
+
+                // Synchronize preset selection with scroll state initially or when selected preset shifts programmatically
+                LaunchedEffect(uiState.timerPresetType) {
+                    if (!presetScrollState.isScrollInProgress) {
+                        val activeType = ExerciseType.fromString(uiState.timerPresetType)
+                        val targetIndex = when (activeType) {
+                            ExerciseType.SQUAT -> 0
+                            ExerciseType.LUNGE -> 1
+                            ExerciseType.PLANK -> 2
+                            ExerciseType.OTHER -> 3
+                        }
+                        val currentScrollIdx = if (cardWidthPx + spacingPx > 0) {
+                            (presetScrollState.value / (cardWidthPx + spacingPx)).roundToInt().coerceIn(0, 3)
+                        } else {
+                            0
+                        }
+                        if (targetIndex != currentScrollIdx) {
+                            val targetOffset = targetIndex * (cardWidthPx + spacingPx)
+                            presetScrollState.animateScrollTo(targetOffset.toInt())
+                        }
+                    }
+                }
+
+                // Compute real-time active scroll index to light up indicators
+                val activeScrollIndex = if (cardWidthPx + spacingPx > 0) {
+                    (presetScrollState.value / (cardWidthPx + spacingPx)).roundToInt().coerceIn(0, 3)
+                } else {
+                    0
+                }
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(presetScrollState),
+                        horizontalArrangement = Arrangement.spacedBy(spacing)
+                    ) {
+                        val presets = listOf(
+                            Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
+                            Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
+                            Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
+                            Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
+                        )
+
+                        presets.forEach { (exeType, secs, desc) ->
+                            val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
+                            val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
+                                ExerciseType.SQUAT -> Triple(Color(0xFFFFECCC), Color(0xFFE65100), Color(0xFFE65100))
+                                ExerciseType.LUNGE -> Triple(Color(0xFFD7E3FF), Color(0xFF3F5F90), Color(0xFF3F5F90))
+                                ExerciseType.PLANK -> Triple(Color(0xFFFFDAD6), Color(0xFF93000A), Color(0xFF93000A))
+                                ExerciseType.OTHER -> Triple(Color(0xFFCCE8E3), Color(0xFF006A60), Color(0xFF006A60))
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .width(cardWidth)
+                                    .background(
+                                        if (isSelected) itemBgColor else cardSurface,
+                                        RoundedCornerShape(12.dp)
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) itemBorderColor else Color(0xFFDCE5E2),
+                                        RoundedCornerShape(12.dp)
+                                    )
+                                    .clickable(enabled = !isRunning) {
+                                        viewModel.selectPreset(exeType.name)
+                                    }
+                                    .padding(vertical = 12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                val labelDisplay = stringResource(id = exeType.displayNameResId)
+                                Text(
+                                    text = labelDisplay,
+                                    color = if (isSelected) itemTextColor else charcoalDark,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = desc,
+                                    color = if (isSelected) itemTextColor.copy(alpha = 0.8f) else secondaryGray,
+                                    fontSize = 10.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
 
-                    Column(
-                        modifier = Modifier
-                            .width(125.dp)
-                            .background(
-                                if (isSelected) itemBgColor else cardSurface,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .border(
-                                1.dp,
-                                if (isSelected) itemBorderColor else Color(0xFFDCE5E2),
-                                RoundedCornerShape(12.dp)
-                            )
-                            .clickable(enabled = !isRunning) {
-                                viewModel.selectPreset(exeType.name)
-                            }
-                            .padding(vertical = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Center dynamic page indicator dots
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val labelDisplay = stringResource(id = exeType.displayNameResId)
-                        Text(
-                            text = labelDisplay,
-                            color = if (isSelected) itemTextColor else charcoalDark,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = desc,
-                            color = if (isSelected) itemTextColor.copy(alpha = 0.8f) else secondaryGray,
-                            fontSize = 10.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        repeat(4) { index ->
+                            val isDotActive = activeScrollIndex == index
+                            val themeAccentColor = when (ExerciseType.fromString(uiState.timerPresetType)) {
+                                ExerciseType.SQUAT -> Color(0xFFE65100)
+                                ExerciseType.LUNGE -> Color(0xFF3F5F90)
+                                ExerciseType.PLANK -> Color(0xFF93000A)
+                                ExerciseType.OTHER -> Color(0xFF006A60)
+                            }
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(24.dp)
+                                    .clickable(enabled = !isRunning) {
+                                        coroutineScope.launch {
+                                            val targetOffset = index * (cardWidthPx + spacingPx)
+                                            presetScrollState.animateScrollTo(targetOffset.toInt())
+                                            val presetName = when (index) {
+                                                0 -> ExerciseType.SQUAT.name
+                                                1 -> ExerciseType.LUNGE.name
+                                                2 -> ExerciseType.PLANK.name
+                                                else -> ExerciseType.OTHER.name
+                                            }
+                                            viewModel.selectPreset(presetName)
+                                        }
+                                    }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(if (isDotActive) 8.dp else 6.dp)
+                                        .background(
+                                            color = if (isDotActive) themeAccentColor else secondaryGray.copy(alpha = 0.3f),
+                                            shape = CircleShape
+                                        )
+                                )
+                            }
+                        }
                     }
                 }
             }
