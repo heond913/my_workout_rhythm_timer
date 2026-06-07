@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">나만의 운동 타이머</string>
     <string name="label_language_selection">🌐 언어 선택</string>
+    <string name="routine_custom_prefix_format">커스텀 루틴: %1$s</string>
+    <string name="exercise_status_work">운동</string>
+    <string name="exercise_status_rest">휴식</string>
+    <string name="title_custom_routines_list">🎯 커스텀 루틴 목록</string>
+    <string name="btn_build_routine">+ 루틴 생성</string>
+    <string name="status_none">없음</string>
+    <string name="routine_rest_format">Rest (%1$ds)</string>
     <string name="routine_step_format">%1$d단계</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
@@ -250,4 +257,24 @@
     <string name="share_card_style_coral">웜 코랄 (Coral)</string>
     <string name="share_text_success_format">🔥 %1$s 완수 완료! 🔥\n🗓 날짜: %2$s\n%3$s⏱ 운동 시간: %4$s\n⭐ 만족도: %5$s\n🚀 #나만의운동타이머 와 함께 오운완 달성!</string>
     <string name="share_text_stats_format">🏆 나만의 운동 타이머 성장 분석! 🏆\n🔥 현재 연속 운동: %1$d일 돌파!\n💪 누적 운동: %2$d회 / %3$d세트\n🏋️‍♂️ 최대 중량: %4$skg\n⏱ 누적 시간: %5$d분 %6$d초\n📊 #틱톡운동 #통계 분석 완료! #나만의운동타이머</string>
+
+    <!-- Form Validation Errors -->
+    <string name="error_invalid_reps">올바른 반복 횟수를 입력해주세요 (예: 15)</string>
+    <string name="error_invalid_sets">올바른 세트 수를 입력해주세요 (예: 3)</string>
+    <string name="error_invalid_weight">올바른 무게를 입력해주세요 (예: 10 또는 12.5)</string>
+    <string name="error_invalid_duration">올바른 시간을 초 단위로 입력해주세요 (예: 60)</string>
+    <string name="error_empty_custom_exercise">커스텀 운동명을 입력해주세요</string>
+
+    <!-- Routine Edit Dialog -->
+    <string name="label_exercise_duration">운동 시간</string>
+    <string name="label_rhythm_setting">박자 세팅</string>
+    <string name="label_rest_duration_after">운동 끝난 후 휴식시간</string>
+    <string name="title_create_custom_routine">새 커스텀 루틴 생성</string>
+    <string name="title_edit_custom_routine">커스텀 루틴 편집</string>
+    <string name="label_routine_name">루틴명</string>
+    <string name="placeholder_routine_name">예: 하체 버닝 세트</string>
+    <string name="label_exercise_steps_format">운동 단계 (%1$d)</string>
+    <string name="btn_add_step">➕ 단계 추가</string>
+    <string name="msg_no_steps_added">등록된 운동이 없습니다. 단계를 추가해주세요.</string>
+    <string name="btn_save">저장</string>
 </resources>

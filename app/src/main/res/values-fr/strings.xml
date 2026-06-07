@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Mon rythme d\'entraînement</string>
     <string name="label_language_selection">🌐 Sélection de la langue</string>
+    <string name="routine_custom_prefix_format">Routine personnalisée: %1$s</string>
+    <string name="exercise_status_work">exercice</string>
+    <string name="exercise_status_rest">repos</string>
+    <string name="title_custom_routines_list">🎯 Liste des routines personnalisées</string>
+    <string name="btn_build_routine">+ Créer une routine</string>
+    <string name="status_none">Aucun</string>
+    <string name="routine_rest_format">Rest (%1$ds)</string>
     <string name="routine_step_format">Étape %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
@@ -256,4 +263,17 @@
     <string name="error_invalid_weight">Saisissez une valeur décimale correcte pour la charge (ex. 10 ou 12.5)</string>
     <string name="error_invalid_duration">Saisissez une valeur entière correcte en secondes pour la durée (ex. 60)</string>
     <string name="error_empty_custom_exercise">Veuillez saisir un nom pour l\'exercice personnalisé</string>
+
+    <!-- Routine Edit Dialog -->
+    <string name="label_exercise_duration">Durée</string>
+    <string name="label_rhythm_setting">Intervalle de rythme</string>
+    <string name="label_rest_duration_after">Temps de repos après</string>
+    <string name="title_create_custom_routine">Créer une routine personnalisée</string>
+    <string name="title_edit_custom_routine">Modifier la routine personnalisée</string>
+    <string name="label_routine_name">Nom de la routine</string>
+    <string name="placeholder_routine_name">ex. Jambes d\'enfer</string>
+    <string name="label_exercise_steps_format">Étapes de l\'exercice (%1$d)</string>
+    <string name="btn_add_step">➕ Ajouter une étape</string>
+    <string name="msg_no_steps_added">Aucune étape ajoutée. Veuillez ajouter des exercices.</string>
+    <string name="btn_save">Sauvegarder</string>
 </resources>

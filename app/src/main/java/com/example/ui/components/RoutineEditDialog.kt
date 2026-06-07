@@ -1,6 +1,8 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -78,7 +80,6 @@ fun ExerciseChipGroup(
 fun RoutineStepRowItem(
     index: Int,
     step: RoutineStep,
-    isKo: Boolean,
     isMoveUpEnabled: Boolean,
     isMoveDownEnabled: Boolean,
     isLastStep: Boolean,
@@ -107,7 +108,7 @@ fun RoutineStepRowItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isKo) "${index + 1}단계" else "Step ${index + 1}",
+                    text = stringResource(id = R.string.routine_step_format, index + 1),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = tealActive
@@ -156,7 +157,7 @@ fun RoutineStepRowItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isKo) "운동 시간" else "Duration",
+                    text = stringResource(id = R.string.label_exercise_duration),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     color = secondaryGray
@@ -209,7 +210,7 @@ fun RoutineStepRowItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isKo) "박자 세팅" else "Rhythm Interval",
+                        text = stringResource(id = R.string.label_rhythm_setting),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryGray
@@ -262,7 +263,7 @@ fun RoutineStepRowItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isKo) "운동 끝난 후 휴식시간" else "Rest Duration After",
+                        text = stringResource(id = R.string.label_rest_duration_after),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryGray
@@ -317,7 +318,6 @@ fun RoutineEditDialog(
     routineId: String?,
     initialName: String,
     initialSteps: List<RoutineStep>,
-    isKo: Boolean,
     onDismiss: () -> Unit,
     onSave: (String, List<RoutineStep>) -> Unit
 ) {
@@ -332,9 +332,9 @@ fun RoutineEditDialog(
         title = {
             Text(
                 text = if (routineId == null) {
-                    if (isKo) "새 커스텀 루틴 생성" else "Create Custom Routine"
+                    stringResource(id = R.string.title_create_custom_routine)
                 } else {
-                    if (isKo) "커스텀 루틴 편집" else "Edit Custom Routine"
+                    stringResource(id = R.string.title_edit_custom_routine)
                 },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -350,7 +350,7 @@ fun RoutineEditDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = if (isKo) "루틴명" else "Routine Name",
+                    text = stringResource(id = R.string.label_routine_name),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = secondaryGray
@@ -359,7 +359,7 @@ fun RoutineEditDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    placeholder = { Text(if (isKo) "예: 하체 버닝 세트" else "e.g. Legs Burn") },
+                    placeholder = { Text(stringResource(id = R.string.placeholder_routine_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true
@@ -373,7 +373,7 @@ fun RoutineEditDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isKo) "운동 단계 (${steps.size})" else "Exercise Steps (${steps.size})",
+                        text = stringResource(id = R.string.label_exercise_steps_format, steps.size),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = secondaryGray
@@ -385,7 +385,7 @@ fun RoutineEditDialog(
                         }
                     ) {
                         Text(
-                            text = if (isKo) "➕ 단계 추가" else "➕ Add Step",
+                            text = stringResource(id = R.string.btn_add_step),
                             color = tealActive,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -395,7 +395,7 @@ fun RoutineEditDialog(
 
                 if (steps.isEmpty()) {
                     Text(
-                        text = if (isKo) "등록된 운동이 없습니다. 단계를 추가해주세요." else "No steps added. Please add some exercises.",
+                        text = stringResource(id = R.string.msg_no_steps_added),
                         fontSize = 12.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center,
@@ -409,7 +409,6 @@ fun RoutineEditDialog(
                     RoutineStepRowItem(
                         index = index,
                         step = step,
-                        isKo = isKo,
                         isMoveUpEnabled = index > 0,
                         isMoveDownEnabled = index < steps.size - 1,
                         isLastStep = index == steps.size - 1,
@@ -462,12 +461,12 @@ fun RoutineEditDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = tealActive),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(if (isKo) "저장" else "Save", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.btn_save), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(if (isKo) "취소" else "Cancel", color = secondaryGray, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.cancel), color = secondaryGray, fontWeight = FontWeight.Bold)
             }
         },
         shape = RoundedCornerShape(16.dp),

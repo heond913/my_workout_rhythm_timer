@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">マイワークアウトリズム</string>
     <string name="label_language_selection">🌐 言語選択</string>
+    <string name="routine_custom_prefix_format">カスタムルーティン: %1$s</string>
+    <string name="exercise_status_work">運動</string>
+    <string name="exercise_status_rest">休憩</string>
+    <string name="title_custom_routines_list">🎯 カスタムルーティン一覧</string>
+    <string name="btn_build_routine">+ ルーティン作成</string>
+    <string name="status_none">なし</string>
+    <string name="routine_rest_format">Rest (%1$ds)</string>
     <string name="routine_step_format">ステップ %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
@@ -256,4 +263,17 @@
     <string name="error_invalid_weight">重量には有効な数値を入力してください (例: 10 または 12.5)</string>
     <string name="error_invalid_duration">継続秒数には有効な整数を入力してください (例: 60)</string>
     <string name="error_empty_custom_exercise">カスタム運動名を入力してください</string>
+
+    <!-- Routine Edit Dialog -->
+    <string name="label_exercise_duration">運動時間</string>
+    <string name="label_rhythm_setting">拍子設定</string>
+    <string name="label_rest_duration_after">運動後の休憩時間</string>
+    <string name="title_create_custom_routine">新規カスタムルーティン作成</string>
+    <string name="title_edit_custom_routine">カスタムルーティン編集</string>
+    <string name="label_routine_name">ルーティン名</string>
+    <string name="placeholder_routine_name">例：下半身強化セット</string>
+    <string name="label_exercise_steps_format">運動段階 (%1$d)</string>
+    <string name="btn_add_step">➕ 段階追加</string>
+    <string name="msg_no_steps_added">登録された運動がありません。段階を追加してください。</string>
+    <string name="btn_save">保存</string>
 </resources>

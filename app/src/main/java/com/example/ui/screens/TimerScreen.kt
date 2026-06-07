@@ -151,8 +151,6 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     }
 
     val appLocalesForScreen = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-    val currentLocaleForScreen = if (!appLocalesForScreen.isEmpty) appLocalesForScreen.get(0)?.language else java.util.Locale.getDefault().language
-    val isKo = currentLocaleForScreen == "ko"
 
     var showRoutineDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
     var editingRoutineId by remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
@@ -249,7 +247,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         Spacer(modifier = Modifier.width(8.dp))
                         
                         Text(
-                            text = if (isKo) "커스텀 루틴: ${uiState.routineName}" else "Custom Routine: ${uiState.routineName}",
+                            text = stringResource(id = R.string.routine_custom_prefix_format, uiState.routineName),
                             fontWeight = FontWeight.Bold,
                             color = WorkoutDeepTeal,
                             fontSize = 14.sp
@@ -287,10 +285,10 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 
                                 val stepType = ExerciseType.fromString(step.exerciseName)
                                 val stepColor = when (stepType) {
-                                    ExerciseType.SQUAT -> VibrantSquatOrange // Orange
-                                    ExerciseType.LUNGE -> VibrantLungeIndigo     // Blue
-                                    ExerciseType.PLANK -> VibrantPlankCrimson   // Red
-                                    ExerciseType.OTHER -> VibrantTealActive                // Teal
+                                    ExerciseType.SQUAT -> VibrantSquatOrange
+                                    ExerciseType.LUNGE -> VibrantLungeIndigo
+                                    ExerciseType.PLANK -> VibrantPlankCrimson
+                                    ExerciseType.OTHER -> VibrantTealActive
                                 }
                                 
                                 val circleBgColor = if (isCurrent) {
@@ -346,8 +344,8 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         step.exerciseName
                                     }
                                     
-                                    val statusStr = if (isKo) "운동" else "work"
-                                    val restStr = if (isKo) "휴식" else "rest"
+                                    val statusStr = stringResource(id = R.string.exercise_status_work)
+                                    val restStr = stringResource(id = R.string.exercise_status_rest)
                                     
                                     Text(
                                         text = "$exerciseLabel: ${step.durationSeconds}s ($statusStr)",
@@ -804,7 +802,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isKo) "🎯 커스텀 루틴 목록" else "🎯 Custom Routines List",
+                    text = stringResource(id = R.string.title_custom_routines_list),
                     color = charcoalDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.ExtraBold
@@ -823,7 +821,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (isKo) "+ 루틴 생성" else "+ Build Routine",
+                        text = stringResource(id = R.string.btn_build_routine),
                         color = tealActive,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -842,7 +840,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         .padding(16.dp),
                 ) {
                     Text(
-                        text = if (isKo) "없음" else "None",
+                        text = stringResource(id = R.string.status_none),
                         color = secondaryGray,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
@@ -917,14 +915,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 ) {
                                     routine.steps.forEachIndexed { index, step ->
                                         val exType = ExerciseType.fromString(step.exerciseName)
-                                        val displayExerciseName = if (isKo) {
+                                        val displayExerciseName = if (exType != ExerciseType.OTHER) {
                                             stringResource(id = exType.displayNameResId)
                                         } else {
-                                            when (exType) {
-                                                ExerciseType.SQUAT -> "Squat"
-                                                ExerciseType.LUNGE -> "Lunge"
-                                                ExerciseType.PLANK -> "Plank"
-                                                ExerciseType.OTHER -> "Etc."
+                                            if (step.exerciseName.equals(ExerciseType.OTHER.name, ignoreCase = true) || step.exerciseName.isBlank()) {
+                                                stringResource(id = R.string.preset_other)
+                                            } else {
+                                                step.exerciseName
                                             }
                                         }
                                         
@@ -961,7 +958,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                                     .padding(horizontal = 10.dp, vertical = 5.dp)
                                             ) {
                                                 Text(
-                                                    text = if (isKo) "Rest (${step.restSeconds}s)" else "Rest (${step.restSeconds}s)",
+                                                    text = stringResource(id = R.string.routine_rest_format, step.restSeconds),
                                                     color = VibrantCharcoalDark,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold
@@ -1396,7 +1393,6 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             routineId = editingRoutineId,
             initialName = routineNameInput,
             initialSteps = routineStepsInput,
-            isKo = isKo,
             onDismiss = { showRoutineDialog = false },
             onSave = { name, steps ->
                 viewModel.createOrUpdateRoutine(

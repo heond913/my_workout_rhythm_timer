@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">My Workout Rhythm</string>
     <string name="label_language_selection">🌐 Language Selection</string>
+    <string name="routine_custom_prefix_format">Custom Routine: %1$s</string>
+    <string name="exercise_status_work">work</string>
+    <string name="exercise_status_rest">rest</string>
+    <string name="title_custom_routines_list">🎯 Custom Routines List</string>
+    <string name="btn_build_routine">+ Build Routine</string>
+    <string name="status_none">None</string>
+    <string name="routine_rest_format">Rest (%1$ds)</string>
     <string name="routine_step_format">Step %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
@@ -257,4 +264,17 @@
     <string name="error_invalid_weight">Please enter a valid decimal for weight (e.g., 10 or 12.5)</string>
     <string name="error_invalid_duration">Please enter a valid integer for duration in seconds (e.g., 60)</string>
     <string name="error_empty_custom_exercise">Please enter a custom exercise name</string>
+
+    <!-- Routine Edit Dialog -->
+    <string name="label_exercise_duration">Duration</string>
+    <string name="label_rhythm_setting">Rhythm Interval</string>
+    <string name="label_rest_duration_after">Rest Duration After</string>
+    <string name="title_create_custom_routine">Create Custom Routine</string>
+    <string name="title_edit_custom_routine">Edit Custom Routine</string>
+    <string name="label_routine_name">Routine Name</string>
+    <string name="placeholder_routine_name">e.g. Legs Burn</string>
+    <string name="label_exercise_steps_format">Exercise Steps (%1$d)</string>
+    <string name="btn_add_step">➕ Add Step</string>
+    <string name="msg_no_steps_added">No steps added. Please add some exercises.</string>
+    <string name="btn_save">Save</string>
 </resources>

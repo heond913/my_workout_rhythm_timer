@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Mein Trainingsrhythmus</string>
     <string name="label_language_selection">🌐 Sprachauswahl</string>
+    <string name="routine_custom_prefix_format">Benutzerdefinierte Routine: %1$s</string>
+    <string name="exercise_status_work">Training</string>
+    <string name="exercise_status_rest">Pause</string>
+    <string name="title_custom_routines_list">🎯 Liste benutzerdefinierter Routinen</string>
+    <string name="btn_build_routine">+ Routine erstellen</string>
+    <string name="status_none">Keine</string>
+    <string name="routine_rest_format">Rest (%1$ds)</string>
     <string name="routine_step_format">Schritt %1$d</string>
 
     <!-- Navigation Tab Labels in BottomBar -->
@@ -256,4 +263,17 @@
     <string name="error_invalid_weight">Bitte gib eine gültige Dezimalzahl für das Gewicht ein (z.B. 10 oder 12.5)</string>
     <string name="error_invalid_duration">Bitte gib eine gültige Ganzzahl für Sekunden ein (z.B. 60)</string>
     <string name="error_empty_custom_exercise">Bitte gib einen anderen Übungsnamen ein</string>
+
+    <!-- Routine Edit Dialog -->
+    <string name="label_exercise_duration">Dauer</string>
+    <string name="label_rhythm_setting">Rhythmus-Intervall</string>
+    <string name="label_rest_duration_after">Ruhzeit danach</string>
+    <string name="title_create_custom_routine">Neue benutzerdefinierte Routine erstellen</string>
+    <string name="title_edit_custom_routine">Benutzerdefinierte Routine bearbeiten</string>
+    <string name="label_routine_name">Routinenname</string>
+    <string name="placeholder_routine_name">z.B. Beintraining</string>
+    <string name="label_exercise_steps_format">Übungsschritte (%1$d)</string>
+    <string name="btn_add_step">➕ Schritt hinzufügen</string>
+    <string name="msg_no_steps_added">Keine Schritte hinzugefügt. Bitte Übungen hinzufügen.</string>
+    <string name="btn_save">Speichern</string>
 </resources>
