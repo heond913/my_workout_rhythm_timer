@@ -429,11 +429,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     }
                 }
 
-                // Compute real-time active scroll index to light up indicators
-                val activeScrollIndex = if (cardWidthPx + spacingPx > 0) {
-                    (presetScrollState.value / (cardWidthPx + spacingPx)).roundToInt().coerceIn(0, 3)
-                } else {
-                    0
+                val activeType = ExerciseType.fromString(uiState.timerPresetType)
+                val selectedPresetIndex = when (activeType) {
+                    ExerciseType.SQUAT -> 0
+                    ExerciseType.LUNGE -> 1
+                    ExerciseType.PLANK -> 2
+                    ExerciseType.OTHER -> 3
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -447,7 +448,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             Triple(ExerciseType.SQUAT, uiState.squatIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.squatIntervalSeconds)),
                             Triple(ExerciseType.LUNGE, uiState.lungeIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.lungeIntervalSeconds)),
                             Triple(ExerciseType.PLANK, totalSeconds, stringResource(id = R.string.preset_check_format, totalSeconds)),
-                            Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_check_format, uiState.otherIntervalSeconds))
+                            Triple(ExerciseType.OTHER, uiState.otherIntervalSeconds, stringResource(id = R.string.preset_interval_format, uiState.otherIntervalSeconds))
                         )
 
                         presets.forEach { (exeType, secs, desc) ->
@@ -507,12 +508,12 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         repeat(4) { index ->
-                            val isDotActive = activeScrollIndex == index
-                            val themeAccentColor = when (ExerciseType.fromString(uiState.timerPresetType)) {
-                                ExerciseType.SQUAT -> Color(0xFFE65100)
-                                ExerciseType.LUNGE -> Color(0xFF3F5F90)
-                                ExerciseType.PLANK -> Color(0xFF93000A)
-                                ExerciseType.OTHER -> Color(0xFF006A60)
+                            val isDotActive = selectedPresetIndex == index
+                            val dotColor = when (index) {
+                                0 -> Color(0xFFE65100) // Squat Orange
+                                1 -> Color(0xFF3F5F90) // Lunge Blue
+                                2 -> Color(0xFF93000A) // Plank Red
+                                else -> Color(0xFF006A60) // Other Teal
                             }
 
                             Box(
@@ -538,7 +539,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     modifier = Modifier
                                         .size(if (isDotActive) 8.dp else 6.dp)
                                         .background(
-                                            color = if (isDotActive) themeAccentColor else secondaryGray.copy(alpha = 0.3f),
+                                            color = if (isDotActive) dotColor else secondaryGray.copy(alpha = 0.3f),
                                             shape = CircleShape
                                         )
                                 )
