@@ -205,6 +205,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">Série du rythme corporel global</string>
     <string name="default_routine_2_name">Série de renforcement du bas</string>
+    <string name="default_routine_3_name">Série de gainage planche</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">Repos terminé ! L\'exercice suivant est %1$s. Préparez-vous !</string>

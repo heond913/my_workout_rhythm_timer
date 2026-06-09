@@ -206,6 +206,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">Full-Body Rhythm Set</string>
     <string name="default_routine_2_name">Lower Body Strengthening Set</string>
+    <string name="default_routine_3_name">Core Plank Set</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">Rest ended! Next exercise is %1$s. Prepare yourself!</string>

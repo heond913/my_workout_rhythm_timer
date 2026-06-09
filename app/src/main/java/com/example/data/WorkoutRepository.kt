@@ -41,7 +41,7 @@ class WorkoutRepository(
         sharedPreferences.edit { putString("timer_preset_type", preset) }
     }
 
-    fun getSquatInterval(): Int = sharedPreferences.getInt("squat_interval", 4)
+    fun getSquatInterval(): Int = sharedPreferences.getInt("squat_interval", 3)
     fun saveSquatInterval(value: Int) {
         sharedPreferences.edit { putInt("squat_interval", value) }
     }
@@ -51,7 +51,7 @@ class WorkoutRepository(
         sharedPreferences.edit { putInt("lunge_interval", value) }
     }
 
-    fun getPlankInterval(): Int = sharedPreferences.getInt("plank_interval", 10)
+    fun getPlankInterval(): Int = sharedPreferences.getInt("plank_interval", 30)
     fun savePlankInterval(value: Int) {
         sharedPreferences.edit { putInt("plank_interval", value) }
     }
@@ -81,7 +81,7 @@ class WorkoutRepository(
         sharedPreferences.edit { putInt("other_target_seconds", value) }
     }
 
-    fun getRhythmInterval(): Int = sharedPreferences.getInt("rhythm_interval_seconds", 4)
+    fun getRhythmInterval(): Int = sharedPreferences.getInt("rhythm_interval_seconds", 3)
     fun saveRhythmInterval(value: Int) {
         sharedPreferences.edit { putInt("rhythm_interval_seconds", value) }
     }
@@ -162,7 +162,7 @@ class WorkoutRepository(
                     id = "default_1",
                     name = getLocalizedString(R.string.default_routine_1_name, langCode),
                     steps = listOf(
-                        RoutineStep(getLocalizedString(R.string.preset_squat, langCode), 60, 4, 15),
+                        RoutineStep(getLocalizedString(R.string.preset_squat, langCode), 60, 3, 15),
                         RoutineStep(getLocalizedString(R.string.preset_lunge, langCode), 60, 5, 0)
                     ),
                     timestamp = routine.timestamp
@@ -174,8 +174,18 @@ class WorkoutRepository(
                     name = getLocalizedString(R.string.default_routine_2_name, langCode),
                     steps = listOf(
                         RoutineStep(getLocalizedString(R.string.preset_squat, langCode), 45, 3, 20),
-                        RoutineStep(getLocalizedString(R.string.preset_lunge, langCode), 45, 4, 20),
+                        RoutineStep(getLocalizedString(R.string.preset_lunge, langCode), 45, 5, 20),
                         RoutineStep(getLocalizedString(R.string.preset_other, langCode), 60, 6, 0)
+                    ),
+                    timestamp = routine.timestamp
+                )
+            }
+            "default_3" -> {
+                CustomRoutine(
+                    id = "default_3",
+                    name = getLocalizedString(R.string.default_routine_3_name, langCode),
+                    steps = listOf(
+                        RoutineStep(getLocalizedString(R.string.preset_plank, langCode), 60, 30, 15)
                     ),
                     timestamp = routine.timestamp
                 )
@@ -197,7 +207,7 @@ class WorkoutRepository(
                     id = "default_1",
                     name = "전신 리듬 세트",
                     steps = listOf(
-                        RoutineStep("스쿼트", 60, 4, 15),
+                        RoutineStep("스쿼트", 60, 3, 15),
                         RoutineStep("런지", 60, 5, 0)
                     )
                 ),
@@ -206,8 +216,15 @@ class WorkoutRepository(
                     name = "하체 단련 세트",
                     steps = listOf(
                         RoutineStep("스쿼트", 45, 3, 20),
-                        RoutineStep("런지", 45, 4, 20),
+                        RoutineStep("런지", 45, 5, 20),
                         RoutineStep("기타", 60, 6, 0)
+                    )
+                ),
+                CustomRoutine(
+                    id = "default_3",
+                    name = "코어 플랭크 세트",
+                    steps = listOf(
+                        RoutineStep("플랭크", 60, 30, 15)
                     )
                 )
             )

@@ -206,6 +206,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">전신 리듬 세트</string>
     <string name="default_routine_2_name">하체 단련 세트</string>
+    <string name="default_routine_3_name">코어 플랭크 세트</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">쉬는 시간 끝! 다음 운동은 %1$s입니다. 준비하세요!</string>

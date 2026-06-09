@@ -10,7 +10,7 @@ data class TimerState(
     val timerMode: TimerMode = TimerMode.Countdown,
     val timerPresetType: String = "스쿼트",
     val totalTargetSeconds: Int = 60,
-    val rhythmIntervalSeconds: Int = 4,
+    val rhythmIntervalSeconds: Int = 3,
     val elapsedSeconds: Int = 0,
     val remainingSeconds: Int = 60,
     val rhythmTickCount: Int = 0,

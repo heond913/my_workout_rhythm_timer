@@ -205,6 +205,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">全身リズムセット</string>
     <string name="default_routine_2_name">下半身強化セット</string>
+    <string name="default_routine_3_name">コアプランクセット</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">休憩終了です！次の運動は %1$s です。準備してください！</string>

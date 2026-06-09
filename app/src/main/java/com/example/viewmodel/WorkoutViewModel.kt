@@ -59,9 +59,9 @@ enum class TimerMode {
 data class WorkoutUiState(
     val currentTab: AppTab = AppTab.Timer,
     val timerPresetType: String = "스쿼트",
-    val squatIntervalSeconds: Int = 4,
+    val squatIntervalSeconds: Int = 3,
     val lungeIntervalSeconds: Int = 5,
-    val plankIntervalSeconds: Int = 10,
+    val plankIntervalSeconds: Int = 30,
     val otherIntervalSeconds: Int = 10,
     val squatTargetSeconds: Int = 60,
     val lungeTargetSeconds: Int = 60,

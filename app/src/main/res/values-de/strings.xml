@@ -205,6 +205,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">Ganzkörper-Rhythmussatz</string>
     <string name="default_routine_2_name">Ganzkörper-Stärkungssatz</string>
+    <string name="default_routine_3_name">Rumpf-Plank-Satz</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">Erholung beendet! Nächste Übung ist %1$s. Bereite dich vor!</string>

@@ -206,6 +206,7 @@
     <!-- Default routines names -->
     <string name="default_routine_1_name">Grupo de Ritmo Corporal Total</string>
     <string name="default_routine_2_name">Grupo de Fortalecimiento Inferior</string>
+    <string name="default_routine_3_name">Grupo de Plancha Abdominal</string>
 
     <!-- Localized TTS strings -->
     <string name="tts_rest_ended_next_exercise">¡Descanso terminado! El siguiente ejercicio es %1$s. ¡Prepárate!</string>
