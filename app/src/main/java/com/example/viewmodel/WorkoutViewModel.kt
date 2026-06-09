@@ -331,6 +331,9 @@ class WorkoutViewModel @JvmOverloads constructor(
     fun onLanguageSelected() {
         repository.saveLanguageSelected(true)
         updateShowLanguageSelection(false)
+        _uiState.update {
+            it.copy(customRoutines = repository.getCustomRoutines())
+        }
     }
 
     fun selectPreset(preset: String) {
