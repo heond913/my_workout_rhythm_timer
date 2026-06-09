@@ -70,6 +70,9 @@ class MainActivity : AppCompatActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
         enableEdgeToEdge()
 
+        // Pre-initialize DailyAdManager and preload interstitial ad on app start
+        com.example.ad.DailyAdManager.getInstance(this)
+
         // Set default language to English on initial installation (if no language selected yet)
         val prefs = getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE)
         val isLangSelected = prefs.getBoolean("is_language_selected", false)

@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.content.Context
 import android.media.AudioManager
 import androidx.compose.animation.core.animateFloatAsState
@@ -85,6 +86,7 @@ import com.example.ui.components.DrawExerciseIcon
 import com.example.ui.components.RoutineEditDialog
 import com.example.ui.components.TimerVisualizer
 import com.example.ui.models.exercisePreset
+import com.example.ad.DailyAdManager
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.ui.theme.*
 
@@ -1383,7 +1385,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.updateShowCompletionDialog(false) },
+                    onClick = {
+                        val activity = context as? Activity
+                        if (activity != null) {
+                            DailyAdManager.getInstance(context).showDailyWorkoutAd(activity) {
+                                viewModel.updateShowCompletionDialog(false)
+                            }
+                        } else {
+                            viewModel.updateShowCompletionDialog(false)
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = tealActive),
                     shape = RoundedCornerShape(8.dp)
                 ) {
