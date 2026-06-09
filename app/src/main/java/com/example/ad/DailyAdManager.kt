@@ -28,7 +28,8 @@ class DailyAdManager private constructor(context: Context) {
 
     companion object {
         private const val TAG = "DailyAdManager"
-        private const val AD_UNIT_ID = "ca-app-pub-3920415495562244/1033173712" // Official AdMob Test Ad Unit ID
+        // Official AdMob Test Interstitial Ad Unit ID
+        private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
         private const val PREFS_NAME = "workout_rhythm_prefs"
         private const val KEY_LAST_SHOWN_DATE = "last_ad_shown_date_yyyymmdd"
 
@@ -101,6 +102,11 @@ class DailyAdManager private constructor(context: Context) {
      * Compares the current device date with the stored date in SharedPreferences.
      */
     private fun hasShownAdToday(): Boolean {
+        // Skip check in debug/development mode to allow continuous testing
+        if (com.example.BuildConfig.DEBUG) {
+            Log.d(TAG, "hasShownAdToday: Debug build detected, bypassing daily limit for testing.")
+            return false
+        }
         val sharedPreferences = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastShownDate = sharedPreferences.getString(KEY_LAST_SHOWN_DATE, "")
         val todayDate = getTodayDateString()

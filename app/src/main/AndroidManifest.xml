@@ -46,7 +46,7 @@
         <!-- Sample AdMob App ID (required by Google Mobile Ads SDK for test unit IDs) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3920415495562244~3347511713" />
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <activity
             android:name=".MainActivity"
