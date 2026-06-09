@@ -805,8 +805,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     text = stringResource(id = R.string.title_custom_routines_list),
                     color = charcoalDark,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
+                
+                Spacer(modifier = Modifier.width(8.dp))
                 
                 Box(
                     modifier = Modifier
@@ -824,7 +829,9 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         text = stringResource(id = R.string.btn_build_routine),
                         color = tealActive,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
                     )
                 }
             }
