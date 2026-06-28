@@ -59,9 +59,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
     val tealActive = MaterialTheme.colorScheme.primary
     val darkBg = MaterialTheme.colorScheme.background
-    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
-    val secondaryGray = MaterialTheme.colorScheme.onSurfaceVariant
-    val charcoalDark = MaterialTheme.colorScheme.onSurface
+    val cardSurface = if (isDark) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFF94A3B8) else MaterialTheme.colorScheme.onSurfaceVariant
+    val charcoalDark = if (isDark) Color(0xFFE3E3E3) else MaterialTheme.colorScheme.onSurface
     val borderColor = if (isDark) Color(0xFF3F4945) else Color(0xFFDCE5E2)
 
     val scrollState = rememberScrollState()
@@ -110,9 +110,27 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 
                 // Isolate preset presentation colors & metadata using the UI presenter model
                 val preset = exeType.exercisePreset
-                val itemBg = preset.bgColor
-                val itemBorder = preset.themeColor
-                val itemAccent = preset.themeColor
+                val itemBg = if (isDark) {
+                    when (exeType) {
+                        ExerciseType.SQUAT -> Color(0xFF3E1F00)
+                        ExerciseType.LUNGE -> Color(0xFF141F35)
+                        ExerciseType.PLANK -> Color(0xFF3F0001)
+                        ExerciseType.OTHER -> Color(0xFF003731)
+                    }
+                } else {
+                    preset.bgColor
+                }
+                val itemBorder = if (isDark) {
+                    when (exeType) {
+                        ExerciseType.SQUAT -> Color(0xFFFFB085)
+                        ExerciseType.LUNGE -> Color(0xFF93C5FD)
+                        ExerciseType.PLANK -> Color(0xFFFCA5A5)
+                        ExerciseType.OTHER -> Color(0xFF80CBC4)
+                    }
+                } else {
+                    preset.themeColor
+                }
+                val itemAccent = itemBorder
 
                 Card(
                     colors = CardDefaults.cardColors(
@@ -151,7 +169,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         val exeDisplay = stringResource(id = preset.displayNameResId)
                         Text(
                             text = exeDisplay,
-                            color = if (isSelected) charcoalDark else secondaryGray,
+                            color = if (isSelected) itemAccent else secondaryGray,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
@@ -320,7 +338,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 5).coerceAtLeast(0)
                             viewModel.updateInputReps(newVal.toString())
                         },
-                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_reps), tint = tealActive)
                     }
@@ -353,9 +373,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = currentIdx + 5
                             viewModel.updateInputReps(newVal.toString())
                         },
-                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else tealActive, RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_reps), tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_reps), tint = if (isDark) tealActive else Color.White)
                     }
                 }
 
@@ -411,7 +433,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 1).coerceAtLeast(1)
                             viewModel.updateInputSets(newVal.toString())
                         },
-                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_sets), tint = tealActive)
                     }
@@ -444,9 +468,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = currentIdx + 1
                             viewModel.updateInputSets(newVal.toString())
                         },
-                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else tealActive, RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_sets), tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_sets), tint = if (isDark) tealActive else Color.White)
                     }
                 }
 
@@ -502,7 +528,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentVal - 2.5).coerceAtLeast(0.0)
                             viewModel.updateInputWeightKg(if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString())
                         },
-                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_weight), tint = tealActive)
                     }
@@ -535,9 +563,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = currentVal + 2.5
                             viewModel.updateInputWeightKg(if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString())
                         },
-                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else tealActive, RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_weight), tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_weight), tint = if (isDark) tealActive else Color.White)
                     }
                 }
 
@@ -593,7 +623,9 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 10).coerceAtLeast(0)
                             viewModel.updateInputDurationSeconds(newVal.toString())
                         },
-                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_duration), tint = tealActive)
                     }
@@ -626,9 +658,11 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = currentIdx + 10
                             viewModel.updateInputDurationSeconds(newVal.toString())
                         },
-                        modifier = Modifier.background(tealActive, RoundedCornerShape(10.dp))
+                        modifier = Modifier
+                            .background(if (isDark) tealActive.copy(alpha = 0.15f) else tealActive, RoundedCornerShape(10.dp))
+                            .border(1.dp, if (isDark) borderColor else Color.Transparent, RoundedCornerShape(10.dp))
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_duration), tint = Color.White)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.desc_increase_duration), tint = if (isDark) tealActive else Color.White)
                     }
                 }
 
@@ -688,7 +722,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "$star Stars",
-                            tint = if (isFilled) tealActive else Color(0xFFDAE5E1),
+                            tint = if (isFilled) tealActive else (if (isDark) Color(0xFF3F4945) else Color(0xFFDAE5E1)),
                             modifier = Modifier
                                 .size(36.dp)
                                 .clickable { viewModel.updateInputRating(star) }
@@ -746,7 +780,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                 .testTag("save_workout_button"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = tealActive,
-                contentColor = Color.White
+                contentColor = if (isDark) Color(0xFF003731) else Color.White
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
