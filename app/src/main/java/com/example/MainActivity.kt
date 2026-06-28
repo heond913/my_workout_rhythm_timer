@@ -117,7 +117,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
+            val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+            val currentLocale = configuration.locales[0]
+
+            androidx.compose.runtime.key(currentLocale) {
+                MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
                 val viewModel: WorkoutViewModel = viewModel()
                 val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -185,6 +189,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
         }
     }
 }
