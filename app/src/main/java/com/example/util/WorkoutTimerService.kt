@@ -174,288 +174,302 @@ class WorkoutTimerService : Service() {
                 }
                 if (diff > 0) {
                     for (i in 1..diff) {
-                        val currentLoopState = TimerRepository.timerState.value
-                        if (!currentLoopState.isRunning) break
-
-                        var newElapsed = currentLoopState.elapsedSeconds
-                        var newRemaining = currentLoopState.remainingSeconds
-                        var newRhythmTick = currentLoopState.rhythmTickCount
-                        var newWorkoutCount = currentLoopState.workoutCount
-                        var newRunning = currentLoopState.isRunning
-                        var newShowDialog = currentLoopState.showCompletionDialog
-                        var newIsResting = currentLoopState.isResting
-                        var newRestRemaining = currentLoopState.restRemainingSeconds
-                        var newRestTotal = currentLoopState.restTotalSeconds
-                        var newCurrentStepIndex = currentLoopState.routineCurrentStepIndex
-                        var newIsRoutineActive = currentLoopState.isRoutineActive
-                        var newPresetType = currentLoopState.timerPresetType
-                        var newInterval = currentLoopState.rhythmIntervalSeconds
-                        var newTotalTarget = currentLoopState.totalTargetSeconds
-                        var newRoutineHistoryJson = currentLoopState.routineHistoryJson
+                        if (!TimerRepository.timerState.value.isRunning) break
 
                         var speakText: String? = null
-                        var coachingText: String? = null
+                        var extraSpeakText: String? = null
+                        var playStrongBeep = false
+                        var playTick = false
+                        var playSetFinished = false
+                        var resetStartTime = false
+                        var logWorkout = false
+                        var logRoutineHistoryJson: String? = null
+                        var logRoutineName: String? = null
 
-                        val targetTotal = newTotalTarget
+                        TimerRepository.updateState { currentState ->
+                            if (!currentState.isRunning) return@updateState currentState
 
-                        if (currentLoopState.isResting) {
-                            newElapsed++
-                            if (newRestRemaining > 0) {
-                                newRestRemaining--
-                            }
-                            if (newRestRemaining == 10 && newRestTotal > 15) {
-                                speakText = getString(R.string.rest_10_seconds_left)
-                            } else if (newRestRemaining in 1..3) {
-                                speakText = ttsHelper.getCountdownWord(newRestRemaining)
-                            }
+                            var newElapsed = currentState.elapsedSeconds
+                            var newRemaining = currentState.remainingSeconds
+                            var newRhythmTick = currentState.rhythmTickCount
+                            var newWorkoutCount = currentState.workoutCount
+                            var newRunning = currentState.isRunning
+                            var newShowDialog = currentState.showCompletionDialog
+                            var newIsResting = currentState.isResting
+                            var newRestRemaining = currentState.restRemainingSeconds
+                            var newRestTotal = currentState.restTotalSeconds
+                            var newCurrentStepIndex = currentState.routineCurrentStepIndex
+                            var newIsRoutineActive = currentState.isRoutineActive
+                            var newPresetType = currentState.timerPresetType
+                            var newInterval = currentState.rhythmIntervalSeconds
+                            var newTotalTarget = currentState.totalTargetSeconds
+                            var newRoutineHistoryJson = currentState.routineHistoryJson
 
-                            if (newRestRemaining <= 0) {
-                                if (currentLoopState.isRoutineActive) {
-                                    val steps = com.example.data.CustomRoutine.deserializeSteps(currentLoopState.routineStepsJson)
-                                    val nextStepIdx = currentLoopState.routineCurrentStepIndex + 1
-                                    if (nextStepIdx < steps.size) {
-                                        val nextStep = steps[nextStepIdx]
-                                        newCurrentStepIndex = nextStepIdx
-                                        newPresetType = nextStep.exerciseName
-                                        newInterval = nextStep.rhythmIntervalSeconds
-                                        newTotalTarget = nextStep.durationSeconds
-                                        
+                            var ttsWord: String? = null
+                            var coachingText: String? = null
+
+                            val targetTotal = newTotalTarget
+
+                            if (currentState.isResting) {
+                                newElapsed++
+                                if (newRestRemaining > 0) {
+                                    newRestRemaining--
+                                }
+                                if (newRestRemaining == 10 && newRestTotal > 15) {
+                                    ttsWord = getString(R.string.rest_10_seconds_left)
+                                } else if (newRestRemaining in 1..3) {
+                                    ttsWord = ttsHelper.getCountdownWord(newRestRemaining)
+                                }
+
+                                if (newRestRemaining <= 0) {
+                                    if (currentState.isRoutineActive) {
+                                        val steps = com.example.data.CustomRoutine.deserializeSteps(currentState.routineStepsJson)
+                                        val nextStepIdx = currentState.routineCurrentStepIndex + 1
+                                        if (nextStepIdx < steps.size) {
+                                            val nextStep = steps[nextStepIdx]
+                                            newCurrentStepIndex = nextStepIdx
+                                            newPresetType = nextStep.exerciseName
+                                            newInterval = nextStep.rhythmIntervalSeconds
+                                            newTotalTarget = nextStep.durationSeconds
+                                            
+                                            newIsResting = false
+                                            newElapsed = 0
+                                            resetStartTime = true
+                                            newRhythmTick = 0
+                                            newWorkoutCount = 0
+                                            newRemaining = nextStep.durationSeconds + 3
+                                            
+                                            ttsWord = getString(R.string.tts_rest_ended_next_exercise, getLocalizedExerciseName(nextStep.exerciseName))
+                                            playStrongBeep = true
+                                        } else {
+                                            newIsResting = false
+                                            newRunning = false
+                                            newIsRoutineActive = false
+                                            newShowDialog = true
+                                            ttsWord = getString(R.string.tts_routine_completed_congratulations)
+                                            logRoutineHistoryJson = newRoutineHistoryJson
+                                            logRoutineName = currentState.routineName
+                                            
+                                            val originalPreset = repository.getTimerPresetType()
+                                            newPresetType = originalPreset
+                                            newTotalTarget = when (originalPreset) {
+                                                "스쿼트" -> repository.getSquatTargetSeconds()
+                                                "런지" -> repository.getLungeTargetSeconds()
+                                                "플랭크" -> repository.getPlankTargetSeconds()
+                                                "기타" -> repository.getOtherTargetSeconds()
+                                                else -> 60
+                                            }
+                                            newInterval = when (originalPreset) {
+                                                "스쿼트" -> repository.getSquatInterval()
+                                                "런지" -> repository.getLungeInterval()
+                                                "플랭크" -> newTotalTarget
+                                                "기타" -> repository.getOtherInterval()
+                                                else -> 4
+                                            }
+                                            newRemaining = newTotalTarget
+                                            playSetFinished = true
+                                        }
+                                    } else {
                                         newIsResting = false
                                         newElapsed = 0
-                                        startTime = System.currentTimeMillis()
+                                        resetStartTime = true
                                         newRhythmTick = 0
                                         newWorkoutCount = 0
-                                        newRemaining = nextStep.durationSeconds + 3
-                                        
-                                        speakText = getString(R.string.tts_rest_ended_next_exercise, getLocalizedExerciseName(nextStep.exerciseName))
-                                        soundHelper.playStrongBeep()
-                                    } else {
-                                        newIsResting = false
-                                        newRunning = false
-                                        newIsRoutineActive = false
-                                        newShowDialog = true
-                                        speakText = getString(R.string.tts_routine_completed_congratulations)
-                                        logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
-                                        val originalPreset = repository.getTimerPresetType()
-                                        newPresetType = originalPreset
-                                        newTotalTarget = when (originalPreset) {
-                                            "스쿼트" -> repository.getSquatTargetSeconds()
-                                            "런지" -> repository.getLungeTargetSeconds()
-                                            "플랭크" -> repository.getPlankTargetSeconds()
-                                            "기타" -> repository.getOtherTargetSeconds()
-                                            else -> 60
-                                        }
-                                        newInterval = when (originalPreset) {
-                                            "스쿼트" -> repository.getSquatInterval()
-                                            "런지" -> repository.getLungeInterval()
-                                            "플랭크" -> newTotalTarget
-                                            "기타" -> repository.getOtherInterval()
-                                            else -> 4
-                                        }
-                                        newRemaining = newTotalTarget
-                                        soundHelper.playSetFinished()
+                                        newRemaining = targetTotal + 3
+                                        ttsWord = getString(R.string.rest_finished_prepare)
+                                        playStrongBeep = true
+                                        extraSpeakText = getString(R.string.tts_prep_3)
                                     }
-                                } else {
-                                    newIsResting = false
-                                    newElapsed = 0
-                                    startTime = System.currentTimeMillis()
-                                    newRhythmTick = 0
-                                    newWorkoutCount = 0
-                                    newRemaining = targetTotal + 3
-                                    speakText = getString(R.string.rest_finished_prepare)
-                                    soundHelper.playStrongBeep()
-                                    ttsHelper.speak(getString(R.string.tts_prep_3))
                                 }
-                            }
-                        } else {
-                            if (currentLoopState.timerMode == TimerMode.Countdown) {
-                            newElapsed++
-                            if (newRemaining > 0) {
-                                newRemaining--
-                            }
-
-                            if (newRemaining > targetTotal) {
-                                // 3-second preparation phase
-                                if (newRemaining == targetTotal + 2) {
-                                    speakText = getString(R.string.tts_prep_2)
-                                } else if (newRemaining == targetTotal + 1) {
-                                    speakText = getString(R.string.tts_prep_1)
-                                }
-                            } else if (newRemaining == targetTotal) {
-                                // Transitioning to actual start
-                                speakText = getString(R.string.tts_prep_start)
-                                soundHelper.playStrongBeep()
-                                newRhythmTick = 0
                             } else {
-                                // --- NORMAL WORKOUT COUNTDOWN ---
-                                val currentExType = com.example.data.ExerciseType.fromString(currentLoopState.timerPresetType)
-                                if (currentExType == com.example.data.ExerciseType.PLANK && newRemaining in 1..10) {
-                                    speakText = ttsHelper.getCountdownWord(newRemaining)
-                                } else {
-                                    // Check coaching alerts (Only for PLANK and OTHER)
-                                    if (currentExType == com.example.data.ExerciseType.PLANK || currentExType == com.example.data.ExerciseType.OTHER) {
-                                        val targetHalf = targetTotal / 2
-                                        if (newRemaining == targetHalf && targetHalf >= 10) {
-                                            coachingText = getString(R.string.tts_workout_half)
-                                        } else if (newRemaining == 10 && targetTotal > 15) {
-                                            coachingText = getString(R.string.tts_workout_last10)
+                                if (currentState.timerMode == TimerMode.Countdown) {
+                                    newElapsed++
+                                    if (newRemaining > 0) {
+                                        newRemaining--
+                                    }
+
+                                    if (newRemaining > targetTotal) {
+                                        // 3-second preparation phase
+                                        if (newRemaining == targetTotal + 2) {
+                                            ttsWord = getString(R.string.tts_prep_2)
+                                        } else if (newRemaining == targetTotal + 1) {
+                                            ttsWord = getString(R.string.tts_prep_1)
                                         }
-                                    }
-
-                                    // Rhythm counts
-                                    val interval = currentLoopState.rhythmIntervalSeconds
-                                    var repTriggered = false
-                                    if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
-                                        newRhythmTick++
-                                        if (newRhythmTick >= interval) {
-                                            if (newRemaining > 0) {
-                                                soundHelper.playTick()
-                                            }
-                                            repTriggered = true
-                                            newWorkoutCount++
-                                            newRhythmTick = 0
-                                        }
-                                    }
-
-                                    if (repTriggered) {
-                                        speakText = ttsHelper.getNumberWord(newWorkoutCount)
-                                    }
-
-                                    // Combine if both exist: prioritize number then coaching message
-                                    if (speakText != null && coachingText != null) {
-                                        speakText = "$speakText, $coachingText"
-                                    } else if (speakText == null && coachingText != null) {
-                                        speakText = coachingText
-                                    }
-                                }
-
-                                // Completed Countdown Condition
-                                if (newRemaining <= 0) {
-                                    if (currentLoopState.isRoutineActive) {
-                                         val steps = com.example.data.CustomRoutine.deserializeSteps(currentLoopState.routineStepsJson)
-                                         val currentStepIdx = currentLoopState.routineCurrentStepIndex
-                                         val currentStep = steps[currentStepIdx]
-                                         
-
-
-                                         val oldHistory = com.example.data.RoutineStepResult.deserializeList(newRoutineHistoryJson)
-                                         val newHistory = oldHistory + com.example.data.RoutineStepResult(
-                                             exerciseName = currentStep.exerciseName,
-                                             count = newWorkoutCount,
-                                             targetSeconds = currentStep.durationSeconds
-                                         )
-                                         newRoutineHistoryJson = com.example.data.RoutineStepResult.serializeList(newHistory)
-                                         
-                                         if (currentStep.restSeconds > 0) {
-                                             newIsResting = true
-                                             newRestTotal = currentStep.restSeconds
-                                             newRestRemaining = currentStep.restSeconds
-                                             newElapsed = 0
-                                             startTime = System.currentTimeMillis()
-                                             soundHelper.playStrongBeep()
-                                             speakText = getString(R.string.tts_step_completed_resting_format, getLocalizedExerciseName(currentStep.exerciseName), currentStep.restSeconds)
-                                         } else {
-                                             val nextStepIdx = currentStepIdx + 1
-                                             if (nextStepIdx < steps.size) {
-                                                 val nextStep = steps[nextStepIdx]
-                                                 newCurrentStepIndex = nextStepIdx
-                                                 newPresetType = nextStep.exerciseName
-                                                 newInterval = nextStep.rhythmIntervalSeconds
-                                                 newTotalTarget = nextStep.durationSeconds
-                                                 newRemaining = nextStep.durationSeconds + 3
-                                                 newElapsed = 0
-                                                 startTime = System.currentTimeMillis()
-                                                 newRhythmTick = 0
-                                                 newWorkoutCount = 0
-                                                 
-                                                 speakText = getString(R.string.tts_step_completed_next_exercise, getLocalizedExerciseName(currentStep.exerciseName), getLocalizedExerciseName(nextStep.exerciseName))
-                                                 soundHelper.playStrongBeep()
-                                             } else {
-                                                 newRunning = false
-                                                 newIsRoutineActive = false
-                                                 newShowDialog = true
-                                                 speakText = getString(R.string.tts_routine_finished_congratulations)
-                                                 logCustomRoutineSummary(newRoutineHistoryJson, currentLoopState.routineName)
-                                                 val originalPreset = repository.getTimerPresetType()
-                                                 newPresetType = originalPreset
-                                                 newTotalTarget = when (originalPreset) {
-                                                     "스쿼트" -> repository.getSquatTargetSeconds()
-                                                     "런지" -> repository.getLungeTargetSeconds()
-                                                     "플랭크" -> repository.getPlankTargetSeconds()
-                                                     "기타" -> repository.getOtherTargetSeconds()
-                                                     else -> 60
-                                                 }
-                                                 newInterval = when (originalPreset) {
-                                                     "스쿼트" -> repository.getSquatInterval()
-                                                     "런지" -> repository.getLungeInterval()
-                                                     "플랭크" -> newTotalTarget
-                                                     "기타" -> repository.getOtherInterval()
-                                                     else -> 4
-                                                 }
-                                                 newRemaining = newTotalTarget
-                                                 soundHelper.playSetFinished()
-                                             }
-                                         }
-                                    } else {
-                                        newRunning = false
-                                        soundHelper.playSetFinished()
-
-                                        val completionMsg = getString(R.string.tts_workout_completed)
-                                        if (speakText != null) {
-                                            speakText = "$speakText, $completionMsg"
-                                        } else {
-                                            speakText = completionMsg
-                                        }
-
-                                        logCurrentTimerWorkout()
-                                        newShowDialog = true
-                                    }
-                                }
-                            }
-                        } else {
-                            // Count-up Mode
-                            val isPreparing = newRemaining > targetTotal
-                            if (isPreparing) {
-                                if (newRemaining > 0) {
-                                    newRemaining--
-                                }
-                                if (newRemaining == targetTotal + 2) {
-                                    speakText = getString(R.string.tts_prep_2)
-                                } else if (newRemaining == targetTotal + 1) {
-                                    speakText = getString(R.string.tts_prep_1)
-                                }
-                            } else if (newRemaining == targetTotal && currentLoopState.elapsedSeconds == 0) {
-                                // Note: transition to start
-                                speakText = getString(R.string.tts_prep_start)
-                                soundHelper.playStrongBeep()
-                                newRhythmTick = 0
-                                newRemaining--
-                            } else {
-                                // --- NORMAL WORKOUT COUNT-UP ---
-                                newElapsed++
-                                val currentExType = com.example.data.ExerciseType.fromString(currentLoopState.timerPresetType)
-                                val interval = currentLoopState.rhythmIntervalSeconds
-                                var repTriggered = false
-                                if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
-                                    newRhythmTick++
-                                    if (newRhythmTick >= interval) {
-                                        soundHelper.playTick()
-                                        repTriggered = true
-                                        newWorkoutCount++
+                                    } else if (newRemaining == targetTotal) {
+                                        // Transitioning to actual start
+                                        ttsWord = getString(R.string.tts_prep_start)
+                                        playStrongBeep = true
                                         newRhythmTick = 0
+                                    } else {
+                                        // --- NORMAL WORKOUT COUNTDOWN ---
+                                        val currentExType = com.example.data.ExerciseType.fromString(currentState.timerPresetType)
+                                        if (currentExType == com.example.data.ExerciseType.PLANK && newRemaining in 1..10) {
+                                            ttsWord = ttsHelper.getCountdownWord(newRemaining)
+                                        } else {
+                                            // Check coaching alerts (Only for PLANK and OTHER)
+                                            if (currentExType == com.example.data.ExerciseType.PLANK || currentExType == com.example.data.ExerciseType.OTHER) {
+                                                val targetHalf = targetTotal / 2
+                                                if (newRemaining == targetHalf && targetHalf >= 10) {
+                                                    coachingText = getString(R.string.tts_workout_half)
+                                                } else if (newRemaining == 10 && targetTotal > 15) {
+                                                    coachingText = getString(R.string.tts_workout_last10)
+                                                }
+                                            }
+
+                                            // Rhythm counts
+                                            val interval = currentState.rhythmIntervalSeconds
+                                            var repTriggered = false
+                                            if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
+                                                newRhythmTick++
+                                                if (newRhythmTick >= interval) {
+                                                    if (newRemaining > 0) {
+                                                        playTick = true
+                                                    }
+                                                    repTriggered = true
+                                                    newWorkoutCount++
+                                                    newRhythmTick = 0
+                                                }
+                                            }
+
+                                            if (repTriggered) {
+                                                ttsWord = ttsHelper.getNumberWord(newWorkoutCount)
+                                            }
+
+                                            // Combine if both exist: prioritize number then coaching message
+                                            if (ttsWord != null && coachingText != null) {
+                                                ttsWord = "$ttsWord, $coachingText"
+                                            } else if (ttsWord == null && coachingText != null) {
+                                                ttsWord = coachingText
+                                            }
+                                        }
+
+                                        // Completed Countdown Condition
+                                        if (newRemaining <= 0) {
+                                            if (currentState.isRoutineActive) {
+                                                val steps = com.example.data.CustomRoutine.deserializeSteps(currentState.routineStepsJson)
+                                                val currentStepIdx = currentState.routineCurrentStepIndex
+                                                val currentStep = steps[currentStepIdx]
+
+                                                val oldHistory = com.example.data.RoutineStepResult.deserializeList(newRoutineHistoryJson)
+                                                val newHistory = oldHistory + com.example.data.RoutineStepResult(
+                                                    exerciseName = currentStep.exerciseName,
+                                                    count = newWorkoutCount,
+                                                    targetSeconds = currentStep.durationSeconds
+                                                )
+                                                newRoutineHistoryJson = com.example.data.RoutineStepResult.serializeList(newHistory)
+                                                
+                                                if (currentStep.restSeconds > 0) {
+                                                    newIsResting = true
+                                                    newRestTotal = currentStep.restSeconds
+                                                    newRestRemaining = currentStep.restSeconds
+                                                    newElapsed = 0
+                                                    resetStartTime = true
+                                                    playStrongBeep = true
+                                                    ttsWord = getString(R.string.tts_step_completed_resting_format, getLocalizedExerciseName(currentStep.exerciseName), currentStep.restSeconds)
+                                                } else {
+                                                    val nextStepIdx = currentStepIdx + 1
+                                                    if (nextStepIdx < steps.size) {
+                                                        val nextStep = steps[nextStepIdx]
+                                                        newCurrentStepIndex = nextStepIdx
+                                                        newPresetType = nextStep.exerciseName
+                                                        newInterval = nextStep.rhythmIntervalSeconds
+                                                        newTotalTarget = nextStep.durationSeconds
+                                                        newRemaining = nextStep.durationSeconds + 3
+                                                        newElapsed = 0
+                                                        resetStartTime = true
+                                                        newRhythmTick = 0
+                                                        newWorkoutCount = 0
+                                                        
+                                                        ttsWord = getString(R.string.tts_step_completed_next_exercise, getLocalizedExerciseName(currentStep.exerciseName), getLocalizedExerciseName(nextStep.exerciseName))
+                                                        playStrongBeep = true
+                                                    } else {
+                                                        newRunning = false
+                                                        newIsRoutineActive = false
+                                                        newShowDialog = true
+                                                        ttsWord = getString(R.string.tts_routine_finished_congratulations)
+                                                        logRoutineHistoryJson = newRoutineHistoryJson
+                                                        logRoutineName = currentState.routineName
+                                                        
+                                                        val originalPreset = repository.getTimerPresetType()
+                                                        newPresetType = originalPreset
+                                                        newTotalTarget = when (originalPreset) {
+                                                            "스쿼트" -> repository.getSquatTargetSeconds()
+                                                            "런지" -> repository.getLungeTargetSeconds()
+                                                            "플랭크" -> repository.getPlankTargetSeconds()
+                                                            "기타" -> repository.getOtherTargetSeconds()
+                                                            else -> 60
+                                                        }
+                                                        newInterval = when (originalPreset) {
+                                                            "스쿼트" -> repository.getSquatInterval()
+                                                            "런지" -> repository.getLungeInterval()
+                                                            "플랭크" -> newTotalTarget
+                                                            "기타" -> repository.getOtherInterval()
+                                                            else -> 4
+                                                        }
+                                                        newRemaining = newTotalTarget
+                                                        playSetFinished = true
+                                                    }
+                                                }
+                                            } else {
+                                                newRunning = false
+                                                playSetFinished = true
+
+                                                val completionMsg = getString(R.string.tts_workout_completed)
+                                                if (ttsWord != null) {
+                                                    ttsWord = "$ttsWord, $completionMsg"
+                                                } else {
+                                                    ttsWord = completionMsg
+                                                }
+
+                                                logWorkout = true
+                                                newShowDialog = true
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Count-up Mode
+                                    val isPreparing = newRemaining > targetTotal
+                                    if (isPreparing) {
+                                        if (newRemaining > 0) {
+                                            newRemaining--
+                                        }
+                                        if (newRemaining == targetTotal + 2) {
+                                            ttsWord = getString(R.string.tts_prep_2)
+                                        } else if (newRemaining == targetTotal + 1) {
+                                            ttsWord = getString(R.string.tts_prep_1)
+                                        }
+                                    } else if (newRemaining == targetTotal && currentState.elapsedSeconds == 0) {
+                                        // Note: transition to start
+                                        ttsWord = getString(R.string.tts_prep_start)
+                                        playStrongBeep = true
+                                        newRhythmTick = 0
+                                        newRemaining--
+                                    } else {
+                                        // --- NORMAL WORKOUT COUNT-UP ---
+                                        newElapsed++
+                                        val currentExType = com.example.data.ExerciseType.fromString(currentState.timerPresetType)
+                                        val interval = currentState.rhythmIntervalSeconds
+                                        var repTriggered = false
+                                        if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
+                                            newRhythmTick++
+                                            if (newRhythmTick >= interval) {
+                                                playTick = true
+                                                repTriggered = true
+                                                newWorkoutCount++
+                                                newRhythmTick = 0
+                                            }
+                                        }
+
+                                        if (repTriggered) {
+                                            ttsWord = ttsHelper.getNumberWord(newWorkoutCount)
+                                        }
                                     }
                                 }
-
-                                if (repTriggered) {
-                                    speakText = ttsHelper.getNumberWord(newWorkoutCount)
-                                }
                             }
-                        }
-                        }
 
-                        // Update State atomically
-                        TimerRepository.updateState {
-                            it.copy(
+                            speakText = ttsWord
+
+                            currentState.copy(
                                 elapsedSeconds = newElapsed,
                                 remainingSeconds = newRemaining,
                                 rhythmTickCount = newRhythmTick,
@@ -471,20 +485,51 @@ class WorkoutTimerService : Service() {
                                 rhythmIntervalSeconds = newInterval,
                                 totalTargetSeconds = newTotalTarget,
                                 routineHistoryJson = newRoutineHistoryJson,
-                                manualInputEnabled = if (!newRunning) true else it.manualInputEnabled
+                                manualInputEnabled = if (!newRunning) true else currentState.manualInputEnabled
                             )
                         }
 
-                        // Speech Audio trigger
-                        if (speakText != null) {
-                            ttsHelper.speak(speakText)
+                        // Apply side effects post state update
+                        val finalResetStartTime = resetStartTime
+                        val finalPlayStrongBeep = playStrongBeep
+                        val finalPlayTick = playTick
+                        val finalPlaySetFinished = playSetFinished
+                        val finalLogWorkout = logWorkout
+                        val finalLogRoutineHistoryJson = logRoutineHistoryJson
+                        val finalLogRoutineName = logRoutineName
+                        val finalSpeakText = speakText
+                        val finalExtraSpeakText = extraSpeakText
+
+                        if (finalResetStartTime) {
+                            startTime = System.currentTimeMillis()
+                        }
+                        if (finalPlayStrongBeep) {
+                            soundHelper.playStrongBeep()
+                        }
+                        if (finalPlayTick) {
+                            soundHelper.playTick()
+                        }
+                        if (finalPlaySetFinished) {
+                            soundHelper.playSetFinished()
+                        }
+                        if (finalLogWorkout) {
+                            logCurrentTimerWorkout()
+                        }
+                        if (finalLogRoutineHistoryJson != null && finalLogRoutineName != null) {
+                            logCustomRoutineSummary(finalLogRoutineHistoryJson, finalLogRoutineName)
+                        }
+                        if (finalSpeakText != null) {
+                            ttsHelper.speak(finalSpeakText)
+                        }
+                        if (finalExtraSpeakText != null) {
+                            ttsHelper.speak(finalExtraSpeakText)
                         }
 
                         // Dynamically update notification text every second
                         updateNotification()
 
-                        if (!newRunning) {
-                            // If countdown completed, delay stopping service to allow TTS congratulations & applause to play fully
+                        val finalRunning = TimerRepository.timerState.value.isRunning
+                        if (!finalRunning) {
                             shutdownJob = serviceScope.launch {
                                 delay(6000L) // 6 seconds is perfect to play both TTS and the SoundPool cheer
                                 ServiceCompat.stopForeground(this@WorkoutTimerService, ServiceCompat.STOP_FOREGROUND_REMOVE)
