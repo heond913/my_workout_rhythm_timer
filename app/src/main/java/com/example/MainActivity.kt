@@ -63,10 +63,25 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.AppTab
 import com.example.viewmodel.WorkoutViewModel
 import kotlinx.coroutines.delay
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private var isReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install Splash Screen BEFORE super.onCreate()
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
+
+        // Force system splash screen to remain on screen until isReady becomes true
+        splashScreen.setKeepOnScreenCondition {
+            !isReady
+        }
+
         volumeControlStream = AudioManager.STREAM_MUSIC
         enableEdgeToEdge()
 
@@ -91,26 +106,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Fetch ViewModel instance early to kick off Room query and observe its emission
+        val viewModelInstance = androidx.lifecycle.ViewModelProvider(this)[WorkoutViewModel::class.java]
+        lifecycleScope.launch {
+            // Wait for Room database flow to emit at least once, guaranteeing first read is done
+            viewModelInstance.allRecords.first()
+            // Wait an additional 150ms buffer to allow Jetpack Compose layout measurement to complete smoothly
+            delay(150)
+            isReady = true
+        }
+
         setContent {
             MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
                 val viewModel: WorkoutViewModel = viewModel()
                 val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                var showSplash by remember { mutableStateOf(true) }
-                var splashAlpha by remember { mutableStateOf(1f) }
-
-                LaunchedEffect(Unit) {
-                    delay(2200) // Show splash screen elements cleanly
-                    animate(
-                        initialValue = 1f,
-                        targetValue = 0f,
-                        animationSpec = tween(durationMillis = 600) // Super smooth 600ms fadeout transition
-                    ) { value, _ ->
-                        splashAlpha = value
-                    }
-                    showSplash = false
-                }
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     Scaffold(
@@ -172,66 +182,6 @@ class MainActivity : AppCompatActivity() {
                             onDismiss = { /* Optionally handle dismiss if needed, or force selection */ },
                             onLanguageSelected = { viewModel.onLanguageSelected() }
                         )
-                    }
-
-                    // Floating Loading/Splash screen overlay
-                    if (showSplash) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .alpha(splashAlpha),
-                            color = Color(0xFFFBFDF9) // VibrantSoftGreenBg matching the app theme background
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(24.dp)
-                                ) {
-                                    // Beautiful custom logo image for the splash/loading screen
-                                    Image(
-                                        painter = painterResource(id = R.drawable.loading_image),
-                                        contentDescription = "App Loading Image",
-                                        modifier = Modifier
-                                            .size(350.dp)
-                                            .padding(bottom = 24.dp)
-                                            .testTag("app_loading_image"),
-                                        contentScale = ContentScale.Fit
-                                    )
-
-                                    val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-                                    val currentLocale = if (!appLocales.isEmpty) appLocales.get(0)?.language else java.util.Locale.getDefault().language
-                                    val isEn = currentLocale != "ko"
-
-                                    Text(
-                                        text = stringResource(id = R.string.splash_title),
-                                        fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF006A60), // tealActive vibrant primary color
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        lineHeight = if (isEn) 40.sp else 34.sp,
-                                        modifier = Modifier.padding(bottom = 8.dp)
-                                    )
-
-                                    Text(
-                                        text = stringResource(id = R.string.splash_subtitle),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF3F4947), // secondaryGray
-                                        modifier = Modifier.padding(bottom = 32.dp)
-                                    )
-
-                                    CircularProgressIndicator(
-                                        color = Color(0xFF006A60),
-                                        strokeWidth = 3.dp,
-                                        modifier = Modifier.size(36.dp)
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }

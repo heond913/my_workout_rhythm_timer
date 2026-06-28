@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Starting splash screen theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FBFDF9</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/loading_image</item>
+        <item name="postSplashScreenTheme">@style/Theme.MyApplication</item>
+    </style>
+
     <style name="Theme.MyApplication" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Disable the default OS starting preview window to prevent the system splash screen & icon from showing -->
         <item name="android:windowDisablePreview">true</item>
