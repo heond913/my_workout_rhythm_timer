@@ -65,10 +65,15 @@ fun SocialShareDialog(
     val context = LocalContext.current
     var activeStyle by remember { mutableStateOf(ShareCardStyle.NEON) }
 
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
+
     // Color definitions
-    val modalBg = Color(0xFFFBFDF9)
-    val txtPrimary = Color(0xFF191C1B)
-    val txtSecondary = Color(0xFF3F4947)
+    val modalBg = if (isDark) Color(0xFF242424) else Color(0xFFFBFDF9)
+    val txtPrimary = if (isDark) Color(0xFFE3E3E3) else Color(0xFF191C1B)
+    val txtSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF3F4947)
+    val borderCol = if (isDark) Color(0xFF2C2C2C) else Color(0xFFDCE5E2)
+    val closeBtnBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFE6F3F1)
+    val primaryActive = MaterialTheme.colorScheme.primary
 
     // Gradients for the card depending on active style
     val cardBrush = when (activeStyle) {
@@ -170,7 +175,7 @@ fun SocialShareDialog(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
                 .padding(16.dp)
-                .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(24.dp))
+                .border(1.dp, borderCol, RoundedCornerShape(24.dp))
                 .testTag("social_share_dialog_card")
         ) {
             Column(
@@ -201,13 +206,13 @@ fun SocialShareDialog(
                     IconButton(
                         onClick = onDismiss,
                         modifier = Modifier
-                            .background(Color(0xFFE6F3F1), CircleShape)
+                            .background(closeBtnBg, CircleShape)
                             .size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close share",
-                            tint = Color(0xFF006A60),
+                            tint = primaryActive,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -565,7 +570,7 @@ fun SocialShareDialog(
                             )
                         },
                         border = ButtonDefaults.outlinedButtonBorder.copy(
-                            brush = Brush.linearGradient(listOf(Color(0xFF006A60), Color(0xFF006A60)))
+                            brush = Brush.linearGradient(listOf(primaryActive, primaryActive))
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -580,13 +585,13 @@ fun SocialShareDialog(
                             Icon(
                                 imageVector = Icons.Default.Share,
                                 contentDescription = null,
-                                tint = Color(0xFF006A60),
+                                tint = primaryActive,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(id = R.string.btn_share_system),
-                                color = Color(0xFF006A60),
+                                color = primaryActive,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )

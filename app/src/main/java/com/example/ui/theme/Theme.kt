@@ -14,19 +14,19 @@ import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme =
   darkColorScheme(
-    primary = VibrantTealActive,
-    secondary = VibrantSlateGrey,
-    tertiary = VibrantLungeIndigo,
-    background = VibrantCharcoalDark,
-    surface = VibrantCharcoalDark,
-    surfaceVariant = Color(0xFF252A28), // Sleek charcoal variant for cards
-    onPrimary = Color.Black,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    onSurfaceVariant = Color(0xFFBEC9C6),
-    outline = Color(0xFF3F4945)
+    primary = Color(0xFF5EEAD4), // Desaturated teal (Teal 300) for premium touch
+    secondary = Color(0xFF94A3B8), // Slate gray for secondary details
+    tertiary = Color(0xFF60A5FA), // Desaturated blue (Blue 400) for Lunge highlight
+    background = Color(0xFF121212), // 1. 앱의 메인 기본 배경 (Dark Background)
+    surface = Color(0xFF1E1E1E), // 1. 일반 인풋 카드 및 리스트 컨테이너 (Dark Surface)
+    surfaceVariant = Color(0xFF242424), // 1. 소셜 공유, 스트릭, 숫자 인풋창 등 Elevated Surface
+    onPrimary = Color(0xFF121212), // High contrast dark text on light desaturated primary
+    onSecondary = Color(0xFF121212),
+    onTertiary = Color(0xFF121212),
+    onBackground = Color(0xFFE3E3E3), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis)
+    onSurface = Color(0xFFE3E3E3), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis)
+    onSurfaceVariant = Color(0xFF94A3B8), // 2. 서브 라벨 및 설명 문구 (Medium Emphasis)
+    outline = Color(0xFF2C2C2C) // 1. 다크모드 카드 테두리 (Stroke)
   )
 
 private val LightColorScheme =

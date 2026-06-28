@@ -49,14 +49,15 @@ import java.util.*
 @Composable
 fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>) {
     // Color Theme - Vibrant Palette
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
     val tealActive = MaterialTheme.colorScheme.primary
     val darkBg = MaterialTheme.colorScheme.background
-    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
-    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else Color(0xFF3F4947)
-    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else Color(0xFF191C1B)
-    val borderColor = if (isDark) Color(0xFF3F4945) else Color(0xFFDCE5E2)
-    val fireOrange = Color(0xFFE05220) // Vibrant orange with solid white contrast
+    val cardSurface = MaterialTheme.colorScheme.surface
+    val cardSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFF94A3B8) else Color(0xFF3F4947)
+    val charcoalDark = if (isDark) Color(0xFFE3E3E3) else Color(0xFF191C1B)
+    val borderColor = if (isDark) Color(0xFF2C2C2C) else Color(0xFFDCE5E2)
+    val fireOrange = if (isDark) Color(0xFFFF9800) else Color(0xFFE05220) // Desaturated orange for dark mode
 
     val streak = viewModel.getWorkoutStreak(workoutRecords)
     val scrollState = rememberScrollState()
@@ -125,14 +126,14 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
         // 1. Streak burning badge
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = if (streak > 0) Color(0xFFE6F3F1) else Color(0xFFFCE8E6)
+                containerColor = if (isDark) Color(0xFF242424) else (if (streak > 0) Color(0xFFE6F3F1) else Color(0xFFFCE8E6))
             ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .border(
                     width = 1.5.dp,
-                    color = if (streak > 0) fireOrange else Color(0xFFF1B0A9),
+                    color = if (isDark) Color(0xFF2C2C2C) else (if (streak > 0) fireOrange else Color(0xFFF1B0A9)),
                     shape = RoundedCornerShape(16.dp)
                 )
                 .padding(4.dp)
@@ -147,7 +148,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     modifier = Modifier
                         .size(60.dp)
                         .background(
-                            color = if (streak > 0) Color(0xFFFFDAD6) else Color(0xFFF5D6D6),
+                            color = if (isDark) Color(0xFF1E1E1E) else (if (streak > 0) Color(0xFFFFDAD6) else Color(0xFFF5D6D6)),
                             shape = RoundedCornerShape(12.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -435,11 +436,21 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     periods.forEach { (index, stringRes) ->
                         val isSelected = selectedPeriod == index
+                        val periodBg = if (isDark) {
+                            if (isSelected) Color(0xFF86EFAC) else Color(0xFF1E1E1E)
+                        } else {
+                            if (isSelected) tealActive else Color(0xFFE6F3F1)
+                        }
+                        val periodTxtColor = if (isDark) {
+                            if (isSelected) Color.Black else Color(0xFF86EFAC)
+                        } else {
+                            if (isSelected) Color.White else tealActive
+                        }
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) tealActive else Color(0xFFE6F3F1))
+                                .background(periodBg)
                                 .clickable { selectedPeriod = index }
                                 .padding(vertical = 10.dp)
                                 .testTag("period_tab_$index"),
@@ -447,7 +458,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                         ) {
                             Text(
                                 text = stringResource(id = stringRes),
-                                color = if (isSelected) Color.White else tealActive,
+                                color = periodTxtColor,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
@@ -468,14 +479,23 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     )
                     metrics.forEach { (index, stringRes) ->
                         val isSelected = selectedMetric == index
-                        val highlightColor = if (index == 0) tealActive else Color(0xFFE65100)
-                        val lightHighlight = if (index == 0) Color(0xFFE6F3F1) else Color(0xFFFFECCC)
+                        val highlightColor = if (isDark) {
+                            if (index == 0) Color(0xFF86EFAC) else Color(0xFFFFB085)
+                        } else {
+                            if (index == 0) tealActive else Color(0xFFE65100)
+                        }
+                        val lightHighlight = if (isDark) {
+                            if (index == 0) Color(0xFF141F19) else Color(0xFF261C15)
+                        } else {
+                            if (index == 0) Color(0xFFE6F3F1) else Color(0xFFFFECCC)
+                        }
+                        val unselectedBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFF2F7F5)
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(10.dp))
                                 .border(1.dp, if (isSelected) highlightColor else Color.Transparent, RoundedCornerShape(10.dp))
-                                .background(if (isSelected) lightHighlight else Color(0xFFF2F7F5))
+                                .background(if (isSelected) lightHighlight else unselectedBg)
                                 .clickable { selectedMetric = index }
                                 .padding(vertical = 10.dp)
                                 .testTag("metric_tab_$index"),
@@ -642,7 +662,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                                     
                                     // Draw background column guide with soft green-grey
                                     drawRoundRect(
-                                        color = Color(0xFFDAE5E1),
+                                        color = if (isDark) Color(0xFF242424) else Color(0xFFDAE5E1),
                                         topLeft = Offset(0f, 0f),
                                         size = Size(size.width, size.height),
                                         cornerRadius = CornerRadius(12f, 12f)
@@ -651,11 +671,19 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                                     if (isValueActive) {
                                         val brush = if (selectedMetric == 0) {
                                             Brush.verticalGradient(
-                                                colors = listOf(tealActive, Color(0xFFCCE8E3))
+                                                colors = if (isDark) {
+                                                    listOf(Color(0xFF86EFAC), Color(0xFF141F19))
+                                                } else {
+                                                    listOf(tealActive, Color(0xFFCCE8E3))
+                                                }
                                             )
                                         } else {
                                             Brush.verticalGradient(
-                                                colors = listOf(Color(0xFFE65100), Color(0xFFFFECCC))
+                                                colors = if (isDark) {
+                                                    listOf(Color(0xFFFFB085), Color(0xFF261C15))
+                                                } else {
+                                                    listOf(Color(0xFFE65100), Color(0xFFFFECCC))
+                                                }
                                             )
                                         }
                                         drawRoundRect(

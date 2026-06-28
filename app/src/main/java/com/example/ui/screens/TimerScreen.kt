@@ -132,7 +132,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
     // Isolate preset presentation colors & metadata using the UI presenter model
     val activePreset = uiState.timerPresetType.exercisePreset
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == VibrantCharcoalDark
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == VibrantCharcoalDark
     val activePresetColor = activePreset.themeColor
     val activePresetBgColor = if (isDark) {
         when (uiState.timerPresetType) {
@@ -140,7 +140,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             "런지" -> Color(0xFF141F35)
             "플랭크" -> Color(0xFF3F0001)
             "기타" -> Color(0xFF003731)
-            else -> Color(0xFF252A28)
+            else -> Color(0xFF242424)
         }
     } else {
         activePreset.bgColor
@@ -149,9 +149,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
     // Color Theme mappings - Vibrant Palette
     val tealActive = MaterialTheme.colorScheme.primary
     val darkBg = MaterialTheme.colorScheme.background
-    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
-    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else VibrantSlateGrey
-    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else VibrantCharcoalDark
+    val cardSurface = MaterialTheme.colorScheme.surface
+    val cardSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFF94A3B8) else VibrantSlateGrey
+    val charcoalDark = if (isDark) Color(0xFFE3E3E3) else VibrantCharcoalDark
+    val borderUnselected = if (isDark) Color(0xFF2C2C2C) else VibrantLightBorder
 
     val scrollState = rememberScrollState()
 
@@ -493,11 +495,20 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                         presets.forEach { (exeType, secs, desc) ->
                             val isSelected = ExerciseType.fromString(uiState.timerPresetType) == exeType
-                            val (itemBgColor, itemBorderColor, itemTextColor) = when (exeType) {
-                                ExerciseType.SQUAT -> Triple(VibrantSquatSoftBg, VibrantSquatOrange, VibrantSquatOrange)
-                                ExerciseType.LUNGE -> Triple(VibrantLungeLavenderBg, VibrantLungeIndigo, VibrantLungeIndigo)
-                                ExerciseType.PLANK -> Triple(VibrantPlankCoralBg, VibrantPlankCrimson, VibrantPlankCrimson)
-                                ExerciseType.OTHER -> Triple(VibrantTealSoftBg, VibrantTealActive, VibrantTealActive)
+                            val (itemBgColor, itemBorderColor, itemTextColor) = if (isDark) {
+                                when (exeType) {
+                                    ExerciseType.SQUAT -> Triple(Color(0xFF261C15), Color(0xFF3D2A1E), Color(0xFFFFB085))
+                                    ExerciseType.LUNGE -> Triple(Color(0xFF161E2E), Color(0xFF24324D), Color(0xFF93C5FD))
+                                    ExerciseType.PLANK -> Triple(Color(0xFF141F19), Color(0xFF1F3627), Color(0xFF86EFAC))
+                                    ExerciseType.OTHER -> Triple(Color(0xFF141F19), Color(0xFF1F3627), Color(0xFF86EFAC))
+                                }
+                            } else {
+                                when (exeType) {
+                                    ExerciseType.SQUAT -> Triple(VibrantSquatSoftBg, VibrantSquatOrange, VibrantSquatOrange)
+                                    ExerciseType.LUNGE -> Triple(VibrantLungeLavenderBg, VibrantLungeIndigo, VibrantLungeIndigo)
+                                    ExerciseType.PLANK -> Triple(VibrantPlankCoralBg, VibrantPlankCrimson, VibrantPlankCrimson)
+                                    ExerciseType.OTHER -> Triple(VibrantTealSoftBg, VibrantTealActive, VibrantTealActive)
+                                }
                             }
 
                             Column(
@@ -509,7 +520,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     )
                                     .border(
                                         1.dp,
-                                        if (isSelected) itemBorderColor else VibrantLightBorder,
+                                        if (isSelected) itemBorderColor else borderUnselected,
                                         RoundedCornerShape(12.dp)
                                     )
                                     .clickable(enabled = !isRunning) {
@@ -549,11 +560,20 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     ) {
                         repeat(4) { index ->
                             val isDotActive = selectedPresetIndex == index
-                            val dotColor = when (index) {
-                                0 -> VibrantSquatOrange // Squat Orange
-                                1 -> VibrantLungeIndigo // Lunge Blue
-                                2 -> VibrantPlankCrimson // Plank Red
-                                else -> VibrantTealActive // Other Teal
+                            val dotColor = if (isDark) {
+                                when (index) {
+                                    0 -> Color(0xFFFFB085) // Squat Amber Coral
+                                    1 -> Color(0xFF93C5FD) // Lunge Sky Blue
+                                    2 -> Color(0xFF86EFAC) // Plank Mint Green
+                                    else -> Color(0xFF86EFAC) // Other Mint Green
+                                }
+                            } else {
+                                when (index) {
+                                    0 -> VibrantSquatOrange // Squat Orange
+                                    1 -> VibrantLungeIndigo // Lunge Blue
+                                    2 -> VibrantPlankCrimson // Plank Red
+                                    else -> VibrantTealActive // Other Teal
+                                }
                             }
 
                             Box(
@@ -599,7 +619,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, VibrantLightBorder, RoundedCornerShape(16.dp))
+                    .border(1.dp, borderUnselected, RoundedCornerShape(16.dp))
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Row(
@@ -635,8 +655,8 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier
                                 .size(48.dp) 
                                 .padding(6.dp) 
-                                .background(Color.White, CircleShape)
-                                .border(1.dp, VibrantTealSoftBg, CircleShape)
+                                .background(if (isDark) tealActive.copy(alpha = 0.2f) else Color.White, CircleShape)
+                                .border(1.dp, if (isDark) borderUnselected else VibrantTealSoftBg, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Remove,
@@ -674,12 +694,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier
                                 .size(48.dp)
                                 .padding(6.dp)
-                                .background(tealActive, CircleShape)
+                                .background(if (isDark) tealActive.copy(alpha = 0.2f) else tealActive, CircleShape)
+                                .border(1.dp, if (isDark) borderUnselected else Color.Transparent, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(id = R.string.desc_increase_5_sec),
-                                tint = Color.White,
+                                tint = if (isDark) tealActive else Color.White,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -695,7 +716,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, VibrantLightBorder, RoundedCornerShape(16.dp))
+                    .border(1.dp, borderUnselected, RoundedCornerShape(16.dp))
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Row(
@@ -735,8 +756,8 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier
                                 .size(48.dp)
                                 .padding(6.dp)
-                                .background(Color.White, CircleShape)
-                                .border(1.dp, VibrantTealSoftBg, CircleShape)
+                                .background(if (isDark) tealActive.copy(alpha = 0.2f) else Color.White, CircleShape)
+                                .border(1.dp, if (isDark) borderUnselected else VibrantTealSoftBg, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Remove,
@@ -773,12 +794,13 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             modifier = Modifier
                                 .size(48.dp)
                                 .padding(6.dp)
-                                .background(tealActive, CircleShape)
+                                .background(if (isDark) tealActive.copy(alpha = 0.2f) else tealActive, CircleShape)
+                                .border(1.dp, if (isDark) borderUnselected else Color.Transparent, CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(id = R.string.desc_increase_volume),
-                                tint = Color.White,
+                                tint = if (isDark) tealActive else Color.White,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -884,7 +906,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, VibrantLightBorder, RoundedCornerShape(16.dp))
+                        .border(1.dp, borderUnselected, RoundedCornerShape(16.dp))
                         .padding(16.dp),
                 ) {
                     Text(
@@ -903,7 +925,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
-                            .border(1.dp, VibrantLightBorder, RoundedCornerShape(16.dp))
+                            .border(1.dp, borderUnselected, RoundedCornerShape(16.dp))
                     ) {
                         Row(
                             modifier = Modifier
@@ -973,16 +995,42 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             }
                                         }
                                         
-                                        val (chipBg, chipTx) = when (exType) {
-                                            ExerciseType.SQUAT -> Pair(WorkoutSquatTextButton, Color.White)
-                                            ExerciseType.LUNGE -> Pair(WorkoutLungeTextButton, Color.White)
-                                            ExerciseType.PLANK -> Pair(VibrantPlankCrimson, Color.White)
-                                            ExerciseType.OTHER -> Pair(WorkoutTealDeepAccent, Color.White)
+                                        val (chipBg, chipTx) = if (isDark) {
+                                            when (exType) {
+                                                ExerciseType.SQUAT -> Pair(Color(0xFF261C15), Color(0xFFFFB085))
+                                                ExerciseType.LUNGE -> Pair(Color(0xFF161E2E), Color(0xFF93C5FD))
+                                                ExerciseType.PLANK -> Pair(Color(0xFF141F19), Color(0xFF86EFAC))
+                                                ExerciseType.OTHER -> Pair(Color(0xFF141F19), Color(0xFF86EFAC))
+                                            }
+                                        } else {
+                                            when (exType) {
+                                                ExerciseType.SQUAT -> Pair(WorkoutSquatTextButton, Color.White)
+                                                ExerciseType.LUNGE -> Pair(WorkoutLungeTextButton, Color.White)
+                                                ExerciseType.PLANK -> Pair(VibrantPlankCrimson, Color.White)
+                                                ExerciseType.OTHER -> Pair(WorkoutTealDeepAccent, Color.White)
+                                            }
+                                        }
+                                        val chipBorder = if (isDark) {
+                                            when (exType) {
+                                                ExerciseType.SQUAT -> Color(0xFF3D2A1E)
+                                                ExerciseType.LUNGE -> Color(0xFF24324D)
+                                                ExerciseType.PLANK -> Color(0xFF1F3627)
+                                                ExerciseType.OTHER -> Color(0xFF1F3627)
+                                            }
+                                        } else {
+                                            Color.Transparent
                                         }
                                         
                                         Box(
                                             modifier = Modifier
                                                 .background(chipBg, RoundedCornerShape(50.dp))
+                                                .let {
+                                                    if (chipBorder != Color.Transparent) {
+                                                        it.border(1.dp, chipBorder, RoundedCornerShape(50.dp))
+                                                    } else {
+                                                        it
+                                                    }
+                                                }
                                                 .padding(horizontal = 10.dp, vertical = 5.dp)
                                         ) {
                                             Text(
@@ -1043,13 +1091,16 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     Box(
                                         modifier = Modifier
                                             .size(40.dp)
-                                            .background(WorkoutTealDeepAccent, CircleShape),
+                                            .background(if (isDark) tealActive.copy(alpha = 0.2f) else WorkoutTealDeepAccent, CircleShape)
+                                            .let { 
+                                                if (isDark) it.border(1.dp, borderUnselected, CircleShape) else it 
+                                            },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.PlayArrow,
                                             contentDescription = "Start Routine",
-                                            tint = Color.White,
+                                            tint = if (isDark) tealActive else Color.White,
                                             modifier = Modifier
                                                 .size(20.dp)
                                                 .padding(start = 2.dp)
@@ -1073,14 +1124,14 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                     Box(
                                         modifier = Modifier
                                             .size(40.dp)
-                                            .background(Color.White, CircleShape)
-                                            .border(1.dp, VibrantTealSoftBg, CircleShape),
+                                            .background(if (isDark) tealActive.copy(alpha = 0.2f) else Color.White, CircleShape)
+                                            .border(1.dp, if (isDark) borderUnselected else VibrantTealSoftBg, CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Edit Routine",
-                                            tint = WorkoutTealDeepAccent,
+                                            tint = tealActive,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
@@ -1252,7 +1303,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                             val exePreset = stepResult.exerciseName.exercisePreset
                             val exerciseDisplay = stringResource(id = exePreset.displayNameResId)
                             Card(
-                                colors = CardDefaults.cardColors(containerColor = VibrantStreakCardBg),
+                                colors = CardDefaults.cardColors(containerColor = if (isDark) Color(0xFF242424) else VibrantStreakCardBg),
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -1269,7 +1320,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         ) {
                                             Text(
                                                 text = "${index + 1}단계",
-                                                color = Color.White,
+                                                color = if (isDark) Color.Black else Color.White,
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -1306,7 +1357,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         val exercise = stringResource(id = uiState.timerPresetType.exercisePreset.displayNameResId)
 
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = VibrantStreakCardBg),
+                            colors = CardDefaults.cardColors(containerColor = if (isDark) Color(0xFF242424) else VibrantStreakCardBg),
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -1341,7 +1392,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                     // Encouragement Message Card
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = WorkoutGoldLightBg), // Light gold tint
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) Color(0xFF2E2500) else WorkoutGoldLightBg), // Light gold tint
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -1354,7 +1405,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                 text = stringResource(id = encouragementRes),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = WorkoutGoldActive,
+                                color = if (isDark) Color(0xFFFCD34D) else WorkoutGoldActive,
                                 lineHeight = 18.sp,
                                 modifier = Modifier.weight(1f)
                               )
@@ -1372,7 +1423,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
                     // Tips Card
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = WorkoutLightGrayBg), // Very soft light gray
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) Color(0xFF242424) else WorkoutLightGrayBg), // Very soft light gray
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -1475,14 +1526,51 @@ fun ExerciseSettingsCard(
     intervalValue: Int,
     onIntervalChange: (Int) -> Unit
 ) {
-    val charcoalDark = VibrantCharcoalDark
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == VibrantCharcoalDark
+
+    // Desaturate theme colors and card backgrounds for dark mode to prevent visual bleeding and ensure readability (WCAG 2.1 4.5:1 contrast)
+    val resolvedThemeColor = if (isDark) {
+        when {
+            title.contains("스쿼트") || title.contains("Squat") -> Color(0xFFFFB085) // 1. Squat 테마 - 소프트 앰버 코랄
+            title.contains("런지") || title.contains("Lunge") -> Color(0xFF93C5FD) // 2. Lunge 테마 - 소프트 스카이 블루
+            title.contains("기타") || title.contains("Other") || title.contains("Plank") || title.contains("플랭크") -> Color(0xFF86EFAC) // 3. 기타/플랭크 - 소프트 민트 세이지 그린
+            else -> MaterialTheme.colorScheme.primary
+        }
+    } else {
+        themeColor
+    }
+
+    val resolvedBgColor = if (isDark) {
+        when {
+            title.contains("스쿼트") || title.contains("Squat") -> Color(0xFF261C15) // 1. Squat 테마 - 유색 다크 서페이스
+            title.contains("런지") || title.contains("Lunge") -> Color(0xFF161E2E) // 2. Lunge 테마 - 유색 다크 서페이스
+            title.contains("기타") || title.contains("Other") || title.contains("Plank") || title.contains("플랭크") -> Color(0xFF141F19) // 3. 기타/플랭크 - 유색 다크 서페이스
+            else -> Color(0xFF242424)
+        }
+    } else {
+        bgColor
+    }
+
+    val resolvedBorderColor = if (isDark) {
+        when {
+            title.contains("스쿼트") || title.contains("Squat") -> Color(0xFF3D2A1E) // 1. Squat 테마 - Stroke
+            title.contains("런지") || title.contains("Lunge") -> Color(0xFF24324D) // 2. Lunge 테마 - Stroke
+            title.contains("기타") || title.contains("Other") || title.contains("Plank") || title.contains("플랭크") -> Color(0xFF1F3627) // 3. 기타/플랭크 - Stroke
+            else -> Color(0xFF2C2C2C)
+        }
+    } else {
+        borderColor
+    }
+
+    val charcoalDark = if (isDark) Color(0xFFE3E3E3) else VibrantCharcoalDark
+    val stepperBg = if (isDark) Color(0xFF242424) else Color.White
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = bgColor),
+        colors = CardDefaults.cardColors(containerColor = resolvedBgColor),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            .border(1.dp, resolvedBorderColor, RoundedCornerShape(16.dp))
     ) {
         Row(
             modifier = Modifier
@@ -1494,7 +1582,7 @@ fun ExerciseSettingsCard(
             // Left: Title
             Text(
                 text = title,
-                color = themeColor,
+                color = resolvedThemeColor,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold
             )
@@ -1518,12 +1606,12 @@ fun ExerciseSettingsCard(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(Color.White, CircleShape)
-                            .border(1.dp, borderColor, CircleShape)
+                            .background(if (isDark) resolvedThemeColor.copy(alpha = 0.2f) else stepperBg, CircleShape)
+                            .border(1.dp, resolvedBorderColor, CircleShape)
                             .clickable { onIntervalChange((intervalValue - 1).coerceAtLeast(1)) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("-", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("-", color = resolvedThemeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Text(
@@ -1538,11 +1626,12 @@ fun ExerciseSettingsCard(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(themeColor, CircleShape)
+                            .background(if (isDark) resolvedThemeColor.copy(alpha = 0.2f) else resolvedThemeColor, CircleShape)
+                            .border(1.dp, if (isDark) resolvedBorderColor else Color.Transparent, CircleShape)
                             .clickable { onIntervalChange((intervalValue + 1).coerceAtMost(60)) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("+", color = if (isDark) resolvedThemeColor else Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
