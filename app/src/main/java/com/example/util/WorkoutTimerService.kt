@@ -429,6 +429,7 @@ class WorkoutTimerService : Service() {
                                 speakText = getString(R.string.tts_prep_start)
                                 soundHelper.playStrongBeep()
                                 newRhythmTick = 0
+                                newRemaining--
                             } else {
                                 // --- NORMAL WORKOUT COUNT-UP ---
                                 newElapsed++
