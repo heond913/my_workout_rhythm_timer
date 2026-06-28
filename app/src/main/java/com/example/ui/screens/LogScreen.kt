@@ -320,7 +320,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 5).coerceAtLeast(0)
                             viewModel.updateInputReps(newVal.toString())
                         },
-                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_reps), tint = tealActive)
                     }
@@ -333,15 +333,15 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         isError = uiState.repsError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
-                            color = charcoalDark,
+                            color = if (isDark) Color.White else charcoalDark,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            focusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
+                            unfocusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -411,7 +411,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 1).coerceAtLeast(1)
                             viewModel.updateInputSets(newVal.toString())
                         },
-                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_sets), tint = tealActive)
                     }
@@ -424,15 +424,15 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         isError = uiState.setsError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
-                            color = charcoalDark,
+                            color = if (isDark) Color.White else charcoalDark,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            focusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
+                            unfocusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -502,7 +502,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentVal - 2.5).coerceAtLeast(0.0)
                             viewModel.updateInputWeightKg(if (newVal % 1.0 == 0.0) newVal.toInt().toString() else newVal.toString())
                         },
-                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_weight), tint = tealActive)
                     }
@@ -515,15 +515,15 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         isError = uiState.weightError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
-                            color = charcoalDark,
+                            color = if (isDark) Color.White else charcoalDark,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            focusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
+                            unfocusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -593,7 +593,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                             val newVal = (currentIdx - 10).coerceAtLeast(0)
                             viewModel.updateInputDurationSeconds(newVal.toString())
                         },
-                        modifier = Modifier.background(Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
+                        modifier = Modifier.background(if (isDark) Color(0xFF2D2D2D) else Color(0xFFE6F3F1), RoundedCornerShape(10.dp))
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = stringResource(id = R.string.desc_decrease_duration), tint = tealActive)
                     }
@@ -606,15 +606,15 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         isError = uiState.durationError != null,
                         textStyle = LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
-                            color = charcoalDark,
+                            color = if (isDark) Color.White else charcoalDark,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            focusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
+                            unfocusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -720,12 +720,12 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     onValueChange = { viewModel.updateInputNote(it) },
                     placeholder = { Text(stringResource(id = R.string.placeholder_memo), color = secondaryGray, fontSize = 12.sp) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = charcoalDark,
-                        unfocusedTextColor = charcoalDark,
+                        focusedTextColor = if (isDark) Color.White else charcoalDark,
+                        unfocusedTextColor = if (isDark) Color.White else charcoalDark,
                         focusedBorderColor = tealActive,
                         unfocusedBorderColor = borderColor,
-                        focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                        unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+                        focusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White,
+                        unfocusedContainerColor = if (isDark) Color(0xFF2D2D2D) else Color.White
                     ),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(80.dp).testTag("note_input_field")

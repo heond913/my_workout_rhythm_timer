@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.res.stringResource
 import com.example.R
 import androidx.compose.foundation.border
@@ -33,7 +34,8 @@ fun ExerciseChipGroup(
     modifier: Modifier = Modifier
 ) {
     val exerciseTypes = ExerciseType.values()
-    val charcoalDark = Color(0xFF191C1B)
+    val isDark = isSystemInDarkTheme()
+    val charcoalDark = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF191C1B)
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -46,18 +48,29 @@ fun ExerciseChipGroup(
             val selectedBorder = preset.themeColor
             val txtColor = preset.themeColor
 
+            val bg = if (isSelected) {
+                if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else selectedBg
+            } else {
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color.White
+            }
+
+            val borderCol = if (isSelected) {
+                if (isDark) MaterialTheme.colorScheme.primary else selectedBorder
+            } else {
+                if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFDCE5E2)
+            }
+
+            val dispTxtColor = if (isSelected) {
+                if (isDark) MaterialTheme.colorScheme.primary else txtColor
+            } else {
+                charcoalDark
+            }
+
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .background(
-                        if (isSelected) selectedBg else Color.White,
-                        RoundedCornerShape(8.dp)
-                    )
-                    .border(
-                        1.dp,
-                        if (isSelected) selectedBorder else Color(0xFFDCE5E2),
-                        RoundedCornerShape(8.dp)
-                    )
+                    .background(bg, RoundedCornerShape(8.dp))
+                    .border(1.dp, borderCol, RoundedCornerShape(8.dp))
                     .clickable { onExerciseSelected(exeType) }
                     .padding(vertical = 4.dp),
                 contentAlignment = Alignment.Center
@@ -66,7 +79,7 @@ fun ExerciseChipGroup(
                     text = androidx.compose.ui.res.stringResource(id = exeType.displayNameResId),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) txtColor else charcoalDark
+                    color = dispTxtColor
                 )
             }
         }
@@ -89,16 +102,23 @@ fun RoutineStepRowItem(
     onStepChange: (RoutineStep) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tealActive = Color(0xFF006A60)
-    val charcoalDark = Color(0xFF191C1B)
-    val secondaryGray = Color(0xFF3F4947)
+    val isDark = isSystemInDarkTheme()
+    val tealActive = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
+    val charcoalDark = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF191C1B)
+    val secondaryGray = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F7F5)),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF2F7F5)
+        ),
         shape = RoundedCornerShape(12.dp),
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFDCE5E2), RoundedCornerShape(12.dp))
+            .border(
+                1.dp,
+                if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFDCE5E2),
+                RoundedCornerShape(12.dp)
+            )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             // Header row with step index, order shift indicators, and delete button
@@ -169,8 +189,8 @@ fun RoutineStepRowItem(
                     Box(
                         modifier = Modifier
                             .size(26.dp)
-                            .background(Color.White, CircleShape)
-                            .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                            .background(if (isDark) Color(0xFF242424) else Color.White, CircleShape)
+                            .border(1.dp, if (isDark) Color(0xFF3F4945) else Color(0xFFCCE8E3), CircleShape)
                             .clickable {
                                 onStepChange(step.copy(durationSeconds = (step.durationSeconds - 5).coerceAtLeast(5)))
                             },
@@ -222,8 +242,8 @@ fun RoutineStepRowItem(
                         Box(
                             modifier = Modifier
                                 .size(26.dp)
-                                .background(Color.White, CircleShape)
-                                .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                .background(if (isDark) Color(0xFF242424) else Color.White, CircleShape)
+                                .border(1.dp, if (isDark) Color(0xFF3F4945) else Color(0xFFCCE8E3), CircleShape)
                                 .clickable {
                                     onStepChange(step.copy(rhythmIntervalSeconds = (step.rhythmIntervalSeconds - 1).coerceAtLeast(1)))
                                 },
@@ -275,8 +295,8 @@ fun RoutineStepRowItem(
                         Box(
                             modifier = Modifier
                                 .size(26.dp)
-                                .background(Color.White, CircleShape)
-                                .border(1.dp, Color(0xFFCCE8E3), CircleShape)
+                                .background(if (isDark) Color(0xFF242424) else Color.White, CircleShape)
+                                .border(1.dp, if (isDark) Color(0xFF3F4945) else Color(0xFFCCE8E3), CircleShape)
                                 .clickable {
                                     onStepChange(step.copy(restSeconds = (step.restSeconds - 5).coerceAtLeast(0)))
                                 },
@@ -324,8 +344,9 @@ fun RoutineEditDialog(
     var name by remember { mutableStateOf(initialName) }
     var steps by remember { mutableStateOf(initialSteps) }
 
-    val tealActive = Color(0xFF006A60)
-    val secondaryGray = Color(0xFF3F4947)
+    val isDark = isSystemInDarkTheme()
+    val tealActive = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
+    val secondaryGray = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -470,6 +491,6 @@ fun RoutineEditDialog(
             }
         },
         shape = RoundedCornerShape(16.dp),
-        containerColor = Color.White
+        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
     )
 }

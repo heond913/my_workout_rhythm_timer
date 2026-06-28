@@ -868,11 +868,15 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
         var showShareDialog by remember { mutableStateOf(false) }
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F3F1)),
+            colors = CardDefaults.cardColors(containerColor = if (isDark) Color(0xFF1E1E1E) else Color(0xFFE6F3F1)),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.5.dp, tealActive, RoundedCornerShape(16.dp))
+                .border(
+                    1.5.dp,
+                    if (isDark) Color(0xFF333333) else tealActive,
+                    RoundedCornerShape(16.dp)
+                )
                 .clickable { showShareDialog = true }
                 .padding(4.dp)
                 .testTag("stats_social_share_card")
@@ -904,13 +908,13 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                         text = stringResource(id = R.string.social_share_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = charcoalDark
+                        color = if (isDark) Color.White else charcoalDark
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = stringResource(id = R.string.social_share_subtitle),
                         fontSize = 11.sp,
-                        color = secondaryGray
+                        color = if (isDark) Color(0xFFCBD5E1) else secondaryGray
                     )
                 }
             }
