@@ -261,12 +261,18 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             val currentIdx = uiState.routineCurrentStepIndex
             
             Card(
-                colors = CardDefaults.cardColors(containerColor = WorkoutTealSoftCard),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) Color(0xFF242424) else WorkoutTealSoftCard
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
-                    .border(1.dp, WorkoutTealBorder, RoundedCornerShape(16.dp))
+                    .border(
+                        1.dp,
+                        if (isDark) Color(0xFF3F4945) else WorkoutTealBorder,
+                        RoundedCornerShape(16.dp)
+                    )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -292,7 +298,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                         Text(
                             text = stringResource(id = R.string.routine_custom_prefix_format, uiState.routineName),
                             fontWeight = FontWeight.Bold,
-                            color = WorkoutDeepTeal,
+                            color = if (isDark) Color.White else WorkoutDeepTeal,
                             fontSize = 14.sp
                         )
                     }
@@ -300,7 +306,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         thickness = 1.dp,
-                        color = WorkoutTealDivider
+                        color = if (isDark) Color(0xFF3F4945) else WorkoutTealDivider
                     )
                     
                     Box(
@@ -342,19 +348,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         ExerciseType.OTHER -> VibrantStreakCardBg
                                     }
                                 } else {
-                                    Color.White
+                                    if (isDark) Color(0xFF1E1E1E) else Color.White
                                 }
                                 
                                 val circleBorderColor = if (isCurrent) {
                                     stepColor
                                 } else {
-                                    WorkoutGrayBorder
+                                    if (isDark) Color(0xFF3F4945) else WorkoutGrayBorder
                                 }
                                 
                                 val iconColor = if (isCurrent) {
                                     stepColor
                                 } else {
-                                    if (isCompleted) WorkoutStatusCompleted else WorkoutStatusPending
+                                    if (isCompleted) {
+                                        if (isDark) Color(0xFF9CA3AF) else WorkoutStatusCompleted
+                                    } else {
+                                        if (isDark) Color(0xFF4B5563) else WorkoutStatusPending
+                                    }
                                 }
                                 
                                 Column(
@@ -394,7 +404,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                         text = "$exerciseLabel: ${step.durationSeconds}s ($statusStr)",
                                         fontSize = 11.sp,
                                         fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isCurrent) stepColor else WorkoutStepTextMuted,
+                                        color = if (isCurrent) stepColor else (if (isDark) Color(0xFFCBD5E1) else WorkoutStepTextMuted),
                                         textAlign = TextAlign.Center
                                     )
                                     
@@ -403,7 +413,11 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                                             text = "/ +${step.restSeconds}s ($restStr)",
                                             fontSize = 11.sp,
                                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isCurrent) WorkoutStepIndicatorActive else WorkoutStepIndicatorInactive,
+                                            color = if (isCurrent) {
+                                                if (isDark) Color(0xFF4DB6AC) else WorkoutStepIndicatorActive
+                                            } else {
+                                                if (isDark) Color(0xFF6B7280) else WorkoutStepIndicatorInactive
+                                            },
                                             textAlign = TextAlign.Center
                                         )
                                     }
@@ -1180,14 +1194,20 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     modifier = Modifier
                         .size(56.dp)
                         .background(
-                            if (isRunning) WorkoutDisabledBg
-                            else VibrantStreakCardBg,
+                            if (isDark) {
+                                if (isRunning) Color(0xFF1A1A1A) else Color(0xFF242424)
+                            } else {
+                                if (isRunning) WorkoutDisabledBg else VibrantStreakCardBg
+                            },
                             CircleShape
                         )
                         .border(
                             1.dp,
-                            if (isRunning) WorkoutDisabledBorder
-                            else VibrantLightBorder,
+                            if (isDark) {
+                                Color(0xFF3F4945)
+                            } else {
+                                if (isRunning) WorkoutDisabledBorder else VibrantLightBorder
+                            },
                             CircleShape
                         )
                         .testTag("reset_timer_button")
@@ -1242,8 +1262,23 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                     enabled = isManualInputEnabled,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(if (isManualInputEnabled) VibrantStreakCardBg else WorkoutDisabledBg, CircleShape)
-                        .border(1.dp, if (isManualInputEnabled) VibrantLightBorder else WorkoutDisabledBorder, CircleShape)
+                        .background(
+                            if (isDark) {
+                                if (isManualInputEnabled) Color(0xFF242424) else Color(0xFF1A1A1A)
+                            } else {
+                                if (isManualInputEnabled) VibrantStreakCardBg else WorkoutDisabledBg
+                            },
+                            CircleShape
+                        )
+                        .border(
+                            1.dp,
+                            if (isDark) {
+                                Color(0xFF3F4945)
+                            } else {
+                                if (isManualInputEnabled) VibrantLightBorder else WorkoutDisabledBorder
+                            },
+                            CircleShape
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -1492,7 +1527,7 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
                 }
             },
             shape = RoundedCornerShape(16.dp),
-            containerColor = Color.White
+            containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
         )
     }
 

@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,10 +31,15 @@ fun LanguageSelectionDialog(
     onDismiss: () -> Unit,
     onLanguageSelected: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val dialogBg = if (isDark) MaterialTheme.colorScheme.surface else Color(0xFFFBFDF9)
+    val titleColor = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
+    val secondaryText = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(28.dp),
-            color = Color(0xFFFBFDF9), // VibrantSoftGreenBg
+            color = dialogBg,
             tonalElevation = 6.dp
         ) {
             Column(
@@ -45,7 +52,7 @@ fun LanguageSelectionDialog(
                     text = stringResource(id = R.string.language_selection_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF006A60) // tealActive
+                    color = titleColor
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -53,7 +60,7 @@ fun LanguageSelectionDialog(
                 Text(
                     text = stringResource(id = R.string.language_selection_subtitle),
                     fontSize = 14.sp,
-                    color = Color(0xFF3F4947), // secondaryGray
+                    color = secondaryText,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
                 
@@ -132,13 +139,17 @@ fun LanguageOption(
     label: String,
     onClick: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val containerCol = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color(0xFFCCE8E3)
+    val contentCol = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF00201C)
+
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFCCE8E3), // VibrantTealSoftBg
-            contentColor = Color(0xFF00201C) // VibrantTealDeepContrast
+            containerColor = containerCol,
+            contentColor = contentCol
         ),
         contentPadding = PaddingValues(16.dp)
     ) {

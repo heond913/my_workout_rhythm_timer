@@ -752,7 +752,7 @@ fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(18.dp)
-                        .background(Color(0xFFDAE5E1), RoundedCornerShape(8.dp))
+                        .background(if (isDark) Color(0xFF2E3533) else Color(0xFFDAE5E1), RoundedCornerShape(8.dp))
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     Row(modifier = Modifier.fillMaxSize()) {
