@@ -56,7 +56,7 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val dateFormatter = remember(daySelectedFormat) { SimpleDateFormat(daySelectedFormat, Locale.getDefault()) }
 
     // Color Theme - Vibrant Palette
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
     val tealActive = MaterialTheme.colorScheme.primary
     val darkBg = MaterialTheme.colorScheme.background
     val cardSurface = MaterialTheme.colorScheme.surfaceVariant

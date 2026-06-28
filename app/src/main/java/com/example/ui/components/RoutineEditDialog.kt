@@ -34,7 +34,7 @@ fun ExerciseChipGroup(
     modifier: Modifier = Modifier
 ) {
     val exerciseTypes = ExerciseType.values()
-    val isDark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
     val charcoalDark = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF191C1B)
 
     Row(
@@ -102,7 +102,7 @@ fun RoutineStepRowItem(
     onStepChange: (RoutineStep) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
     val tealActive = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
     val charcoalDark = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF191C1B)
     val secondaryGray = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
@@ -344,7 +344,7 @@ fun RoutineEditDialog(
     var name by remember { mutableStateOf(initialName) }
     var steps by remember { mutableStateOf(initialSteps) }
 
-    val isDark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
     val tealActive = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
     val secondaryGray = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
 

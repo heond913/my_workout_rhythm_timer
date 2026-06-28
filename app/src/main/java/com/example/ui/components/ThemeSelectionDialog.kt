@@ -90,7 +90,7 @@ fun ThemeSelectionDialog(
         else -> "Close"
     }
 
-    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212) || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
     val dialogBg = MaterialTheme.colorScheme.surface
     val activeTeal = MaterialTheme.colorScheme.primary
     val secondaryText = if (isSystemDark) Color(0xFFBEC9C6) else Color(0xFF3F4947)

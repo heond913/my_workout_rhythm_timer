@@ -31,7 +31,7 @@ fun LanguageSelectionDialog(
     onDismiss: () -> Unit,
     onLanguageSelected: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
     val dialogBg = if (isDark) MaterialTheme.colorScheme.surface else Color(0xFFFBFDF9)
     val titleColor = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF006A60)
     val secondaryText = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF3F4947)
@@ -139,7 +139,7 @@ fun LanguageOption(
     label: String,
     onClick: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF121212)
     val containerCol = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color(0xFFCCE8E3)
     val contentCol = if (isDark) MaterialTheme.colorScheme.primary else Color(0xFF00201C)
 
