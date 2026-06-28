@@ -43,10 +43,10 @@
         android:theme="@style/Theme.MyApplication"
         android:localeConfig="@xml/locales_config">
 
-        <!-- Sample AdMob App ID (required by Google Mobile Ads SDK for test unit IDs) -->
+        <!-- Dynamic AdMob App ID (configured via Secrets/Environment variables) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${ADMOB_APP_ID}" />
 
         <activity
             android:name=".MainActivity"

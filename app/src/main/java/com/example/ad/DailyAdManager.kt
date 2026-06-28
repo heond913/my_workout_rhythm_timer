@@ -61,8 +61,8 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
     companion object {
         private const val TAG = "DailyAdManager"
         
-        // Official AdMob Test Interstitial Ad Unit ID
-        private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+        // Dynamically configured Ad Unit ID from secrets/environment variables via BuildConfig
+        private val AD_UNIT_ID = com.example.BuildConfig.ADMOB_INTERSTITIAL_AD_UNIT_ID
         private const val PREFS_NAME = "workout_rhythm_prefs"
         
         // Preference key mappings
