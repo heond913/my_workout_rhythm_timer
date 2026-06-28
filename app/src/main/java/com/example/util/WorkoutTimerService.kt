@@ -37,6 +37,7 @@ class WorkoutTimerService : Service() {
     private lateinit var ttsHelper: TtsHelper
     private lateinit var repository: WorkoutRepository
     private lateinit var notificationManager: NotificationManager
+    private lateinit var serviceControl: com.example.data.ServiceTimerControl
 
     companion object {
         const val CHANNEL_ID = "workout_timer_channel_v2"
@@ -64,6 +65,7 @@ class WorkoutTimerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        serviceControl = TimerRepository.getServiceControl(this)
         soundHelper = SoundHelper(this)
         ttsHelper = TtsHelper(this)
         repository = WorkoutRepository(
@@ -98,20 +100,21 @@ class WorkoutTimerService : Service() {
         shutdownJob?.cancel()
         shutdownJob = null
 
-        val currentState = TimerRepository.timerState.value
-        if (currentState.isRunning && timerJob?.isActive == true) return
+        val startConfig = TimerRepository.timerConfig.value
+        val currentSnapshot = TimerRepository.timerSnapshot.value
+        if (currentSnapshot.isRunning && timerJob?.isActive == true) return
 
-        var elapsed = currentState.elapsedSeconds
-        var remaining = currentState.remainingSeconds
-        var workoutCount = currentState.workoutCount
-        var rhythmTickCount = currentState.rhythmTickCount
-        var showCompletionDialog = currentState.showCompletionDialog
+        var elapsed = currentSnapshot.elapsedSeconds
+        var remaining = currentSnapshot.remainingSeconds
+        var workoutCount = currentSnapshot.workoutCount
+        var rhythmTickCount = currentSnapshot.rhythmTickCount
+        var showCompletionDialog = currentSnapshot.showCompletionDialog
 
-        val isAutoResetNeeded = (currentState.timerMode == TimerMode.Countdown && currentState.remainingSeconds <= 0)
+        val isAutoResetNeeded = (startConfig.timerMode == TimerMode.Countdown && remaining <= 0)
 
         if (isAutoResetNeeded) {
             elapsed = 0
-            remaining = currentState.totalTargetSeconds
+            remaining = startConfig.totalTargetSeconds
             rhythmTickCount = 0
             workoutCount = 0
             showCompletionDialog = false
@@ -129,17 +132,28 @@ class WorkoutTimerService : Service() {
             remaining
         }
 
-        // Set state running with correct remainingSeconds accounting for preparation phase
-        TimerRepository.updateState {
-            it.copy(
+        // Lock-on-Start initialization: setup running runtime state from current locked configurations
+        serviceControl.setRuntimeState(
+            com.example.data.TimerRuntimeState(
                 isRunning = true,
                 elapsedSeconds = elapsed,
                 remainingSeconds = freshRemaining,
                 rhythmTickCount = rhythmTickCount,
                 workoutCount = workoutCount,
-                showCompletionDialog = showCompletionDialog
+                showCompletionDialog = showCompletionDialog,
+                isResting = currentSnapshot.isResting,
+                restRemainingSeconds = currentSnapshot.restRemainingSeconds,
+                restTotalSeconds = currentSnapshot.restTotalSeconds,
+                routineCurrentStepIndex = currentSnapshot.routineCurrentStepIndex,
+                isRoutineActive = currentSnapshot.isRoutineActive,
+                timerPresetType = currentSnapshot.timerPresetType,
+                rhythmIntervalSeconds = currentSnapshot.rhythmIntervalSeconds,
+                totalTargetSeconds = currentSnapshot.totalTargetSeconds,
+                routineHistoryJson = currentSnapshot.routineHistoryJson,
+                manualInputEnabled = false,
+                timerMode = startConfig.timerMode
             )
-        }
+        )
 
         // Start Foreground Service immediately to satisfy system mandates
         val notification = buildNotification()
@@ -152,21 +166,25 @@ class WorkoutTimerService : Service() {
             ttsHelper.speak(getString(R.string.tts_workout_start))
         }
 
-        val finalState = TimerRepository.timerState.value
-        var startTime = System.currentTimeMillis() - finalState.elapsedSeconds * 1000L
+        val activeRuntime = TimerRepository.timerSnapshot.value
+        var startTime = System.currentTimeMillis() - activeRuntime.elapsedSeconds * 1000L
 
         timerJob = serviceScope.launch {
-            while (TimerRepository.timerState.value.isRunning) {
+            // LOCK-ON-START: static config snapshot locked prior to loop entry
+            val lockedConfig = TimerRepository.timerConfig.value
+
+            while (true) {
+                val loopSnapshot = TimerRepository.timerSnapshot.value
+                if (!loopSnapshot.isRunning) break
+
                 delay(100L) // Poll atomic timestamp for high precision
-                val state = TimerRepository.timerState.value
+                
+                val currentRuntime = TimerRepository.timerSnapshot.value
                 val targetTotalElapsed = ((System.currentTimeMillis() - startTime) / 1000).toInt()
-                val diff = targetTotalElapsed - state.elapsedSeconds
+                val diff = targetTotalElapsed - currentRuntime.elapsedSeconds
                 if (diff >= 5) {
                     // Robust bulk time drift detection (Time Skipping Prevention)
-                    // If a drastic jump of >= 5 seconds occurs (e.g. system slowdown or recovery from CPU Doze mode),
-                    // we immediately pause the timer to protect user data coherence, prevent rapid coroutine triggers,
-                    // and gracefully inform the user to resume manually.
-                    TimerRepository.updateState { it.copy(isRunning = false, manualInputEnabled = true) }
+                    serviceControl.updateRuntimeState { it.copy(isRunning = false, manualInputEnabled = true) }
                     soundHelper.playDoubleBeep()
                     ttsHelper.speak(getString(R.string.tts_timer_paused_deviation))
                     updateNotification()
@@ -174,7 +192,8 @@ class WorkoutTimerService : Service() {
                 }
                 if (diff > 0) {
                     for (i in 1..diff) {
-                        if (!TimerRepository.timerState.value.isRunning) break
+                        val innerSnapshot = TimerRepository.timerSnapshot.value
+                        if (!innerSnapshot.isRunning) break
 
                         var speakText: String? = null
                         var extraSpeakText: String? = null
@@ -186,31 +205,31 @@ class WorkoutTimerService : Service() {
                         var logRoutineHistoryJson: String? = null
                         var logRoutineName: String? = null
 
-                        TimerRepository.updateState { currentState ->
-                            if (!currentState.isRunning) return@updateState currentState
+                        serviceControl.updateRuntimeState { current ->
+                            if (!current.isRunning) return@updateRuntimeState current
 
-                            var newElapsed = currentState.elapsedSeconds
-                            var newRemaining = currentState.remainingSeconds
-                            var newRhythmTick = currentState.rhythmTickCount
-                            var newWorkoutCount = currentState.workoutCount
-                            var newRunning = currentState.isRunning
-                            var newShowDialog = currentState.showCompletionDialog
-                            var newIsResting = currentState.isResting
-                            var newRestRemaining = currentState.restRemainingSeconds
-                            var newRestTotal = currentState.restTotalSeconds
-                            var newCurrentStepIndex = currentState.routineCurrentStepIndex
-                            var newIsRoutineActive = currentState.isRoutineActive
-                            var newPresetType = currentState.timerPresetType
-                            var newInterval = currentState.rhythmIntervalSeconds
-                            var newTotalTarget = currentState.totalTargetSeconds
-                            var newRoutineHistoryJson = currentState.routineHistoryJson
+                            var newElapsed = current.elapsedSeconds
+                            var newRemaining = current.remainingSeconds
+                            var newRhythmTick = current.rhythmTickCount
+                            var newWorkoutCount = current.workoutCount
+                            var newRunning = current.isRunning
+                            var newShowDialog = current.showCompletionDialog
+                            var newIsResting = current.isResting
+                            var newRestRemaining = current.restRemainingSeconds
+                            var newRestTotal = current.restTotalSeconds
+                            var newCurrentStepIndex = current.routineCurrentStepIndex
+                            var newIsRoutineActive = current.isRoutineActive
+                            var newPresetType = current.timerPresetType
+                            var newInterval = current.rhythmIntervalSeconds
+                            var newTotalTarget = current.totalTargetSeconds
+                            var newRoutineHistoryJson = current.routineHistoryJson
 
                             var ttsWord: String? = null
                             var coachingText: String? = null
 
                             val targetTotal = newTotalTarget
 
-                            if (currentState.isResting) {
+                            if (current.isResting) {
                                 newElapsed++
                                 if (newRestRemaining > 0) {
                                     newRestRemaining--
@@ -222,9 +241,9 @@ class WorkoutTimerService : Service() {
                                 }
 
                                 if (newRestRemaining <= 0) {
-                                    if (currentState.isRoutineActive) {
-                                        val steps = com.example.data.CustomRoutine.deserializeSteps(currentState.routineStepsJson)
-                                        val nextStepIdx = currentState.routineCurrentStepIndex + 1
+                                    if (newIsRoutineActive) {
+                                        val steps = com.example.data.CustomRoutine.deserializeSteps(lockedConfig.routineStepsJson)
+                                        val nextStepIdx = newCurrentStepIndex + 1
                                         if (nextStepIdx < steps.size) {
                                             val nextStep = steps[nextStepIdx]
                                             newCurrentStepIndex = nextStepIdx
@@ -248,9 +267,9 @@ class WorkoutTimerService : Service() {
                                             newShowDialog = true
                                             ttsWord = getString(R.string.tts_routine_completed_congratulations)
                                             logRoutineHistoryJson = newRoutineHistoryJson
-                                            logRoutineName = currentState.routineName
+                                            logRoutineName = lockedConfig.routineName
                                             
-                                            val originalPreset = repository.getTimerPresetType()
+                                            val originalPreset = lockedConfig.timerPresetType
                                             newPresetType = originalPreset
                                             newTotalTarget = when (originalPreset) {
                                                 "스쿼트" -> repository.getSquatTargetSeconds()
@@ -282,7 +301,7 @@ class WorkoutTimerService : Service() {
                                     }
                                 }
                             } else {
-                                if (currentState.timerMode == TimerMode.Countdown) {
+                                if (current.timerMode == TimerMode.Countdown) {
                                     newElapsed++
                                     if (newRemaining > 0) {
                                         newRemaining--
@@ -302,7 +321,7 @@ class WorkoutTimerService : Service() {
                                         newRhythmTick = 0
                                     } else {
                                         // --- NORMAL WORKOUT COUNTDOWN ---
-                                        val currentExType = com.example.data.ExerciseType.fromString(currentState.timerPresetType)
+                                        val currentExType = com.example.data.ExerciseType.fromString(newPresetType)
                                         if (currentExType == com.example.data.ExerciseType.PLANK && newRemaining in 1..10) {
                                             ttsWord = ttsHelper.getCountdownWord(newRemaining)
                                         } else {
@@ -317,7 +336,7 @@ class WorkoutTimerService : Service() {
                                             }
 
                                             // Rhythm counts
-                                            val interval = currentState.rhythmIntervalSeconds
+                                            val interval = newInterval
                                             var repTriggered = false
                                             if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
                                                 newRhythmTick++
@@ -345,16 +364,15 @@ class WorkoutTimerService : Service() {
 
                                         // Completed Countdown Condition
                                         if (newRemaining <= 0) {
-                                            if (currentState.isRoutineActive) {
-                                                val steps = com.example.data.CustomRoutine.deserializeSteps(currentState.routineStepsJson)
-                                                val currentStepIdx = currentState.routineCurrentStepIndex
-                                                val currentStep = steps[currentStepIdx]
+                                            if (current.isRoutineActive) {
+                                                val steps = com.example.data.CustomRoutine.deserializeSteps(lockedConfig.routineStepsJson)
+                                                val currentStep = steps[current.routineCurrentStepIndex]
 
                                                 val oldHistory = com.example.data.RoutineStepResult.deserializeList(newRoutineHistoryJson)
                                                 val newHistory = oldHistory + com.example.data.RoutineStepResult(
-                                                    exerciseName = currentStep.exerciseName,
+                                                    exerciseName = current.timerPresetType,
                                                     count = newWorkoutCount,
-                                                    targetSeconds = currentStep.durationSeconds
+                                                    targetSeconds = current.totalTargetSeconds
                                                 )
                                                 newRoutineHistoryJson = com.example.data.RoutineStepResult.serializeList(newHistory)
                                                 
@@ -367,7 +385,7 @@ class WorkoutTimerService : Service() {
                                                     playStrongBeep = true
                                                     ttsWord = getString(R.string.tts_step_completed_resting_format, getLocalizedExerciseName(currentStep.exerciseName), currentStep.restSeconds)
                                                 } else {
-                                                    val nextStepIdx = currentStepIdx + 1
+                                                    val nextStepIdx = newCurrentStepIndex + 1
                                                     if (nextStepIdx < steps.size) {
                                                         val nextStep = steps[nextStepIdx]
                                                         newCurrentStepIndex = nextStepIdx
@@ -388,9 +406,9 @@ class WorkoutTimerService : Service() {
                                                         newShowDialog = true
                                                         ttsWord = getString(R.string.tts_routine_finished_congratulations)
                                                         logRoutineHistoryJson = newRoutineHistoryJson
-                                                        logRoutineName = currentState.routineName
+                                                        logRoutineName = lockedConfig.routineName
                                                         
-                                                        val originalPreset = repository.getTimerPresetType()
+                                                        val originalPreset = lockedConfig.timerPresetType
                                                         newPresetType = originalPreset
                                                         newTotalTarget = when (originalPreset) {
                                                             "스쿼트" -> repository.getSquatTargetSeconds()
@@ -438,7 +456,7 @@ class WorkoutTimerService : Service() {
                                         } else if (newRemaining == targetTotal + 1) {
                                             ttsWord = getString(R.string.tts_prep_1)
                                         }
-                                    } else if (newRemaining == targetTotal && currentState.elapsedSeconds == 0) {
+                                    } else if (newRemaining == targetTotal && current.elapsedSeconds == 0) {
                                         // Note: transition to start
                                         ttsWord = getString(R.string.tts_prep_start)
                                         playStrongBeep = true
@@ -447,8 +465,8 @@ class WorkoutTimerService : Service() {
                                     } else {
                                         // --- NORMAL WORKOUT COUNT-UP ---
                                         newElapsed++
-                                        val currentExType = com.example.data.ExerciseType.fromString(currentState.timerPresetType)
-                                        val interval = currentState.rhythmIntervalSeconds
+                                        val currentExType = com.example.data.ExerciseType.fromString(newPresetType)
+                                        val interval = newInterval
                                         var repTriggered = false
                                         if (interval > 0 && currentExType != com.example.data.ExerciseType.PLANK) {
                                             newRhythmTick++
@@ -469,7 +487,7 @@ class WorkoutTimerService : Service() {
 
                             speakText = ttsWord
 
-                            currentState.copy(
+                            current.copy(
                                 elapsedSeconds = newElapsed,
                                 remainingSeconds = newRemaining,
                                 rhythmTickCount = newRhythmTick,
@@ -485,7 +503,7 @@ class WorkoutTimerService : Service() {
                                 rhythmIntervalSeconds = newInterval,
                                 totalTargetSeconds = newTotalTarget,
                                 routineHistoryJson = newRoutineHistoryJson,
-                                manualInputEnabled = if (!newRunning) true else currentState.manualInputEnabled
+                                manualInputEnabled = if (!newRunning) true else current.manualInputEnabled
                             )
                         }
 
@@ -528,7 +546,7 @@ class WorkoutTimerService : Service() {
                         // Dynamically update notification text every second
                         updateNotification()
 
-                        val finalRunning = TimerRepository.timerState.value.isRunning
+                        val finalRunning = TimerRepository.timerSnapshot.value.isRunning
                         if (!finalRunning) {
                             shutdownJob = serviceScope.launch {
                                 delay(6000L) // 6 seconds is perfect to play both TTS and the SoundPool cheer
@@ -544,7 +562,7 @@ class WorkoutTimerService : Service() {
     }
 
     private fun pauseTimerLoop() {
-        TimerRepository.updateState { it.copy(isRunning = false, manualInputEnabled = true) }
+        serviceControl.updateRuntimeState { it.copy(isRunning = false, manualInputEnabled = true) }
         timerJob?.cancel()
         soundHelper.playDoubleBeep()
         ttsHelper.speak(getString(R.string.tts_workout_paused))
@@ -557,7 +575,7 @@ class WorkoutTimerService : Service() {
         timerJob?.cancel()
         sessionStartTime = 0L
 
-        val isRoutineActiveBeforeReset = TimerRepository.timerState.value.isRoutineActive
+        val isRoutineActiveBeforeReset = TimerRepository.timerSnapshot.value.isRoutineActive
         val originalPreset = repository.getTimerPresetType()
         val originalTotalTarget = when (originalPreset) {
             "스쿼트" -> repository.getSquatTargetSeconds()
@@ -574,14 +592,8 @@ class WorkoutTimerService : Service() {
             else -> 4
         }
 
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
-                isRunning = false,
-                elapsedSeconds = 0,
-                remainingSeconds = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalTotalTarget else it.totalTargetSeconds,
-                rhythmTickCount = 0,
-                workoutCount = 0,
-                manualInputEnabled = true,
                 isRoutineActive = false,
                 routineName = "",
                 routineStepsJson = "",
@@ -592,13 +604,15 @@ class WorkoutTimerService : Service() {
                 rhythmIntervalSeconds = if (isRoutineActiveBeforeReset || it.isRoutineActive) originalInterval else it.rhythmIntervalSeconds
             )
         }
+        TimerRepository.resetRuntimeState()
+
         ttsHelper.stop()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
     private fun logCurrentTimerWorkout() {
-        val state = TimerRepository.timerState.value
+        val state = TimerRepository.timerSnapshot.value
         val type = com.example.data.ExerciseType.fromString(state.timerPresetType)
         val exercise = when (type) {
             com.example.data.ExerciseType.SQUAT -> "스쿼트"
@@ -724,7 +738,7 @@ class WorkoutTimerService : Service() {
     }
 
     private fun buildNotification(): android.app.Notification {
-        val state = TimerRepository.timerState.value
+        val state = TimerRepository.timerSnapshot.value
         val type = com.example.data.ExerciseType.fromString(state.timerPresetType)
         val exerciseDisplay = when (type) {
             com.example.data.ExerciseType.SQUAT -> getString(R.string.preset_squat)

@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.AppDatabase
 import com.example.data.TimerRepository
-import com.example.data.TimerState
+import com.example.data.TimerSnapshot
 import com.example.data.WorkoutRecord
 import com.example.data.WorkoutRepository
 import com.example.data.CustomRoutine
@@ -124,6 +124,16 @@ data class WorkoutUiState(
     val appTheme: AppTheme = AppTheme.SYSTEM
 )
 
+private fun normalizePresetName(preset: String): String {
+    val resolvedType = com.example.data.ExerciseType.fromString(preset)
+    return when (resolvedType) {
+        com.example.data.ExerciseType.SQUAT -> "스쿼트"
+        com.example.data.ExerciseType.LUNGE -> "런지"
+        com.example.data.ExerciseType.PLANK -> "플랭크"
+        com.example.data.ExerciseType.OTHER -> if (preset.trim().uppercase() == "OTHER" || preset.trim() == "기타" || preset.isBlank()) "기타" else preset
+    }
+}
+
 class WorkoutViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: WorkoutRepository = WorkoutRepository(
@@ -144,7 +154,7 @@ class WorkoutViewModel @JvmOverloads constructor(
     // Unified UI and Timer State
     private val _uiState = MutableStateFlow(
         WorkoutUiState(
-            timerPresetType = repository.getTimerPresetType(),
+            timerPresetType = normalizePresetName(repository.getTimerPresetType()),
             squatIntervalSeconds = repository.getSquatInterval(),
             lungeIntervalSeconds = repository.getLungeInterval(),
             plankIntervalSeconds = repository.getPlankInterval(),
@@ -174,7 +184,8 @@ class WorkoutViewModel @JvmOverloads constructor(
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
 
     init {
-        val initialPreset = repository.getTimerPresetType()
+        val rawPreset = repository.getTimerPresetType()
+        val initialPreset = normalizePresetName(rawPreset)
         val initialTarget = when (initialPreset) {
             "스쿼트" -> repository.getSquatTargetSeconds()
             "런지" -> repository.getLungeTargetSeconds()
@@ -183,11 +194,10 @@ class WorkoutViewModel @JvmOverloads constructor(
             else -> 60
         }
         val initialRhythm = repository.getRhythmInterval()
-        TimerRepository.setState(
-            TimerState(
+        TimerRepository.updateConfig {
+            com.example.data.TimerConfig(
                 timerPresetType = initialPreset,
                 rhythmIntervalSeconds = initialRhythm,
-                remainingSeconds = initialTarget,
                 totalTargetSeconds = initialTarget,
                 autoRestEnabled = repository.getAutoRestEnabled(),
                 squatAutoRestEnabled = repository.getSquatAutoRestEnabled(),
@@ -206,14 +216,17 @@ class WorkoutViewModel @JvmOverloads constructor(
                     else -> 30
                 }
             )
-        )
+        }
 
         _uiState.update {
-            it.copy(customRoutines = repository.getCustomRoutines())
+            it.copy(
+                customRoutines = repository.getCustomRoutines(),
+                timerPresetType = initialPreset
+            )
         }
 
         viewModelScope.launch {
-            TimerRepository.timerState.collect { timerState ->
+            TimerRepository.timerSnapshot.collect { timerState ->
                 _uiState.update {
                     it.copy(
                         timerRunning = timerState.isRunning,
@@ -280,15 +293,14 @@ class WorkoutViewModel @JvmOverloads constructor(
         get() = _uiState.value.totalTargetSeconds
 
     fun updateTargetSeconds(value: Int) {
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
-                totalTargetSeconds = value,
-                remainingSeconds = value
+                totalTargetSeconds = value
             )
         }
         val activePreset = _uiState.value.timerPresetType
         if (activePreset == "플랭크") {
-            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = value) }
+            TimerRepository.updateConfig { it.copy(rhythmIntervalSeconds = value) }
             repository.saveRhythmInterval(value)
         }
         when (activePreset) {
@@ -325,12 +337,8 @@ class WorkoutViewModel @JvmOverloads constructor(
         get() = _uiState.value.showCompletionDialog
 
     fun updateShowCompletionDialog(show: Boolean) {
-        TimerRepository.updateState {
-            if (!show) {
-                it.copy(showCompletionDialog = show, routineHistoryJson = "")
-            } else {
-                it.copy(showCompletionDialog = show)
-            }
+        if (!show) {
+            TimerRepository.dismissCompletionDialog()
         }
     }
 
@@ -364,13 +372,7 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun selectPreset(preset: String) {
-        val resolvedType = com.example.data.ExerciseType.fromString(preset)
-        val normalizedPreset = when (resolvedType) {
-            com.example.data.ExerciseType.SQUAT -> "스쿼트"
-            com.example.data.ExerciseType.LUNGE -> "런지"
-            com.example.data.ExerciseType.PLANK -> "플랭크"
-            com.example.data.ExerciseType.OTHER -> if (preset == "기타" || preset.isBlank()) "기타" else preset
-        }
+        val normalizedPreset = normalizePresetName(preset)
 
         val targetSecondsForPreset = when (normalizedPreset) {
             "스쿼트" -> repository.getSquatTargetSeconds()
@@ -393,17 +395,12 @@ class WorkoutViewModel @JvmOverloads constructor(
             "기타" -> _uiState.value.otherRestSeconds
             else -> 30
         }
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
                 timerPresetType = normalizedPreset,
                 totalTargetSeconds = targetSecondsForPreset,
                 rhythmIntervalSeconds = updatedRhythmInterval,
-                elapsedSeconds = 0,
-                remainingSeconds = targetSecondsForPreset,
-                rhythmTickCount = 0,
-                workoutCount = 0,
                 restTotalSeconds = restSecs,
-                isResting = false,
                 manualInputEnabled = true
             )
         }
@@ -430,7 +427,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(squatIntervalSeconds = safeSecs) }
         repository.saveSquatInterval(safeSecs)
         if (timerPresetType == "스쿼트") {
-            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
+            TimerRepository.updateConfig { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -440,7 +437,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(lungeIntervalSeconds = safeSecs) }
         repository.saveLungeInterval(safeSecs)
         if (timerPresetType == "런지") {
-            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
+            TimerRepository.updateConfig { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -450,7 +447,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(plankIntervalSeconds = safeSecs) }
         repository.savePlankInterval(safeSecs)
         if (timerPresetType == "플랭크") {
-            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
+            TimerRepository.updateConfig { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -460,7 +457,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(otherIntervalSeconds = safeSecs) }
         repository.saveOtherInterval(safeSecs)
         if (timerPresetType == "기타") {
-            TimerRepository.updateState { it.copy(rhythmIntervalSeconds = safeSecs) }
+            TimerRepository.updateConfig { it.copy(rhythmIntervalSeconds = safeSecs) }
             repository.saveRhythmInterval(safeSecs)
         }
     }
@@ -468,38 +465,38 @@ class WorkoutViewModel @JvmOverloads constructor(
     fun updateAutoRestEnabled(enabled: Boolean) {
         _uiState.update { it.copy(autoRestEnabled = enabled) }
         repository.saveAutoRestEnabled(enabled)
-        TimerRepository.updateState { it.copy(autoRestEnabled = enabled) }
+        TimerRepository.updateConfig { it.copy(autoRestEnabled = enabled) }
     }
 
     fun updateSquatAutoRestEnabled(enabled: Boolean) {
         _uiState.update { it.copy(squatAutoRestEnabled = enabled) }
         repository.saveSquatAutoRestEnabled(enabled)
-        TimerRepository.updateState { it.copy(squatAutoRestEnabled = enabled) }
+        TimerRepository.updateConfig { it.copy(squatAutoRestEnabled = enabled) }
     }
 
     fun updateLungeAutoRestEnabled(enabled: Boolean) {
         _uiState.update { it.copy(lungeAutoRestEnabled = enabled) }
         repository.saveLungeAutoRestEnabled(enabled)
-        TimerRepository.updateState { it.copy(lungeAutoRestEnabled = enabled) }
+        TimerRepository.updateConfig { it.copy(lungeAutoRestEnabled = enabled) }
     }
 
     fun updatePlankAutoRestEnabled(enabled: Boolean) {
         _uiState.update { it.copy(plankAutoRestEnabled = enabled) }
         repository.savePlankAutoRestEnabled(enabled)
-        TimerRepository.updateState { it.copy(plankAutoRestEnabled = enabled) }
+        TimerRepository.updateConfig { it.copy(plankAutoRestEnabled = enabled) }
     }
 
     fun updateOtherAutoRestEnabled(enabled: Boolean) {
         _uiState.update { it.copy(otherAutoRestEnabled = enabled) }
         repository.saveOtherAutoRestEnabled(enabled)
-        TimerRepository.updateState { it.copy(otherAutoRestEnabled = enabled) }
+        TimerRepository.updateConfig { it.copy(otherAutoRestEnabled = enabled) }
     }
 
     fun updateSquatRestSeconds(seconds: Int) {
         val safeSecs = seconds.coerceIn(5, 300)
         _uiState.update { it.copy(squatRestSeconds = safeSecs) }
         repository.saveSquatRestSeconds(safeSecs)
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             val updated = it.copy(squatRestSeconds = safeSecs)
             if (updated.timerPresetType == "스쿼트") updated.copy(restTotalSeconds = safeSecs) else updated
         }
@@ -509,7 +506,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         val safeSecs = seconds.coerceIn(5, 300)
         _uiState.update { it.copy(lungeRestSeconds = safeSecs) }
         repository.saveLungeRestSeconds(safeSecs)
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             val updated = it.copy(lungeRestSeconds = safeSecs)
             if (updated.timerPresetType == "런지") updated.copy(restTotalSeconds = safeSecs) else updated
         }
@@ -519,7 +516,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         val safeSecs = seconds.coerceIn(5, 300)
         _uiState.update { it.copy(plankRestSeconds = safeSecs) }
         repository.savePlankRestSeconds(safeSecs)
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             val updated = it.copy(plankRestSeconds = safeSecs)
             if (updated.timerPresetType == "플랭크") updated.copy(restTotalSeconds = safeSecs) else updated
         }
@@ -529,7 +526,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         val safeSecs = seconds.coerceIn(5, 300)
         _uiState.update { it.copy(otherRestSeconds = safeSecs) }
         repository.saveOtherRestSeconds(safeSecs)
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             val updated = it.copy(otherRestSeconds = safeSecs)
             if (updated.timerPresetType == "기타") updated.copy(restTotalSeconds = safeSecs) else updated
         }
@@ -537,20 +534,16 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun selectTimerMode(mode: TimerMode) {
         if (timerRunning) return
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
-                timerMode = mode,
-                elapsedSeconds = 0,
-                remainingSeconds = totalTargetSeconds,
-                rhythmTickCount = 0,
-                workoutCount = 0
+                timerMode = mode
             )
         }
         resetTimer()
     }
 
     fun startTimer() {
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(manualInputEnabled = false)
         }
         val context = getApplication<Application>().applicationContext
@@ -581,7 +574,7 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun resetTimer() {
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(manualInputEnabled = true)
         }
         _uiState.update {
@@ -789,7 +782,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         if (routine.steps.isEmpty()) return
         val firstStep = routine.steps[0]
         
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
                 isRoutineActive = true,
                 routineName = routine.name,
@@ -798,20 +791,16 @@ class WorkoutViewModel @JvmOverloads constructor(
                 routineHistoryJson = "",
                 timerPresetType = firstStep.exerciseName,
                 rhythmIntervalSeconds = firstStep.rhythmIntervalSeconds,
-                totalTargetSeconds = firstStep.durationSeconds,
-                remainingSeconds = firstStep.durationSeconds, // prep phase will be added by WorkoutTimerService on start
-                elapsedSeconds = 0,
-                rhythmTickCount = 0,
-                workoutCount = 0,
-                isResting = false
+                totalTargetSeconds = firstStep.durationSeconds
             )
         }
+        TimerRepository.resetRuntimeState()
         
         startTimer()
     }
 
     fun stopRoutine() {
-        val originalPreset = repository.getTimerPresetType()
+        val originalPreset = normalizePresetName(repository.getTimerPresetType())
         val originalTotalTarget = when (originalPreset) {
             "스쿼트" -> repository.getSquatTargetSeconds()
             "런지" -> repository.getLungeTargetSeconds()
@@ -826,7 +815,7 @@ class WorkoutViewModel @JvmOverloads constructor(
             "기타" -> repository.getOtherInterval()
             else -> 4
         }
-        TimerRepository.updateState {
+        TimerRepository.updateConfig {
             it.copy(
                 isRoutineActive = false,
                 routineName = "",
@@ -835,13 +824,10 @@ class WorkoutViewModel @JvmOverloads constructor(
                 routineHistoryJson = "",
                 timerPresetType = originalPreset,
                 totalTargetSeconds = originalTotalTarget,
-                rhythmIntervalSeconds = originalInterval,
-                remainingSeconds = originalTotalTarget,
-                elapsedSeconds = 0,
-                workoutCount = 0,
-                rhythmTickCount = 0
+                rhythmIntervalSeconds = originalInterval
             )
         }
+        TimerRepository.resetRuntimeState()
         resetTimer()
     }
 
