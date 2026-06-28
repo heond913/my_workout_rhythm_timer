@@ -364,22 +364,29 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun selectPreset(preset: String) {
-        val updatedPreset = preset
-        val targetSecondsForPreset = when (preset) {
+        val resolvedType = com.example.data.ExerciseType.fromString(preset)
+        val normalizedPreset = when (resolvedType) {
+            com.example.data.ExerciseType.SQUAT -> "스쿼트"
+            com.example.data.ExerciseType.LUNGE -> "런지"
+            com.example.data.ExerciseType.PLANK -> "플랭크"
+            com.example.data.ExerciseType.OTHER -> if (preset == "기타" || preset.isBlank()) "기타" else preset
+        }
+
+        val targetSecondsForPreset = when (normalizedPreset) {
             "스쿼트" -> repository.getSquatTargetSeconds()
             "런지" -> repository.getLungeTargetSeconds()
             "플랭크" -> repository.getPlankTargetSeconds()
             "기타" -> repository.getOtherTargetSeconds()
             else -> 60
         }
-        val updatedRhythmInterval = when (preset) {
+        val updatedRhythmInterval = when (normalizedPreset) {
             "스쿼트" -> squatIntervalSeconds
             "런지" -> lungeIntervalSeconds
             "플랭크" -> targetSecondsForPreset
             "기타" -> otherIntervalSeconds
-            else -> 0
+            else -> 4
         }
-        val restSecs = when (updatedPreset) {
+        val restSecs = when (normalizedPreset) {
             "스쿼트" -> _uiState.value.squatRestSeconds
             "런지" -> _uiState.value.lungeRestSeconds
             "플랭크" -> _uiState.value.plankRestSeconds
@@ -388,7 +395,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         }
         TimerRepository.updateState {
             it.copy(
-                timerPresetType = updatedPreset,
+                timerPresetType = normalizedPreset,
                 totalTargetSeconds = targetSecondsForPreset,
                 rhythmIntervalSeconds = updatedRhythmInterval,
                 elapsedSeconds = 0,
@@ -402,7 +409,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         }
         _uiState.update {
             it.copy(
-                timerPresetType = updatedPreset,
+                timerPresetType = normalizedPreset,
                 totalTargetSeconds = targetSecondsForPreset,
                 remainingSeconds = targetSecondsForPreset,
                 squatTargetSeconds = repository.getSquatTargetSeconds(),
@@ -413,7 +420,7 @@ class WorkoutViewModel @JvmOverloads constructor(
                 manualInputEnabled = true
             )
         }
-        repository.saveTimerPresetType(updatedPreset)
+        repository.saveTimerPresetType(normalizedPreset)
         repository.saveRhythmInterval(updatedRhythmInterval)
         resetTimer()
     }
