@@ -139,6 +139,13 @@ class WorkoutRepository(
         sharedPreferences.edit { putBoolean("is_language_selected", selected) }
     }
 
+    // --- Theme Selection ---
+    fun getAppTheme(): String = sharedPreferences.getString("app_theme", "SYSTEM") ?: "SYSTEM"
+
+    fun saveAppTheme(themeName: String) {
+        sharedPreferences.edit { putString("app_theme", themeName) }
+    }
+
     // --- Custom Routines Persistence ---
     private fun getLocalizedString(resId: Int, langCode: String): String {
         val locale = when (langCode) {

@@ -20,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,12 +49,13 @@ import java.util.*
 @Composable
 fun StatsScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutRecord>) {
     // Color Theme - Vibrant Palette
-    val tealActive = Color(0xFF006A60)
-    val darkBg = Color(0xFFFBFDF9) // Light theme background
-    val cardSurface = Color(0xFFF2F7F5) // Mint-grey card surfaces
-    val secondaryGray = Color(0xFF3F4947) // Slate grey text
-    val charcoalDark = Color(0xFF191C1B) // Deep dark text
-    val borderColor = Color(0xFFDCE5E2) // Soft borders
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
+    val tealActive = MaterialTheme.colorScheme.primary
+    val darkBg = MaterialTheme.colorScheme.background
+    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else Color(0xFF3F4947)
+    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else Color(0xFF191C1B)
+    val borderColor = if (isDark) Color(0xFF3F4945) else Color(0xFFDCE5E2)
     val fireOrange = Color(0xFFE05220) // Vibrant orange with solid white contrast
 
     val streak = viewModel.getWorkoutStreak(workoutRecords)

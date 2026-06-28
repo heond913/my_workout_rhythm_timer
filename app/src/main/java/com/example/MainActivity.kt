@@ -30,6 +30,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -117,14 +118,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
+            val viewModel: WorkoutViewModel = viewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
             val configuration = androidx.compose.ui.platform.LocalConfiguration.current
             val currentLocale = configuration.locales[0]
 
-            androidx.compose.runtime.key(currentLocale) {
-                MyApplicationTheme(darkTheme = false, dynamicColor = false) { // Apply Vibrant Palette light theme
-                val viewModel: WorkoutViewModel = viewModel()
+            val isDarkTheme = when (uiState.appTheme) {
+                com.example.viewmodel.AppTheme.LIGHT -> false
+                com.example.viewmodel.AppTheme.DARK -> true
+                com.example.viewmodel.AppTheme.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            androidx.compose.runtime.key(currentLocale, isDarkTheme) {
+                MyApplicationTheme(darkTheme = isDarkTheme, dynamicColor = false) {
                 val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     Scaffold(
@@ -135,7 +143,7 @@ class MainActivity : AppCompatActivity() {
                                 onTabSelected = { viewModel.setTab(it) }
                             )
                         },
-                        containerColor = Color(0xFFFBFDF9) // VibrantSoftGreenBg primary viewport color
+                        containerColor = MaterialTheme.colorScheme.background
                     ) { innerPadding ->
                         val listTabs = listOf(AppTab.Timer, AppTab.Log, AppTab.Calendar, AppTab.Stats)
                         val pagerState = rememberPagerState(
@@ -185,6 +193,14 @@ class MainActivity : AppCompatActivity() {
                         LanguageSelectionDialog(
                             onDismiss = { /* Optionally handle dismiss if needed, or force selection */ },
                             onLanguageSelected = { viewModel.onLanguageSelected() }
+                        )
+                    }
+
+                    if (uiState.showThemeSelection) {
+                        com.example.ui.components.ThemeSelectionDialog(
+                            currentTheme = uiState.appTheme,
+                            onThemeSelected = { viewModel.updateAppTheme(it) },
+                            onDismiss = { viewModel.updateShowThemeSelection(false) }
                         )
                     }
                 }

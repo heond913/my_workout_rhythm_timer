@@ -19,11 +19,14 @@ private val DarkColorScheme =
     tertiary = VibrantLungeIndigo,
     background = VibrantCharcoalDark,
     surface = VibrantCharcoalDark,
+    surfaceVariant = Color(0xFF252A28), // Sleek charcoal variant for cards
     onPrimary = Color.Black,
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White
+    onSurface = Color.White,
+    onSurfaceVariant = Color(0xFFBEC9C6),
+    outline = Color(0xFF3F4945)
   )
 
 private val LightColorScheme =

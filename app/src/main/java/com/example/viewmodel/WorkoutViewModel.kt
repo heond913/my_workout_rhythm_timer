@@ -56,6 +56,12 @@ enum class TimerMode {
     Countdown
 }
 
+enum class AppTheme {
+    LIGHT,
+    DARK,
+    SYSTEM
+}
+
 data class WorkoutUiState(
     val currentTab: AppTab = AppTab.Timer,
     val timerPresetType: String = "스쿼트",
@@ -77,6 +83,7 @@ data class WorkoutUiState(
     val workoutCount: Int = 0,
     val showCompletionDialog: Boolean = false,
     val showLanguageSelection: Boolean = false,
+    val showThemeSelection: Boolean = false,
     val calendarYearMonth: Calendar = Calendar.getInstance(),
     val calendarGrid: List<List<Calendar?>> = buildCalendarGrid(Calendar.getInstance()),
     val selectedCalendarDay: Calendar = Calendar.getInstance(),
@@ -113,7 +120,8 @@ data class WorkoutUiState(
     val setsError: Int? = null,
     val weightError: Int? = null,
     val durationError: Int? = null,
-    val customExerciseError: Int? = null
+    val customExerciseError: Int? = null,
+    val appTheme: AppTheme = AppTheme.SYSTEM
 )
 
 class WorkoutViewModel @JvmOverloads constructor(
@@ -155,7 +163,12 @@ class WorkoutViewModel @JvmOverloads constructor(
             squatRestSeconds = repository.getSquatRestSeconds(),
             lungeRestSeconds = repository.getLungeRestSeconds(),
             plankRestSeconds = repository.getPlankRestSeconds(),
-            otherRestSeconds = repository.getOtherRestSeconds()
+            otherRestSeconds = repository.getOtherRestSeconds(),
+            appTheme = try {
+                AppTheme.valueOf(repository.getAppTheme())
+            } catch (e: Exception) {
+                AppTheme.SYSTEM
+            }
         )
     )
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
@@ -328,11 +341,25 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(showLanguageSelection = show) }
     }
 
+    val showThemeSelection: Boolean
+        get() = _uiState.value.showThemeSelection
+
+    fun updateShowThemeSelection(show: Boolean) {
+        _uiState.update { it.copy(showThemeSelection = show) }
+    }
+
     fun onLanguageSelected() {
         repository.saveLanguageSelected(true)
         updateShowLanguageSelection(false)
         _uiState.update {
             it.copy(customRoutines = repository.getCustomRoutines())
+        }
+    }
+
+    fun updateAppTheme(theme: AppTheme) {
+        repository.saveAppTheme(theme.name)
+        _uiState.update {
+            it.copy(appTheme = theme)
         }
     }
 

@@ -49,6 +49,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -131,15 +132,26 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
 
     // Isolate preset presentation colors & metadata using the UI presenter model
     val activePreset = uiState.timerPresetType.exercisePreset
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == VibrantCharcoalDark
     val activePresetColor = activePreset.themeColor
-    val activePresetBgColor = activePreset.bgColor
+    val activePresetBgColor = if (isDark) {
+        when (uiState.timerPresetType) {
+            "스쿼트" -> Color(0xFF3E1F00)
+            "런지" -> Color(0xFF141F35)
+            "플랭크" -> Color(0xFF3F0001)
+            "기타" -> Color(0xFF003731)
+            else -> Color(0xFF252A28)
+        }
+    } else {
+        activePreset.bgColor
+    }
 
     // Color Theme mappings - Vibrant Palette
-    val tealActive = VibrantTealActive
-    val darkBg = VibrantSoftGreenBg // Light theme background
-    val cardSurface = VibrantPaleMintGray // Mint-grey card surfaces
-    val secondaryGray = VibrantSlateGrey // Slate grey text / unselected labels
-    val charcoalDark = VibrantCharcoalDark // Deep dark text
+    val tealActive = MaterialTheme.colorScheme.primary
+    val darkBg = MaterialTheme.colorScheme.background
+    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else VibrantSlateGrey
+    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else VibrantCharcoalDark
 
     val scrollState = rememberScrollState()
 
@@ -172,14 +184,41 @@ fun TimerScreen(viewModel: WorkoutViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
         if (!uiState.isRoutineActive) {
-            // Language Selection Panel
+            // Language & Theme Selection Panel
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+                val lang = if (!appLocales.isEmpty) appLocales.get(0)?.language ?: "en" else java.util.Locale.getDefault().language
+                val themeLabel = when (lang) {
+                    "ko" -> "🎨 테마 설정"
+                    "ja" -> "🎨 テーマ設定"
+                    "es" -> "🎨 Ajustes de tema"
+                    "de" -> "🎨 Theme-Einstellungen"
+                    "fr" -> "🎨 Thème"
+                    else -> "🎨 Theme Settings"
+                }
+
+                TextButton(
+                    onClick = {
+                        viewModel.updateShowThemeSelection(true)
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = tealActive
+                    ),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = themeLabel,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp
+                    )
+                }
+
                 TextButton(
                     onClick = {
                         viewModel.updateShowLanguageSelection(true)

@@ -56,12 +56,13 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val dateFormatter = remember(daySelectedFormat) { SimpleDateFormat(daySelectedFormat, Locale.getDefault()) }
 
     // Color Theme - Vibrant Palette
-    val tealActive = Color(0xFF006A60)
-    val darkBg = Color(0xFFFBFDF9) // Light theme background
-    val cardSurface = Color(0xFFF2F7F5) // Mint-grey card surfaces
-    val secondaryGray = Color(0xFF3F4947) // Slate grey text
-    val charcoalDark = Color(0xFF191C1B) // Deep dark text
-    val borderColor = Color(0xFFDCE5E2) // Soft borders
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme() || MaterialTheme.colorScheme.background == Color(0xFF191C1B)
+    val tealActive = MaterialTheme.colorScheme.primary
+    val darkBg = MaterialTheme.colorScheme.background
+    val cardSurface = MaterialTheme.colorScheme.surfaceVariant
+    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else Color(0xFF3F4947)
+    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else Color(0xFF191C1B)
+    val borderColor = if (isDark) Color(0xFF3F4945) else Color(0xFFDCE5E2)
 
     val scrollState = rememberScrollState()
 
