@@ -60,8 +60,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
     val tealActive = MaterialTheme.colorScheme.primary
     val darkBg = MaterialTheme.colorScheme.background
     val cardSurface = MaterialTheme.colorScheme.surfaceVariant
-    val secondaryGray = if (isDark) Color(0xFFBEC9C6) else Color(0xFF3F4947)
-    val charcoalDark = if (isDark) Color(0xFFE1E3E0) else Color(0xFF191C1B)
+    val secondaryGray = MaterialTheme.colorScheme.onSurfaceVariant
+    val charcoalDark = MaterialTheme.colorScheme.onSurface
     val borderColor = if (isDark) Color(0xFF3F4945) else Color(0xFFDCE5E2)
 
     val scrollState = rememberScrollState()
@@ -185,8 +185,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                     unfocusedLabelColor = secondaryGray,
                     focusedTextColor = charcoalDark,
                     unfocusedTextColor = charcoalDark,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                    unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
                     errorBorderColor = Color(0xFF93000A),
                     errorLabelColor = Color(0xFF93000A),
                     errorSupportingTextColor = Color(0xFF93000A)
@@ -340,8 +340,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -431,8 +431,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -522,8 +522,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -613,8 +613,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = tealActive,
                             unfocusedBorderColor = borderColor,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
                             errorBorderColor = Color(0xFF93000A)
                         ),
                         singleLine = true
@@ -724,8 +724,8 @@ fun LogScreen(viewModel: WorkoutViewModel) {
                         unfocusedTextColor = charcoalDark,
                         focusedBorderColor = tealActive,
                         unfocusedBorderColor = borderColor,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                        unfocusedContainerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
                     ),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().height(80.dp).testTag("note_input_field")

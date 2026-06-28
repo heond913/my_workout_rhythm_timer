@@ -112,7 +112,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFE6F3F1), RoundedCornerShape(16.dp))
+                .background(if (isDark) MaterialTheme.colorScheme.surface else Color(0xFFE6F3F1), RoundedCornerShape(16.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
                 .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -222,7 +222,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
                                         color = when {
                                             isSelected -> Color.White
                                             hasWorkout -> tealActive
-                                            else -> charcoalDark
+                                            else -> MaterialTheme.colorScheme.onSurface
                                         },
                                         fontWeight = if (isSelected || hasWorkout) FontWeight.Black else FontWeight.Normal,
                                         fontSize = 12.sp
@@ -336,7 +336,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             ) {
                 selectedDayWorkouts.forEach { workout ->
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -511,7 +511,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             text = {
                 Text(stringResource(id = R.string.delete_confirm_msg), color = charcoalDark)
             },
-            containerColor = Color.White,
+            containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -541,7 +541,7 @@ fun CalendarScreen(viewModel: WorkoutViewModel, workoutRecords: List<WorkoutReco
             text = {
                 Text(stringResource(id = R.string.delete_all_confirm_msg), color = charcoalDark)
             },
-            containerColor = Color.White,
+            containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
             shape = RoundedCornerShape(16.dp)
         )
     }

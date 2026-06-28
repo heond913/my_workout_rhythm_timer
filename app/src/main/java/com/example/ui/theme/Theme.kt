@@ -23,9 +23,9 @@ private val DarkColorScheme =
     onPrimary = Color(0xFF121212), // High contrast dark text on light desaturated primary
     onSecondary = Color(0xFF121212),
     onTertiary = Color(0xFF121212),
-    onBackground = Color(0xFFE3E3E3), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis)
-    onSurface = Color(0xFFE3E3E3), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis)
-    onSurfaceVariant = Color(0xFF94A3B8), // 2. 서브 라벨 및 설명 문구 (Medium Emphasis)
+    onBackground = Color(0xFFE2E8F0), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis - 소프트 오프 화이트)
+    onSurface = Color(0xFFE2E8F0), // 2. 중요도가 가장 높은 타이틀 및 메인 데이터 (High Emphasis - 소프트 오프 화이트)
+    onSurfaceVariant = Color(0xFF94A3B8), // 2. 서브 라벨 및 설명 문구 (Medium Emphasis - 차분한 슬레이트 그레이)
     outline = Color(0xFF2C2C2C) // 1. 다크모드 카드 테두리 (Stroke)
   )
 

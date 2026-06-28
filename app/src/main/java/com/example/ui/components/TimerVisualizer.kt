@@ -58,8 +58,8 @@ fun TimerVisualizer(
     val activePresetColor = activePreset.themeColor
     val activePresetBgColor = activePreset.bgColor
 
-    val charcoalDark = Color(0xFF191C1B)
-    val secondaryGray = Color(0xFF3F4947)
+    val charcoalDark = MaterialTheme.colorScheme.onBackground
+    val secondaryGray = MaterialTheme.colorScheme.onSurfaceVariant
 
     // Calculate progress fraction defensively
     val progressFraction = if (isResting) {
@@ -112,7 +112,7 @@ fun TimerVisualizer(
             Text(
                 text = "$minutesString:$secondsString",
                 fontSize = 36.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Bold,
                 color = charcoalDark
             )
 
