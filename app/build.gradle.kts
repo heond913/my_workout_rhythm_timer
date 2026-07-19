@@ -14,7 +14,7 @@ android {
     applicationId = "com.aistudio.workoutrhythm.rnfjpa"
     minSdk = 24
     targetSdk = 36
-    versionCode = 3
+    versionCode = 4
     versionName = "2.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,7 +41,11 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = if (System.getenv("KEYSTORE_PATH") != null || System.getenv("STORE_PASSWORD") != null) {
+        signingConfigs.getByName("release")
+      } else {
+        signingConfigs.getByName("debugConfig")
+      }
     }
     debug {
       signingConfig = signingConfigs.getByName("debugConfig")
