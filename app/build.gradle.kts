@@ -18,6 +18,7 @@ android {
     versionName = "3.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    manifestPlaceholders["ADMOB_APP_ID"] = "ca-app-pub-3940256099942544~3347511713"
   }
 
   signingConfigs {
@@ -91,6 +92,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.work.runtime.ktx)
   implementation("androidx.core:core-splashscreen:1.0.1")
   implementation(libs.androidx.appcompat)
   // implementation(libs.androidx.datastore.preferences)

@@ -278,4 +278,6 @@
     <string name="btn_add_step">➕ 단계 추가</string>
     <string name="msg_no_steps_added">등록된 운동이 없습니다. 단계를 추가해주세요.</string>
     <string name="btn_save">저장</string>
+    <string name="retention_push_title">독서 리듬을 놓치지 마세요!</string>
+    <string name="retention_push_body">오늘의 운동 리듬을 잃지 마세요! 스트릭을 이어갈 시간입니다.</string>
 </resources>
