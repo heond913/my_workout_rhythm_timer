@@ -279,6 +279,8 @@
     <string name="msg_no_steps_added">No steps added. Please add some exercises.</string>
     <string name="btn_save">Save</string>
     <string name="empty" translatable="false"></string>
-    <string name="retention_push_title" translatable="false">독서 리듬을 놓치지 마세요!</string>
-    <string name="retention_push_body" translatable="false">오늘의 운동 리듬을 잃지 마세요! 스트릭을 이어갈 시간입니다.</string>
+    <string name="retention_push_title">Don\'t lose your workout rhythm!</string>
+    <string name="retention_push_body">Don\'t lose today\'s workout rhythm! It\'s time to keep your streak alive.</string>
+    <string name="retention_channel_name">Activity Reminder</string>
+    <string name="retention_channel_description">Reminders to help you maintain your workout rhythm.</string>
 </resources>

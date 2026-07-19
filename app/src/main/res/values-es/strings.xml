@@ -278,4 +278,8 @@
     <string name="btn_add_step">➕ Añadir paso</string>
     <string name="msg_no_steps_added">No se han añadido pasos. Añada ejercicios.</string>
     <string name="btn_save">Guardar</string>
+    <string name="retention_push_title">¡No pierdas tu ritmo de ejercicio!</string>
+    <string name="retention_push_body">¡No pierdas el ritmo de ejercicio de hoy! Es hora de mantener viva tu racha.</string>
+    <string name="retention_channel_name">Recordatorio de actividad</string>
+    <string name="retention_channel_description">Recordatorios para ayudarte a mantener tu ritmo de entrenamiento.</string>
 </resources>

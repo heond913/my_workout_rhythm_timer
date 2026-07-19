@@ -19,8 +19,8 @@ object NotificationHelper {
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "활동 리마인드 알림"
-            val descriptionText = "독서 및 운동 리듬을 잊지 않도록 알려주는 리마인드 알림입니다."
+            val name = context.getString(R.string.retention_channel_name)
+            val descriptionText = context.getString(R.string.retention_channel_description)
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText

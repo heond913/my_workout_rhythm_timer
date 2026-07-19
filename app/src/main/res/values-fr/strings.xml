@@ -277,4 +277,8 @@
     <string name="btn_add_step">➕ Ajouter une étape</string>
     <string name="msg_no_steps_added">Aucune étape ajoutée. Veuillez ajouter des exercices.</string>
     <string name="btn_save">Sauvegarder</string>
+    <string name="retention_push_title">Ne perdez pas votre rythme d\'entraînement !</string>
+    <string name="retention_push_body">Ne perdez pas le rythme d\'entraînement d\'aujourd\'hui ! C\'est le moment de continuer votre série.</string>
+    <string name="retention_channel_name">Rappel d\'activité</string>
+    <string name="retention_channel_description">Rappels pour vous aider à maintenir votre rythme d\'entraînement.</string>
 </resources>

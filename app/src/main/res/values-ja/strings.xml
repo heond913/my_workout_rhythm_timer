@@ -277,4 +277,8 @@
     <string name="btn_add_step">➕ 段階追加</string>
     <string name="msg_no_steps_added">登録された運動がありません。段階を追加してください。</string>
     <string name="btn_save">保存</string>
+    <string name="retention_push_title">トレーニングのリズムを崩さないでください！</string>
+    <string name="retention_push_body">今日のトレーニングのリズムを失わないでください！ストリークを続ける時間です。</string>
+    <string name="retention_channel_name">活動リマインダー</string>
+    <string name="retention_channel_description">トレーニングのリズムを維持するためのリマインダー。</string>
 </resources>

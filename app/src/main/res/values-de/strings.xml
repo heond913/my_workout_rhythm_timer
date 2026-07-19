@@ -277,4 +277,8 @@
     <string name="btn_add_step">➕ Schritt hinzufügen</string>
     <string name="msg_no_steps_added">Keine Schritte hinzugefügt. Bitte Übungen hinzufügen.</string>
     <string name="btn_save">Speichern</string>
+    <string name="retention_push_title">Verliere nicht deinen Trainingsrhythmus!</string>
+    <string name="retention_push_body">Verliere nicht deinen heutigen Trainingsrhythmus! Es ist Zeit, deine Serie aufrechtzuerhalten.</string>
+    <string name="retention_channel_name">Aktivitätserinnerung</string>
+    <string name="retention_channel_description">Erinnerungen, die dir helfen, deinen Trainingsrhythmus beizubehalten.</string>
 </resources>
