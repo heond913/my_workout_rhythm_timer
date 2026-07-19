@@ -278,4 +278,5 @@
     <string name="btn_add_step">➕ Add Step</string>
     <string name="msg_no_steps_added">No steps added. Please add some exercises.</string>
     <string name="btn_save">Save</string>
+    <string name="empty"></string>
 </resources>
