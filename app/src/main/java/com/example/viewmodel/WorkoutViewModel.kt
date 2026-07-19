@@ -15,6 +15,9 @@ import com.example.data.RoutineStep
 import com.example.util.WorkoutTimerService
 import com.example.R
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,6 +28,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
+sealed interface WorkoutEvent {
+    object ShowInAppReview : WorkoutEvent
+}
 
 fun buildCalendarGrid(currentMonthCal: Calendar): List<List<Calendar?>> {
     val tempCal = currentMonthCal.clone() as Calendar
@@ -153,6 +160,9 @@ class WorkoutViewModel @JvmOverloads constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    private val _eventFlow = MutableSharedFlow<WorkoutEvent>()
+    val eventFlow: SharedFlow<WorkoutEvent> = _eventFlow.asSharedFlow()
 
     // Unified UI and Timer State
     private val _uiState = MutableStateFlow(
@@ -772,6 +782,17 @@ class WorkoutViewModel @JvmOverloads constructor(
                 timestamp = timestamp
             )
             repository.insert(record)
+
+            // Increment session count and trigger conditional in-app review if count is exactly 3
+            try {
+                val newCount = repository.incrementCompletedWorkoutCount()
+                if (newCount == 3 && !repository.hasRequestedReview()) {
+                    repository.setHasRequestedReview(true)
+                    _eventFlow.emit(WorkoutEvent.ShowInAppReview)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("WorkoutViewModel", "Error handling in-app review check", e)
+            }
             
             // Clear or reset fields
             _uiState.update {

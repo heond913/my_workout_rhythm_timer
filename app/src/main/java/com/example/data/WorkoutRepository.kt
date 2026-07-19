@@ -265,4 +265,23 @@ class WorkoutRepository(
             }
         }
     }
+
+    fun getCompletedWorkoutCount(): Int {
+        return sharedPreferences.getInt("completed_workout_count", 0)
+    }
+
+    fun incrementCompletedWorkoutCount(): Int {
+        val current = getCompletedWorkoutCount()
+        val next = current + 1
+        sharedPreferences.edit { putInt("completed_workout_count", next) }
+        return next
+    }
+
+    fun hasRequestedReview(): Boolean {
+        return sharedPreferences.getBoolean("has_requested_review", false)
+    }
+
+    fun setHasRequestedReview(value: Boolean) {
+        sharedPreferences.edit { putBoolean("has_requested_review", value) }
+    }
 }

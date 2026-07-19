@@ -1,6 +1,7 @@
 package com.example
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Build
@@ -8,6 +9,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.viewmodel.WorkoutEvent
+import com.example.util.InAppReviewManager
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -139,6 +142,22 @@ class MainActivity : AppCompatActivity() {
             androidx.compose.runtime.key(currentLocale, isDarkTheme) {
                 MyApplicationTheme(darkTheme = isDarkTheme, dynamicColor = false) {
                 val workoutRecords by viewModel.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
+
+                val context = androidx.compose.ui.platform.LocalContext.current
+                LaunchedEffect(viewModel) {
+                    viewModel.eventFlow.collect { event ->
+                        when (event) {
+                            is WorkoutEvent.ShowInAppReview -> {
+                                val activity = context as? Activity
+                                if (activity != null) {
+                                    InAppReviewManager.requestAndLaunchReview(activity) {
+                                        android.util.Log.d("MainActivity", "In-App Review flow finished or skipped")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     Scaffold(

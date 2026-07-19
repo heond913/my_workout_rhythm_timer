@@ -278,7 +278,7 @@
     <string name="btn_add_step">➕ Add Step</string>
     <string name="msg_no_steps_added">No steps added. Please add some exercises.</string>
     <string name="btn_save">Save</string>
-    <string name="empty"></string>
-    <string name="retention_push_title">독서 리듬을 놓치지 마세요!</string>
-    <string name="retention_push_body">오늘의 운동 리듬을 잃지 마세요! 스트릭을 이어갈 시간입니다.</string>
+    <string name="empty" translatable="false"></string>
+    <string name="retention_push_title" translatable="false">독서 리듬을 놓치지 마세요!</string>
+    <string name="retention_push_body" translatable="false">오늘의 운동 리듬을 잃지 마세요! 스트릭을 이어갈 시간입니다.</string>
 </resources>
