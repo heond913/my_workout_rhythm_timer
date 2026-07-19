@@ -45,6 +45,12 @@ interface WorkoutAdManager {
  * manipulation defenses on top of AdMob SDK integration.
  */
 class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
+    private var analyticsRepository: com.example.analytics.AnalyticsRepository? = null
+
+    fun setAnalyticsRepository(analytics: com.example.analytics.AnalyticsRepository) {
+        this.analyticsRepository = analytics
+    }
+
 
     private val appContext: Context = context.applicationContext
     
@@ -138,6 +144,7 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                                 interstitialAd = ad
                                 isAdLoading = false
                             }
+                            analyticsRepository?.logAdLoaded("interstitial", true)
                             Log.d(TAG, "Interstitial ad loaded successfully.")
                         }
 
@@ -146,6 +153,7 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                                 interstitialAd = null
                                 isAdLoading = false
                             }
+                            analyticsRepository?.logAdLoaded("interstitial", false)
                             Log.e(TAG, "Interstitial ad failed to load: ${loadAdError.message}")
                         }
                     }
@@ -277,6 +285,7 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                     adToShow.fullScreenContentCallback = object : FullScreenContentCallback() {
                         override fun onAdDismissedFullScreenContent() {
                             Log.d(TAG, "Ad dismissed by user. Writing state and preloading tomorrow's ad.")
+                            analyticsRepository?.logAdDismiss("interstitial")
                             coroutineScope.launch {
                                 withContext(Dispatchers.IO) {
                                     saveAdShownToday()
@@ -290,12 +299,19 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
 
                         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                             Log.e(TAG, "Ad failed to present: ${adError.message}. Proceeding instantly.")
+                            analyticsRepository?.logAdShowFailed("interstitial", adError.code, adError.domain)
                             onCompleteAction()
                             preloadAd()
                         }
 
                         override fun onAdShowedFullScreenContent() {
+                            analyticsRepository?.logAdShow("interstitial", "workout_finish")
                             Log.i(TAG, "Ad successfully displayed.")
+                        }
+
+                        override fun onAdClicked() {
+                            analyticsRepository?.logAdClicked("interstitial")
+                            Log.i(TAG, "Ad clicked.")
                         }
                     }
                     adToShow.show(hostActivity)

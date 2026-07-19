@@ -140,6 +140,9 @@ class WorkoutViewModel @JvmOverloads constructor(
         AppDatabase.getDatabase(application).workoutDao(),
         application.getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE),
         application
+    ),
+    private val analytics: com.example.analytics.AnalyticsRepository = com.example.analytics.FirebaseAnalyticsRepository(
+        com.google.firebase.analytics.FirebaseAnalytics.getInstance(application)
     )
 ) : AndroidViewModel(application) {
 
@@ -356,9 +359,10 @@ class WorkoutViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(showThemeSelection = show) }
     }
 
-    fun onLanguageSelected() {
+    fun onLanguageSelected(language: String) {
         repository.saveLanguageSelected(true)
         updateShowLanguageSelection(false)
+        analytics.logLanguageChanged(language)
         _uiState.update {
             it.copy(customRoutines = repository.getCustomRoutines())
         }
@@ -366,6 +370,7 @@ class WorkoutViewModel @JvmOverloads constructor(
 
     fun updateAppTheme(theme: AppTheme) {
         repository.saveAppTheme(theme.name)
+        analytics.logThemeChanged(theme.name)
         _uiState.update {
             it.copy(appTheme = theme)
         }
@@ -543,6 +548,22 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun startTimer() {
+        val state = _uiState.value
+        val workSecs = state.rhythmIntervalSeconds
+        val restSecs = when (state.timerPresetType) {
+            "스쿼트" -> state.squatRestSeconds
+            "런지" -> state.lungeRestSeconds
+            "플랭크" -> state.plankRestSeconds
+            else -> state.otherRestSeconds
+        }
+        val intervalCount = if (workSecs > 0) state.totalTargetSeconds / workSecs else 1
+        analytics.logWorkoutStarted(
+            workoutType = state.timerPresetType,
+            intervalCount = intervalCount,
+            workSeconds = workSecs,
+            restSeconds = restSecs
+        )
+
         TimerRepository.updateConfig {
             it.copy(manualInputEnabled = false)
         }
@@ -574,6 +595,13 @@ class WorkoutViewModel @JvmOverloads constructor(
     }
 
     fun resetTimer() {
+        val state = _uiState.value
+        analytics.logWorkoutAbandoned(
+            elapsedSec = state.elapsedSeconds,
+            completedRound = state.workoutCount,
+            reason = "user_reset"
+        )
+
         TimerRepository.updateConfig {
             it.copy(manualInputEnabled = true)
         }
@@ -702,6 +730,12 @@ class WorkoutViewModel @JvmOverloads constructor(
             rating = inputRating,
             note = inputNote,
             timestamp = timestamp
+        )
+
+        analytics.logWorkoutFinished(
+            durationSec = parsedDuration ?: 0,
+            completed = true,
+            workoutType = exercise
         )
 
         _uiState.update {

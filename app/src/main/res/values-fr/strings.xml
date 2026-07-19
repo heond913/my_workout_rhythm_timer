@@ -229,7 +229,7 @@
 
     <string name="lunge_encouragement">Équilibre parfait ! Sentez votre symétrie et votre force se développer !</string>
     <string name="lunge_tip1">Gardez le buste droit et la colonne neutre tout en pliant l\'ensemble des genoux à un angle de 90 degrés.</string>
-    <string name="lunge_tip2">Poussez à hauteur de 70% sur le talon de la jambe avant pour soulager les articulations de la rotule.</string>
+    <string name="lunge_tip2" formatted="false">Poussez à hauteur de 70% sur le talon de la jambe avant pour soulager les articulations de la rotule.</string>
 
     <string name="plank_encouragement">Endurance de haut niveau ! Votre sangle abdominale devient une véritable ceinture de stabilité !</string>
     <string name="plank_tip1">Maintenez votre bassin neutre et bien aligné sur une ligne droite allant des épaules aux talons.</string>

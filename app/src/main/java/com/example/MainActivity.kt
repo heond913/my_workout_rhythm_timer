@@ -71,12 +71,27 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private var isReady = false
+    private lateinit var analytics: com.example.analytics.AnalyticsRepository
+
+
+
+    override fun onDestroy() {
+        if (::analytics.isInitialized) {
+            analytics.logAppClose()
+        }
+        super.onDestroy()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install Splash Screen BEFORE super.onCreate()
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
+        analytics = com.example.analytics.FirebaseAnalyticsRepository(com.google.firebase.analytics.FirebaseAnalytics.getInstance(this))
+        analytics.logAppOpen()
+        
+        // initialized above.setAnalyticsRepository(analytics)
+
 
         // Force system splash screen to remain on screen until isReady becomes true
         splashScreen.setKeepOnScreenCondition {
@@ -144,6 +159,7 @@ class MainActivity : AppCompatActivity() {
 
                         // Sync from ViewModel tab selection to Page
                         LaunchedEffect(uiState.currentTab) {
+                            analytics.logScreenView(uiState.currentTab.name)
                             val targetPage = listTabs.indexOf(uiState.currentTab).coerceAtLeast(0)
                             if (pagerState.currentPage != targetPage && !pagerState.isScrollInProgress) {
                                 pagerState.animateScrollToPage(targetPage)
@@ -183,7 +199,7 @@ class MainActivity : AppCompatActivity() {
                     if (uiState.showLanguageSelection) {
                         LanguageSelectionDialog(
                             onDismiss = { /* Optionally handle dismiss if needed, or force selection */ },
-                            onLanguageSelected = { viewModel.onLanguageSelected() }
+                            onLanguageSelected = { lang -> viewModel.onLanguageSelected(lang) }
                         )
                     }
 
