@@ -136,7 +136,7 @@ class WorkoutRepository(
     fun isLanguageSelected(): Boolean = sharedPreferences.getBoolean("is_language_selected", false)
 
     fun saveLanguageSelected(selected: Boolean) {
-        sharedPreferences.edit { putBoolean("is_language_selected", selected) }
+        sharedPreferences.edit(commit = true) { putBoolean("is_language_selected", selected) }
     }
 
     // --- Theme Selection ---

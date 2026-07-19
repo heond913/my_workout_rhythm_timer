@@ -69,9 +69,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_english),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("en")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
                 
@@ -80,9 +80,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_korean),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ko")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
 
@@ -91,9 +91,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_japanese),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ja")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
 
@@ -102,9 +102,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_spanish),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("es")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
 
@@ -113,9 +113,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_german),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("de")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
 
@@ -124,9 +124,9 @@ fun LanguageSelectionDialog(
                 LanguageOption(
                     label = stringResource(id = R.string.language_french),
                     onClick = {
+                        onLanguageSelected()
                         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("fr")
                         AppCompatDelegate.setApplicationLocales(appLocale)
-                        onLanguageSelected()
                     }
                 )
             }

@@ -89,16 +89,7 @@ class MainActivity : AppCompatActivity() {
         // Pre-initialize DailyAdManager and preload interstitial ad on app start
         com.example.ad.DailyAdManager.getInstance(this)
 
-        // Set default language to English on initial installation (if no language selected yet)
-        val prefs = getSharedPreferences("workout_rhythm_prefs", android.content.Context.MODE_PRIVATE)
-        val isLangSelected = prefs.getBoolean("is_language_selected", false)
-        if (!isLangSelected) {
-            val appLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
-            if (appLocales.isEmpty) {
-                val englishLocale = androidx.core.os.LocaleListCompat.forLanguageTags("en")
-                androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(englishLocale)
-            }
-        }
+
 
         // Prompt for POST_NOTIFICATIONS runtime permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
