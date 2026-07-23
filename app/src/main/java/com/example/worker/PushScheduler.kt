@@ -1,13 +1,21 @@
 package com.example.worker
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.R
 import com.example.analytics.FirebaseAnalyticsRepository
 import com.example.data.RetentionStateStore
+import com.example.util.Clock
+import com.example.util.NotificationHelper
+import com.example.util.SystemClock
 import com.google.firebase.analytics.FirebaseAnalytics
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -16,9 +24,11 @@ object PushScheduler {
     const val WORK_NAME_D1 = "retention_push_d1"
     const val WORK_NAME_D3 = "retention_push_d3"
 
+    var clock: Clock = SystemClock
+
     fun scheduleRetentionWorkers(context: Context) {
         val stateStore = RetentionStateStore(context)
-        val currentTime = System.currentTimeMillis()
+        val currentTime = clock.currentTimeMillis()
 
         // 1. Get or record first_open_at
         val firstOpenAt = stateStore.recordFirstOpenAt(currentTime)
@@ -26,6 +36,9 @@ object PushScheduler {
 
         val workManager = WorkManager.getInstance(context)
         val analytics = FirebaseAnalyticsRepository(FirebaseAnalytics.getInstance(context))
+
+        // Check and process any pending retention permission campaigns if permission is now granted
+        processPendingRetentionCampaigns(context)
 
         // 2. Schedule D1 Retention Worker (24 hours after first open)
         if (!stateStore.isRetentionHandled(RetentionDay.D1)) {
@@ -77,6 +90,77 @@ object PushScheduler {
             Log.d("PushScheduler", "Scheduled D3 Retention Worker with delay: ${d3Delay / 1000 / 3600} hours")
         } else {
             Log.d("PushScheduler", "D3 Retention already handled. Skipping schedule.")
+        }
+    }
+
+    fun processPendingRetentionCampaigns(context: Context) {
+        val stateStore = RetentionStateStore(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+        }
+
+        val firstOpenAt = stateStore.getFirstOpenAt()
+        if (firstOpenAt == 0L) return
+
+        val currentTime = clock.currentTimeMillis()
+        val analytics = FirebaseAnalyticsRepository(FirebaseAnalytics.getInstance(context))
+
+        for (day in listOf(RetentionDay.D1, RetentionDay.D3)) {
+            if (!stateStore.isRetentionHandled(day) && stateStore.isRetentionPermissionPending(day)) {
+                when (day) {
+                    RetentionDay.D1 -> {
+                        val d1TargetTime = firstOpenAt + TimeUnit.DAYS.toMillis(1)
+                        val d1GraceCutoff = d1TargetTime + RetentionConstants.D1_GRACE_PERIOD_MS
+                        if (currentTime > d1GraceCutoff) {
+                            stateStore.setRetentionHandled(RetentionDay.D1, true)
+                            stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
+                            continue
+                        }
+                        val firstWorkoutStartedAt = stateStore.getFirstWorkoutStartedAt()
+                        if (firstWorkoutStartedAt != 0L) {
+                            stateStore.setRetentionHandled(RetentionDay.D1, true)
+                            stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
+                            analytics.logRetentionSkippedActive(RetentionDay.D1.dayNumber)
+                            continue
+                        }
+
+                        val title = context.getString(R.string.retention_push_d1_title)
+                        val body = context.getString(R.string.retention_push_d1_body)
+                        NotificationHelper.showRetentionNotification(context, RetentionDay.D1.dayNumber, title, body)
+
+                        stateStore.setRetentionHandled(RetentionDay.D1, true)
+                        stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
+                        analytics.logRetentionTriggered(RetentionDay.D1.dayNumber)
+                    }
+                    RetentionDay.D3 -> {
+                        val d3TargetTime = firstOpenAt + TimeUnit.DAYS.toMillis(3)
+                        val d3GraceCutoff = d3TargetTime + RetentionConstants.D3_GRACE_PERIOD_MS
+                        if (currentTime > d3GraceCutoff) {
+                            stateStore.setRetentionHandled(RetentionDay.D3, true)
+                            stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
+                            continue
+                        }
+                        val d3ActivityCutoff = d3TargetTime - RetentionConstants.D3_ACTIVITY_WINDOW_MS
+                        val lastWorkoutStartedAt = stateStore.getLastWorkoutStartedAt()
+                        if (lastWorkoutStartedAt >= d3ActivityCutoff) {
+                            stateStore.setRetentionHandled(RetentionDay.D3, true)
+                            stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
+                            analytics.logRetentionSkippedActive(RetentionDay.D3.dayNumber)
+                            continue
+                        }
+
+                        val title = context.getString(R.string.retention_push_d3_title)
+                        val body = context.getString(R.string.retention_push_d3_body)
+                        NotificationHelper.showRetentionNotification(context, RetentionDay.D3.dayNumber, title, body)
+
+                        stateStore.setRetentionHandled(RetentionDay.D3, true)
+                        stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
+                        analytics.logRetentionTriggered(RetentionDay.D3.dayNumber)
+                    }
+                }
+            }
         }
     }
 }

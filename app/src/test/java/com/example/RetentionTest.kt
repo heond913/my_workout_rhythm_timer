@@ -10,9 +10,11 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
 import com.example.data.RetentionStateStore
 import com.example.util.AppLifecycleObserver
+import com.example.util.FakeClock
 import com.example.util.NotificationHelper
 import com.example.viewmodel.AppTab
 import com.example.viewmodel.WorkoutViewModel
+import com.example.worker.PushScheduler
 import com.example.worker.RetentionConstants
 import com.example.worker.RetentionDay
 import com.example.worker.RetentionWorker
@@ -229,6 +231,7 @@ class RetentionTest {
         assertEquals(ListenableWorker.Result.success(), result)
         assertEquals(0, NotificationHelper.postedNotifications.size)
         assertFalse(stateStore.isRetentionHandled(RetentionDay.D1))
+        assertTrue(stateStore.isRetentionPermissionPending(RetentionDay.D1))
     }
 
     @Test
@@ -252,6 +255,139 @@ class RetentionTest {
         val nextDayTime = now + (24 * 3600 * 1000L)
         val clickDay = stateStore.getAndClearValidPendingRetentionClickDay(nextDayTime)
         assertEquals(0, clickDay)
+    }
+
+    @Test
+    fun testCase14_d3TimeBoundary_workoutInWindow_skipsD3Push() {
+        // First open Day 0 10:00
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        // D3 Target = Day 3 10:00 (t0 + 72h)
+        val d3Target = t0 + (72 * 3600 * 1000L)
+
+        // Workout at Day 1 15:00 (t0 + 29h), which is inside Activity Window [Day 1 10:00 .. Day 3 10:00]
+        val workoutTime = t0 + (29 * 3600 * 1000L)
+        stateStore.recordWorkoutStarted(workoutTime)
+
+        val fakeClock = FakeClock(d3Target)
+        RetentionWorker.clock = fakeClock
+
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 3))
+            .build()
+
+        val result = worker.startWork().get()
+        assertEquals(ListenableWorker.Result.success(), result)
+        assertTrue(stateStore.isRetentionHandled(RetentionDay.D3))
+        assertEquals(0, NotificationHelper.postedNotifications.size)
+    }
+
+    @Test
+    fun testCase15_d3TimeBoundary_workoutBeforeWindow_triggersD3Push() {
+        // First open Day 0 10:00
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        // D3 Target = Day 3 10:00 (t0 + 72h)
+        val d3Target = t0 + (72 * 3600 * 1000L)
+
+        // Workout at Day 1 09:59 (t0 + 23h 59m), before Activity Window cutoff (Day 1 10:00)
+        val workoutTime = t0 + (23 * 3600 * 1000L + 59 * 60 * 1000L)
+        stateStore.recordWorkoutStarted(workoutTime)
+
+        val fakeClock = FakeClock(d3Target)
+        RetentionWorker.clock = fakeClock
+
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 3))
+            .build()
+
+        val result = worker.startWork().get()
+        assertEquals(ListenableWorker.Result.success(), result)
+        assertTrue(stateStore.isRetentionHandled(RetentionDay.D3))
+        assertEquals(1, NotificationHelper.postedNotifications.size)
+        assertEquals(3, NotificationHelper.postedNotifications[0].retentionDayNumber)
+    }
+
+    @Test
+    fun testCase16_d3TimeBoundary_delayedWorkerExecution_evaluatesAgainstD3TargetTime() {
+        // First open Day 0 10:00
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        // Workout at Day 1 15:00 (t0 + 29h), inside Activity Window relative to D3 Target Time (t0 + 72h)
+        val workoutTime = t0 + (29 * 3600 * 1000L)
+        stateStore.recordWorkoutStarted(workoutTime)
+
+        // Worker executes 5 hours late at Day 3 15:00 (t0 + 77h)
+        val delayedWorkerTime = t0 + (77 * 3600 * 1000L)
+        val fakeClock = FakeClock(delayedWorkerTime)
+        RetentionWorker.clock = fakeClock
+
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 3))
+            .build()
+
+        val result = worker.startWork().get()
+        assertEquals(ListenableWorker.Result.success(), result)
+        // Should skip because relative to D3 Target Time (t0 + 72h), the workout at t0+29h was within cutoff (t0+24h)
+        assertTrue(stateStore.isRetentionHandled(RetentionDay.D3))
+        assertEquals(0, NotificationHelper.postedNotifications.size)
+    }
+
+    @Test
+    fun testCase17_d3TimeBoundary_workerDelayedExceedsGracePeriod_expiresD3Campaign() {
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        // Worker executes 30 hours late (exceeds 24h grace period)
+        val wayLateTime = t0 + (72 * 3600 * 1000L) + (30 * 3600 * 1000L)
+        val fakeClock = FakeClock(wayLateTime)
+        RetentionWorker.clock = fakeClock
+
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 3))
+            .build()
+
+        val result = worker.startWork().get()
+        assertEquals(ListenableWorker.Result.success(), result)
+        assertTrue(stateStore.isRetentionHandled(RetentionDay.D3))
+        assertEquals(0, NotificationHelper.postedNotifications.size)
+    }
+
+    @Test
+    fun testCase18_permissionDenied_savesPendingState_resumesOnPermissionGrant() {
+        val shadowApp = shadowOf(context.applicationContext as Application)
+        shadowApp.denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        val fakeClock = FakeClock(t0 + 86400000L)
+        RetentionWorker.clock = fakeClock
+        PushScheduler.clock = fakeClock
+
+        // 1. Worker runs while permission is denied
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 1))
+            .build()
+
+        val result = worker.startWork().get()
+        assertEquals(ListenableWorker.Result.success(), result)
+        assertEquals(0, NotificationHelper.postedNotifications.size)
+        assertFalse(stateStore.isRetentionHandled(RetentionDay.D1))
+        assertTrue(stateStore.isRetentionPermissionPending(RetentionDay.D1))
+
+        // 2. User grants permission later
+        shadowApp.grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        // 3. App re-enters foreground / PushScheduler processes pending campaigns
+        PushScheduler.processPendingRetentionCampaigns(context)
+
+        assertEquals(1, NotificationHelper.postedNotifications.size)
+        assertTrue(stateStore.isRetentionHandled(RetentionDay.D1))
+        assertFalse(stateStore.isRetentionPermissionPending(RetentionDay.D1))
     }
 
     @Test

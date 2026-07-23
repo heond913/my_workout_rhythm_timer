@@ -11,13 +11,20 @@ import androidx.work.WorkerParameters
 import com.example.R
 import com.example.analytics.FirebaseAnalyticsRepository
 import com.example.data.RetentionStateStore
+import com.example.util.Clock
 import com.example.util.NotificationHelper
+import com.example.util.SystemClock
 import com.google.firebase.analytics.FirebaseAnalytics
+import java.util.concurrent.TimeUnit
 
 class RetentionWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
+
+    companion object {
+        var clock: Clock = SystemClock
+    }
 
     override suspend fun doWork(): Result {
         val retentionDayNumber = inputData.getInt(RetentionDay.KEY_RETENTION_DAY, 1)
@@ -33,25 +40,47 @@ class RetentionWorker(
             return Result.success()
         }
 
+        val currentTime = clock.currentTimeMillis()
+        val firstOpenAt = stateStore.getFirstOpenAt()
+
         // 2. Policy evaluation (D1 vs D3 separation)
-        val currentTime = System.currentTimeMillis()
         when (retentionDay) {
             RetentionDay.D1 -> {
-                // D1 Policy: First Workout Activation
+                val d1TargetTime = if (firstOpenAt != 0L) firstOpenAt + TimeUnit.DAYS.toMillis(1) else currentTime
+                val d1GraceCutoff = d1TargetTime + RetentionConstants.D1_GRACE_PERIOD_MS
+                if (firstOpenAt != 0L && currentTime > d1GraceCutoff) {
+                    Log.d("RetentionWorker", "D1 campaign expired (> grace period). Skipping.")
+                    stateStore.setRetentionHandled(RetentionDay.D1, true)
+                    stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
+                    return Result.success()
+                }
+
                 val firstWorkoutStartedAt = stateStore.getFirstWorkoutStartedAt()
                 if (firstWorkoutStartedAt != 0L) {
                     Log.d("RetentionWorker", "User already completed first workout. Skipping D1 push.")
                     stateStore.setRetentionHandled(RetentionDay.D1, true)
+                    stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
                     analytics.logRetentionSkippedActive(RetentionDay.D1.dayNumber)
                     return Result.success()
                 }
             }
             RetentionDay.D3 -> {
-                // D3 Policy: Repeat Workout Activation (checked against 48h activity window)
-                val lastWorkoutStartedAt = stateStore.getLastWorkoutStartedAt()
-                if (lastWorkoutStartedAt > 0L && (currentTime - lastWorkoutStartedAt < RetentionConstants.D3_ACTIVITY_WINDOW_MS)) {
-                    Log.d("RetentionWorker", "User worked out within the last 48 hours. Skipping D3 push.")
+                val d3TargetTime = if (firstOpenAt != 0L) firstOpenAt + TimeUnit.DAYS.toMillis(3) else currentTime
+                val d3GraceCutoff = d3TargetTime + RetentionConstants.D3_GRACE_PERIOD_MS
+                if (firstOpenAt != 0L && currentTime > d3GraceCutoff) {
+                    Log.d("RetentionWorker", "D3 campaign expired (> grace period). Skipping.")
                     stateStore.setRetentionHandled(RetentionDay.D3, true)
+                    stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
+                    return Result.success()
+                }
+
+                // D3 Activity Window is relative to D3 Target Time (d3TargetTime - 48h)
+                val d3ActivityCutoff = d3TargetTime - RetentionConstants.D3_ACTIVITY_WINDOW_MS
+                val lastWorkoutStartedAt = stateStore.getLastWorkoutStartedAt()
+                if (lastWorkoutStartedAt >= d3ActivityCutoff) {
+                    Log.d("RetentionWorker", "User worked out within the D3 activity window. Skipping D3 push.")
+                    stateStore.setRetentionHandled(RetentionDay.D3, true)
+                    stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
                     analytics.logRetentionSkippedActive(RetentionDay.D3.dayNumber)
                     return Result.success()
                 }
@@ -65,9 +94,9 @@ class RetentionWorker(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                Log.d("RetentionWorker", "Notification permission denied for D$retentionDayNumber.")
+                Log.d("RetentionWorker", "Notification permission denied for D$retentionDayNumber. Saving pending state.")
+                stateStore.setRetentionPermissionPending(retentionDay, true)
                 analytics.logRetentionPermissionDenied(retentionDay.dayNumber)
-                // Do NOT set handled = true so permission grant later allows retry
                 return Result.success()
             }
         }
@@ -93,6 +122,7 @@ class RetentionWorker(
         )
 
         stateStore.setRetentionHandled(retentionDay, true)
+        stateStore.setRetentionPermissionPending(retentionDay, false)
         analytics.logRetentionTriggered(retentionDay.dayNumber)
         Log.d("RetentionWorker", "Retention push notification sent successfully for D$retentionDayNumber")
 

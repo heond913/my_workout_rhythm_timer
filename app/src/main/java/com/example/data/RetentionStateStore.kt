@@ -96,6 +96,22 @@ class RetentionStateStore(context: Context) {
         }
     }
 
+    fun isRetentionPermissionPending(retentionDay: RetentionDay): Boolean {
+        return when (retentionDay) {
+            RetentionDay.D1 -> prefs.getBoolean(KEY_D1_PERMISSION_PENDING, false)
+            RetentionDay.D3 -> prefs.getBoolean(KEY_D3_PERMISSION_PENDING, false)
+        }
+    }
+
+    fun setRetentionPermissionPending(retentionDay: RetentionDay, pending: Boolean) {
+        prefs.edit {
+            when (retentionDay) {
+                RetentionDay.D1 -> putBoolean(KEY_D1_PERMISSION_PENDING, pending)
+                RetentionDay.D3 -> putBoolean(KEY_D3_PERMISSION_PENDING, pending)
+            }
+        }
+    }
+
     fun setPendingRetentionClick(dayNumber: Int, timestamp: Long = System.currentTimeMillis()) {
         prefs.edit {
             putInt(KEY_PENDING_RETENTION_CLICK_DAY, dayNumber)
@@ -128,6 +144,8 @@ class RetentionStateStore(context: Context) {
         const val KEY_D3_HANDLED = "d3_retention_handled"
         const val KEY_D1_SCHEDULED = "d1_retention_scheduled"
         const val KEY_D3_SCHEDULED = "d3_retention_scheduled"
+        const val KEY_D1_PERMISSION_PENDING = "d1_retention_permission_pending"
+        const val KEY_D3_PERMISSION_PENDING = "d3_retention_permission_pending"
         const val KEY_PENDING_RETENTION_CLICK_DAY = "pending_retention_click_day"
         const val KEY_PENDING_RETENTION_CLICK_AT = "pending_retention_click_at"
     }
