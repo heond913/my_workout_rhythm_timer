@@ -391,6 +391,39 @@ class RetentionTest {
     }
 
     @Test
+    fun testCase19_raceCondition_workerAndForegroundRetry_postsMaximumOneNotification() {
+        val shadowApp = shadowOf(context.applicationContext as Application)
+        shadowApp.denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        val t0 = 1000000000000L
+        stateStore.recordFirstOpenAt(t0)
+
+        val fakeClock = FakeClock(t0 + 86400000L)
+        RetentionWorker.clock = fakeClock
+        PushScheduler.clock = fakeClock
+
+        // Worker sets pending permission
+        val worker = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 1))
+            .build()
+        worker.startWork().get()
+
+        // Grant permissions
+        shadowApp.grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        // Concurrent execution simulation: both PushScheduler retry and another Worker run
+        PushScheduler.processPendingRetentionCampaigns(context)
+
+        val workerAgain = TestListenableWorkerBuilder<RetentionWorker>(context)
+            .setInputData(workDataOf(RetentionDay.KEY_RETENTION_DAY to 1))
+            .build()
+        workerAgain.startWork().get()
+
+        // Notification must be triggered AT MOST 1 time
+        assertEquals(1, NotificationHelper.postedNotifications.size)
+    }
+
+    @Test
     fun testNotificationClickNavigation_navigatesToTimerScreen() {
         val intent = Intent(context, MainActivity::class.java).apply {
             putExtra("from_retention_push", true)

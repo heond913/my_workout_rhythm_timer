@@ -128,11 +128,12 @@ object PushScheduler {
 
                         val title = context.getString(R.string.retention_push_d1_title)
                         val body = context.getString(R.string.retention_push_d1_body)
-                        NotificationHelper.showRetentionNotification(context, RetentionDay.D1.dayNumber, title, body)
 
-                        stateStore.setRetentionHandled(RetentionDay.D1, true)
-                        stateStore.setRetentionPermissionPending(RetentionDay.D1, false)
-                        analytics.logRetentionTriggered(RetentionDay.D1.dayNumber)
+                        if (stateStore.tryClaimRetentionTrigger(RetentionDay.D1)) {
+                            NotificationHelper.showRetentionNotification(context, RetentionDay.D1.dayNumber, title, body)
+                            analytics.logRetentionTriggered(RetentionDay.D1.dayNumber)
+                            Log.d("PushScheduler", "Pending retention push sent for D1")
+                        }
                     }
                     RetentionDay.D3 -> {
                         val d3TargetTime = firstOpenAt + TimeUnit.DAYS.toMillis(3)
@@ -153,11 +154,12 @@ object PushScheduler {
 
                         val title = context.getString(R.string.retention_push_d3_title)
                         val body = context.getString(R.string.retention_push_d3_body)
-                        NotificationHelper.showRetentionNotification(context, RetentionDay.D3.dayNumber, title, body)
 
-                        stateStore.setRetentionHandled(RetentionDay.D3, true)
-                        stateStore.setRetentionPermissionPending(RetentionDay.D3, false)
-                        analytics.logRetentionTriggered(RetentionDay.D3.dayNumber)
+                        if (stateStore.tryClaimRetentionTrigger(RetentionDay.D3)) {
+                            NotificationHelper.showRetentionNotification(context, RetentionDay.D3.dayNumber, title, body)
+                            analytics.logRetentionTriggered(RetentionDay.D3.dayNumber)
+                            Log.d("PushScheduler", "Pending retention push sent for D3")
+                        }
                     }
                 }
             }

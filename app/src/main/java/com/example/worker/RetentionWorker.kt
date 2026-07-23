@@ -101,7 +101,7 @@ class RetentionWorker(
             }
         }
 
-        // 4. Send Notification
+        // 4. Send Notification atomically
         val titleRes = when (retentionDay) {
             RetentionDay.D1 -> R.string.retention_push_d1_title
             RetentionDay.D3 -> R.string.retention_push_d3_title
@@ -114,17 +114,18 @@ class RetentionWorker(
         val title = applicationContext.getString(titleRes)
         val body = applicationContext.getString(bodyRes)
 
-        NotificationHelper.showRetentionNotification(
-            context = applicationContext,
-            retentionDayNumber = retentionDay.dayNumber,
-            title = title,
-            body = body
-        )
-
-        stateStore.setRetentionHandled(retentionDay, true)
-        stateStore.setRetentionPermissionPending(retentionDay, false)
-        analytics.logRetentionTriggered(retentionDay.dayNumber)
-        Log.d("RetentionWorker", "Retention push notification sent successfully for D$retentionDayNumber")
+        if (stateStore.tryClaimRetentionTrigger(retentionDay)) {
+            NotificationHelper.showRetentionNotification(
+                context = applicationContext,
+                retentionDayNumber = retentionDay.dayNumber,
+                title = title,
+                body = body
+            )
+            analytics.logRetentionTriggered(retentionDay.dayNumber)
+            Log.d("RetentionWorker", "Retention push notification sent successfully for D$retentionDayNumber")
+        } else {
+            Log.d("RetentionWorker", "Retention push D$retentionDayNumber already claimed by concurrent execution.")
+        }
 
         return Result.success()
     }

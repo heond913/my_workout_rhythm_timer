@@ -133,7 +133,29 @@ class RetentionStateStore(context: Context) {
         }
     }
 
+    fun tryClaimRetentionTrigger(retentionDay: RetentionDay): Boolean {
+        synchronized(lock) {
+            if (isRetentionHandled(retentionDay)) {
+                return false
+            }
+            prefs.edit(commit = true) {
+                when (retentionDay) {
+                    RetentionDay.D1 -> {
+                        putBoolean(KEY_D1_HANDLED, true)
+                        putBoolean(KEY_D1_PERMISSION_PENDING, false)
+                    }
+                    RetentionDay.D3 -> {
+                        putBoolean(KEY_D3_HANDLED, true)
+                        putBoolean(KEY_D3_PERMISSION_PENDING, false)
+                    }
+                }
+            }
+            return true
+        }
+    }
+
     companion object {
+        private val lock = Any()
         const val KEY_FIRST_OPEN_AT = "first_open_at"
         const val KEY_LEGACY_INSTALL_DATE = "install_date"
         const val KEY_LAST_APP_FOREGROUND_AT = "last_app_foreground_at"
