@@ -33,16 +33,29 @@ class RetentionWorker(
             return Result.success()
         }
 
-        // 2. Check Workout Activity Suppression
-        // Policy:
-        // D1: If user started a workout prior to D1 check -> Skip D1 reminder
-        // D3: If user started a workout prior to D3 check -> Skip D3 reminder
-        val hasStartedWorkout = stateStore.hasStartedWorkout()
-        if (hasStartedWorkout) {
-            Log.d("RetentionWorker", "User has already started a workout. Skipping D$retentionDayNumber push notification.")
-            stateStore.setRetentionHandled(retentionDay, true)
-            analytics.logRetentionSkippedActive(retentionDay.dayNumber)
-            return Result.success()
+        // 2. Policy evaluation (D1 vs D3 separation)
+        val currentTime = System.currentTimeMillis()
+        when (retentionDay) {
+            RetentionDay.D1 -> {
+                // D1 Policy: First Workout Activation
+                val firstWorkoutStartedAt = stateStore.getFirstWorkoutStartedAt()
+                if (firstWorkoutStartedAt != 0L) {
+                    Log.d("RetentionWorker", "User already completed first workout. Skipping D1 push.")
+                    stateStore.setRetentionHandled(RetentionDay.D1, true)
+                    analytics.logRetentionSkippedActive(RetentionDay.D1.dayNumber)
+                    return Result.success()
+                }
+            }
+            RetentionDay.D3 -> {
+                // D3 Policy: Repeat Workout Activation (checked against 48h activity window)
+                val lastWorkoutStartedAt = stateStore.getLastWorkoutStartedAt()
+                if (lastWorkoutStartedAt > 0L && (currentTime - lastWorkoutStartedAt < RetentionConstants.D3_ACTIVITY_WINDOW_MS)) {
+                    Log.d("RetentionWorker", "User worked out within the last 48 hours. Skipping D3 push.")
+                    stateStore.setRetentionHandled(RetentionDay.D3, true)
+                    analytics.logRetentionSkippedActive(RetentionDay.D3.dayNumber)
+                    return Result.success()
+                }
+            }
         }
 
         // 3. Check Notification Permission
@@ -54,6 +67,7 @@ class RetentionWorker(
             ) {
                 Log.d("RetentionWorker", "Notification permission denied for D$retentionDayNumber.")
                 analytics.logRetentionPermissionDenied(retentionDay.dayNumber)
+                // Do NOT set handled = true so permission grant later allows retry
                 return Result.success()
             }
         }

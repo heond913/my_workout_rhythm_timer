@@ -43,7 +43,11 @@ object PushScheduler {
                 ExistingWorkPolicy.KEEP,
                 d1Request
             )
-            analytics.logRetentionScheduled(RetentionDay.D1.dayNumber)
+
+            if (!stateStore.isRetentionScheduled(RetentionDay.D1)) {
+                stateStore.setRetentionScheduled(RetentionDay.D1, true)
+                analytics.logRetentionScheduled(RetentionDay.D1.dayNumber)
+            }
             Log.d("PushScheduler", "Scheduled D1 Retention Worker with delay: ${d1Delay / 1000 / 3600} hours")
         } else {
             Log.d("PushScheduler", "D1 Retention already handled. Skipping schedule.")
@@ -65,7 +69,11 @@ object PushScheduler {
                 ExistingWorkPolicy.KEEP,
                 d3Request
             )
-            analytics.logRetentionScheduled(RetentionDay.D3.dayNumber)
+
+            if (!stateStore.isRetentionScheduled(RetentionDay.D3)) {
+                stateStore.setRetentionScheduled(RetentionDay.D3, true)
+                analytics.logRetentionScheduled(RetentionDay.D3.dayNumber)
+            }
             Log.d("PushScheduler", "Scheduled D3 Retention Worker with delay: ${d3Delay / 1000 / 3600} hours")
         } else {
             Log.d("PushScheduler", "D3 Retention already handled. Skipping schedule.")

@@ -8,16 +8,32 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.R
 import com.example.worker.RetentionDay
 
+data class NotificationRecord(
+    val retentionDayNumber: Int,
+    val title: String,
+    val body: String,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
 object NotificationHelper {
     private const val CHANNEL_ID = "retention_channel"
     private const val NOTIFICATION_ID_D1 = 20261
     private const val NOTIFICATION_ID_D3 = 20263
+
+    @VisibleForTesting
+    val postedNotifications = mutableListOf<NotificationRecord>()
+
+    @VisibleForTesting
+    fun clearPostedNotificationsForTest() {
+        postedNotifications.clear()
+    }
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -39,6 +55,9 @@ object NotificationHelper {
         title: String,
         body: String
     ) {
+        // Record notification for unit testing and assertion
+        postedNotifications.add(NotificationRecord(retentionDayNumber, title, body))
+
         // Android 13+ Notification Permission Check
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(

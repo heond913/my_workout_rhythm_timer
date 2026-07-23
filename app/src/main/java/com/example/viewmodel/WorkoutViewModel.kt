@@ -577,7 +577,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         val context = getApplication<Application>().applicationContext
         val stateStore = com.example.data.RetentionStateStore(context)
         stateStore.recordWorkoutStarted()
-        val pendingDay = stateStore.getAndClearPendingRetentionClickDay()
+        val pendingDay = stateStore.getAndClearValidPendingRetentionClickDay()
         if (pendingDay != 0) {
             analytics.logWorkoutStartedFromRetention(pendingDay)
         }
@@ -602,7 +602,7 @@ class WorkoutViewModel @JvmOverloads constructor(
     fun handleRetentionPushClick(retentionDayNumber: Int) {
         val context = getApplication<Application>().applicationContext
         val stateStore = com.example.data.RetentionStateStore(context)
-        stateStore.setPendingRetentionClickDay(retentionDayNumber)
+        stateStore.setPendingRetentionClick(retentionDayNumber)
         analytics.logRetentionClicked(retentionDayNumber)
     }
 

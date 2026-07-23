@@ -3,6 +3,7 @@ package com.example.data
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.worker.RetentionConstants
 import com.example.worker.RetentionDay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -79,16 +80,41 @@ class RetentionStateStore(context: Context) {
         }
     }
 
-    fun setPendingRetentionClickDay(dayNumber: Int) {
-        prefs.edit { putInt(KEY_PENDING_RETENTION_CLICK_DAY, dayNumber) }
+    fun isRetentionScheduled(retentionDay: RetentionDay): Boolean {
+        return when (retentionDay) {
+            RetentionDay.D1 -> prefs.getBoolean(KEY_D1_SCHEDULED, false)
+            RetentionDay.D3 -> prefs.getBoolean(KEY_D3_SCHEDULED, false)
+        }
     }
 
-    fun getAndClearPendingRetentionClickDay(): Int {
-        val day = prefs.getInt(KEY_PENDING_RETENTION_CLICK_DAY, 0)
-        if (day != 0) {
-            prefs.edit { remove(KEY_PENDING_RETENTION_CLICK_DAY) }
+    fun setRetentionScheduled(retentionDay: RetentionDay, scheduled: Boolean = true) {
+        prefs.edit {
+            when (retentionDay) {
+                RetentionDay.D1 -> putBoolean(KEY_D1_SCHEDULED, scheduled)
+                RetentionDay.D3 -> putBoolean(KEY_D3_SCHEDULED, scheduled)
+            }
         }
-        return day
+    }
+
+    fun setPendingRetentionClick(dayNumber: Int, timestamp: Long = System.currentTimeMillis()) {
+        prefs.edit {
+            putInt(KEY_PENDING_RETENTION_CLICK_DAY, dayNumber)
+            putLong(KEY_PENDING_RETENTION_CLICK_AT, timestamp)
+        }
+    }
+
+    fun getAndClearValidPendingRetentionClickDay(currentTime: Long = System.currentTimeMillis()): Int {
+        val day = prefs.getInt(KEY_PENDING_RETENTION_CLICK_DAY, 0)
+        val clickAt = prefs.getLong(KEY_PENDING_RETENTION_CLICK_AT, 0L)
+        prefs.edit {
+            remove(KEY_PENDING_RETENTION_CLICK_DAY)
+            remove(KEY_PENDING_RETENTION_CLICK_AT)
+        }
+        return if (day != 0 && clickAt != 0L && (currentTime - clickAt <= RetentionConstants.RETENTION_ATTRIBUTION_WINDOW_MS)) {
+            day
+        } else {
+            0
+        }
     }
 
     companion object {
@@ -100,6 +126,9 @@ class RetentionStateStore(context: Context) {
         const val KEY_HAS_STARTED_WORKOUT = "has_started_workout"
         const val KEY_D1_HANDLED = "d1_retention_handled"
         const val KEY_D3_HANDLED = "d3_retention_handled"
+        const val KEY_D1_SCHEDULED = "d1_retention_scheduled"
+        const val KEY_D3_SCHEDULED = "d3_retention_scheduled"
         const val KEY_PENDING_RETENTION_CLICK_DAY = "pending_retention_click_day"
+        const val KEY_PENDING_RETENTION_CLICK_AT = "pending_retention_click_at"
     }
 }
