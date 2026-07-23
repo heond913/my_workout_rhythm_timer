@@ -20,6 +20,13 @@ object AnalyticsEvent {
     const val VIBRATION_CHANGE = "vibration_change"
     
     const val SCREEN_VIEW = "screen_view"
+
+    const val RETENTION_PUSH_SCHEDULED = "retention_push_scheduled"
+    const val RETENTION_PUSH_TRIGGERED = "retention_push_triggered"
+    const val RETENTION_PUSH_SKIPPED_ACTIVE = "retention_push_skipped_active"
+    const val RETENTION_PUSH_PERMISSION_DENIED = "retention_push_permission_denied"
+    const val RETENTION_PUSH_CLICKED = "retention_push_clicked"
+    const val WORKOUT_STARTED_FROM_RETENTION_PUSH = "workout_started_from_retention_push"
 }
 
 object AnalyticsParam {
@@ -47,4 +54,6 @@ object AnalyticsParam {
     
     const val SCREEN_NAME = "screen_name"
     const val SCREEN_CLASS = "screen_class"
+    
+    const val RETENTION_DAY = "retention_day"
 }

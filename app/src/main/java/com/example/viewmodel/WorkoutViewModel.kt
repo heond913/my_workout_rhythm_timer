@@ -574,10 +574,17 @@ class WorkoutViewModel @JvmOverloads constructor(
             restSeconds = restSecs
         )
 
+        val context = getApplication<Application>().applicationContext
+        val stateStore = com.example.data.RetentionStateStore(context)
+        stateStore.recordWorkoutStarted()
+        val pendingDay = stateStore.getAndClearPendingRetentionClickDay()
+        if (pendingDay != 0) {
+            analytics.logWorkoutStartedFromRetention(pendingDay)
+        }
+
         TimerRepository.updateConfig {
             it.copy(manualInputEnabled = false)
         }
-        val context = getApplication<Application>().applicationContext
         val intent = Intent(context, WorkoutTimerService::class.java).apply {
             action = WorkoutTimerService.ACTION_START
         }
@@ -590,6 +597,13 @@ class WorkoutViewModel @JvmOverloads constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun handleRetentionPushClick(retentionDayNumber: Int) {
+        val context = getApplication<Application>().applicationContext
+        val stateStore = com.example.data.RetentionStateStore(context)
+        stateStore.setPendingRetentionClickDay(retentionDayNumber)
+        analytics.logRetentionClicked(retentionDayNumber)
     }
 
     fun pauseTimer() {

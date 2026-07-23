@@ -281,6 +281,10 @@
     <string name="empty" translatable="false"></string>
     <string name="retention_push_title">Don\'t lose your workout rhythm!</string>
     <string name="retention_push_body">Don\'t lose today\'s workout rhythm! It\'s time to keep your streak alive.</string>
+    <string name="retention_push_d1_title">Ready for your first workout?</string>
+    <string name="retention_push_d1_body">Start your workout rhythm today and build healthy habits!</string>
+    <string name="retention_push_d3_title">Keep your workout rhythm going!</string>
+    <string name="retention_push_d3_body">Day 3 is a great time to work out again. Keep your streak alive!</string>
     <string name="retention_channel_name">Activity Reminder</string>
     <string name="retention_channel_description">Reminders to help you maintain your workout rhythm.</string>
 </resources>

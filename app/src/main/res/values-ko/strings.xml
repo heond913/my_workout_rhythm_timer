@@ -278,8 +278,12 @@
     <string name="btn_add_step">➕ 단계 추가</string>
     <string name="msg_no_steps_added">등록된 운동이 없습니다. 단계를 추가해주세요.</string>
     <string name="btn_save">저장</string>
-    <string name="retention_push_title">독서 리듬을 놓치지 마세요!</string>
+    <string name="retention_push_title">운동 리듬을 놓치지 마세요!</string>
     <string name="retention_push_body">오늘의 운동 리듬을 잃지 마세요! 스트릭을 이어갈 시간입니다.</string>
+    <string name="retention_push_d1_title">오늘 첫 운동을 시작해보세요!</string>
+    <string name="retention_push_d1_body">나만의 운동 타이머로 지금 바로 첫 운동 리듬을 시작해보세요!</string>
+    <string name="retention_push_d3_title">오늘도 운동 리듬을 이어가세요!</string>
+    <string name="retention_push_d3_body">3일째입니다! 가볍게 운동하고 스트릭을 이어가세요.</string>
     <string name="retention_channel_name">활동 리마인드 알림</string>
     <string name="retention_channel_description">운동 리듬을 잊지 않도록 알려주는 리마인드 알림입니다.</string>
 </resources>

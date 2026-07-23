@@ -118,4 +118,34 @@ class FirebaseAnalyticsRepository @Inject constructor(
         }
         firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
     }
+
+    override fun logRetentionScheduled(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.RETENTION_PUSH_SCHEDULED, bundle)
+    }
+
+    override fun logRetentionTriggered(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.RETENTION_PUSH_TRIGGERED, bundle)
+    }
+
+    override fun logRetentionSkippedActive(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.RETENTION_PUSH_SKIPPED_ACTIVE, bundle)
+    }
+
+    override fun logRetentionPermissionDenied(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.RETENTION_PUSH_PERMISSION_DENIED, bundle)
+    }
+
+    override fun logRetentionClicked(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.RETENTION_PUSH_CLICKED, bundle)
+    }
+
+    override fun logWorkoutStartedFromRetention(retentionDay: Int) {
+        val bundle = Bundle().apply { putInt(AnalyticsParam.RETENTION_DAY, retentionDay) }
+        firebaseAnalytics.logEvent(AnalyticsEvent.WORKOUT_STARTED_FROM_RETENTION_PUSH, bundle)
+    }
 }

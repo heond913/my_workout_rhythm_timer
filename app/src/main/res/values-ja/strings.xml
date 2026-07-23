@@ -279,6 +279,10 @@
     <string name="btn_save">保存</string>
     <string name="retention_push_title">トレーニングのリズムを崩さないでください！</string>
     <string name="retention_push_body">今日のトレーニングのリズムを失わないでください！ストリークを続ける時間です。</string>
+    <string name="retention_push_d1_title">最初のトレーニングを始めましょう！</string>
+    <string name="retention_push_d1_body">今日から運動リズムをスタートして、健康的な習慣を作りましょう！</string>
+    <string name="retention_push_d3_title">今日も運動リズムを続けましょう！</string>
+    <string name="retention_push_d3_body">3日目です！軽くトレーニングしてストリークを維持しましょう。</string>
     <string name="retention_channel_name">活動リマインダー</string>
     <string name="retention_channel_description">トレーニングのリズムを維持するためのリマインダー。</string>
 </resources>

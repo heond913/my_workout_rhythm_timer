@@ -279,6 +279,10 @@
     <string name="btn_save">Speichern</string>
     <string name="retention_push_title">Verliere nicht deinen Trainingsrhythmus!</string>
     <string name="retention_push_body">Verliere nicht deinen heutigen Trainingsrhythmus! Es ist Zeit, deine Serie aufrechtzuerhalten.</string>
+    <string name="retention_push_d1_title">Bereit für dein erstes Training?</string>
+    <string name="retention_push_d1_body">Starte heute deinen Trainingsrhythmus und baue gesunde Gewohnheiten auf!</string>
+    <string name="retention_push_d3_title">Halte deinen Trainingsrhythmus aufrecht!</string>
+    <string name="retention_push_d3_body">Tag 3 ist eine fantastische Zeit für dein nächstes Workout. Halte deine Serie!</string>
     <string name="retention_channel_name">Aktivitätserinnerung</string>
     <string name="retention_channel_description">Erinnerungen, die dir helfen, deinen Trainingsrhythmus beizubehalten.</string>
 </resources>

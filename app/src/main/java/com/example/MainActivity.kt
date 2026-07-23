@@ -85,6 +85,24 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: android.content.Intent?) {
+        if (intent == null) return
+        val fromRetentionPush = intent.getBooleanExtra("from_retention_push", false)
+        if (fromRetentionPush) {
+            val day = intent.getIntExtra(com.example.worker.RetentionDay.KEY_RETENTION_DAY, 1)
+            val viewModelInstance = androidx.lifecycle.ViewModelProvider(this)[WorkoutViewModel::class.java]
+            viewModelInstance.setTab(com.example.viewmodel.AppTab.Timer)
+            viewModelInstance.handleRetentionPushClick(day)
+            intent.removeExtra("from_retention_push")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install Splash Screen BEFORE super.onCreate()
         val splashScreen = installSplashScreen()
@@ -118,6 +136,7 @@ class MainActivity : AppCompatActivity() {
 
         // Fetch ViewModel instance early to kick off Room query and observe its emission
         val viewModelInstance = androidx.lifecycle.ViewModelProvider(this)[WorkoutViewModel::class.java]
+        handleIntent(intent)
         lifecycleScope.launch {
             // Wait for Room database flow to emit at least once, guaranteeing first read is done
             viewModelInstance.allRecords.first()

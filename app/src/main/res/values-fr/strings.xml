@@ -279,6 +279,10 @@
     <string name="btn_save">Sauvegarder</string>
     <string name="retention_push_title">Ne perdez pas votre rythme d\'entraînement !</string>
     <string name="retention_push_body">Ne perdez pas le rythme d\'entraînement d\'aujourd\'hui ! C\'est le moment de continuer votre série.</string>
+    <string name="retention_push_d1_title">Prêt pour votre premier entraînement ?</string>
+    <string name="retention_push_d1_body">Commencez votre rythme d\'entraînement aujourd\'hui et prenez de bonnes habitudes !</string>
+    <string name="retention_push_d3_title">Poursuivez votre rythme d\'entraînement !</string>
+    <string name="retention_push_d3_body">3ème jour : le moment idéal pour s\'entraîner à nouveau. Maintenez votre série !</string>
     <string name="retention_channel_name">Rappel d\'activité</string>
     <string name="retention_channel_description">Rappels pour vous aider à maintenir votre rythme d\'entraînement.</string>
 </resources>

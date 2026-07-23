@@ -12,10 +12,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.R
+import com.example.worker.RetentionDay
 
 object NotificationHelper {
     private const val CHANNEL_ID = "retention_channel"
-    private const val NOTIFICATION_ID = 2026
+    private const val NOTIFICATION_ID_D1 = 20261
+    private const val NOTIFICATION_ID_D3 = 20263
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -31,7 +33,12 @@ object NotificationHelper {
         }
     }
 
-    fun showRetentionNotification(context: Context, title: String, body: String) {
+    fun showRetentionNotification(
+        context: Context,
+        retentionDayNumber: Int,
+        title: String,
+        body: String
+    ) {
         // Android 13+ Notification Permission Check
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -39,29 +46,28 @@ object NotificationHelper {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // Return gracefully if permission is not granted
                 return
             }
         }
 
-        // Create the notification channel just in case
         createNotificationChannel(context)
 
-        // PendingIntent to launch MainActivity on click
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("from_retention_push", true)
+            putExtra(RetentionDay.KEY_RETENTION_DAY, retentionDayNumber)
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            retentionDayNumber,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Build the Notification
+        val notificationId = if (retentionDayNumber == 3) NOTIFICATION_ID_D3 else NOTIFICATION_ID_D1
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher) // or an ic_notification if available, fallback to launcher icon
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -69,6 +75,6 @@ object NotificationHelper {
             .setContentIntent(pendingIntent)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        notificationManager.notify(notificationId, builder.build())
     }
 }

@@ -20,4 +20,11 @@ interface AnalyticsRepository {
     fun logVibrationChanged(enabled: Boolean)
     
     fun logScreenView(screenName: String, screenClass: String = "MainActivity")
+
+    fun logRetentionScheduled(retentionDay: Int)
+    fun logRetentionTriggered(retentionDay: Int)
+    fun logRetentionSkippedActive(retentionDay: Int)
+    fun logRetentionPermissionDenied(retentionDay: Int)
+    fun logRetentionClicked(retentionDay: Int)
+    fun logWorkoutStartedFromRetention(retentionDay: Int)
 }

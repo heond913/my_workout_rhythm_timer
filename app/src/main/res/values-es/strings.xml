@@ -280,6 +280,10 @@
     <string name="btn_save">Guardar</string>
     <string name="retention_push_title">¡No pierdas tu ritmo de ejercicio!</string>
     <string name="retention_push_body">¡No pierdas el ritmo de ejercicio de hoy! Es hora de mantener viva tu racha.</string>
+    <string name="retention_push_d1_title">¡¿Listo para tu primer entrenamiento?!</string>
+    <string name="retention_push_d1_body">¡Comienza tu ritmo de ejercicio hoy y crea hábitos saludables!</string>
+    <string name="retention_push_d3_title">¡Mantén tu ritmo de ejercicio!</string>
+    <string name="retention_push_d3_body">El día 3 es perfecto para entrenar de nuevo. ¡Mantén tu racha!</string>
     <string name="retention_channel_name">Recordatorio de actividad</string>
     <string name="retention_channel_description">Recordatorios para ayudarte a mantener tu ritmo de entrenamiento.</string>
 </resources>
