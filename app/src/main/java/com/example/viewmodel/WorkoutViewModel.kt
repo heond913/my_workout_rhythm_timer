@@ -239,6 +239,13 @@ class WorkoutViewModel @JvmOverloads constructor(
         }
 
         viewModelScope.launch {
+            repository.reviewEventFlow.collect {
+                _eventFlow.emit(WorkoutEvent.ShowInAppReview)
+            }
+        }
+        repository.checkAndClaimInAppReview()
+
+        viewModelScope.launch {
             TimerRepository.timerSnapshot.collect { timerState ->
                 _uiState.update {
                     it.copy(
@@ -796,17 +803,6 @@ class WorkoutViewModel @JvmOverloads constructor(
                 timestamp = timestamp
             )
             repository.insert(record)
-
-            // Increment session count and trigger conditional in-app review if count is exactly 3
-            try {
-                val newCount = repository.incrementCompletedWorkoutCount()
-                if (newCount == 3 && !repository.hasRequestedReview()) {
-                    repository.setHasRequestedReview(true)
-                    _eventFlow.emit(WorkoutEvent.ShowInAppReview)
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("WorkoutViewModel", "Error handling in-app review check", e)
-            }
             
             // Clear or reset fields
             _uiState.update {

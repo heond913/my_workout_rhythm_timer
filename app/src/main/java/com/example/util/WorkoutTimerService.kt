@@ -32,6 +32,7 @@ class WorkoutTimerService : Service() {
     private var timerJob: Job? = null
     private var shutdownJob: Job? = null
     private var sessionStartTime: Long = 0L
+    private var isCurrentSessionCompleted: Boolean = false
 
     private lateinit var soundHelper: SoundHelper
     private lateinit var ttsHelper: TtsHelper
@@ -121,6 +122,9 @@ class WorkoutTimerService : Service() {
         }
 
         val isFreshStart = (elapsed == 0)
+        if (isFreshStart) {
+            isCurrentSessionCompleted = false
+        }
 
         if (sessionStartTime == 0L) {
             sessionStartTime = System.currentTimeMillis()
@@ -536,6 +540,18 @@ class WorkoutTimerService : Service() {
                         if (finalLogRoutineHistoryJson != null && finalLogRoutineName != null) {
                             logCustomRoutineSummary(finalLogRoutineHistoryJson, finalLogRoutineName)
                         }
+                        if (finalLogWorkout || (finalLogRoutineHistoryJson != null && finalLogRoutineName != null)) {
+                            if (!isCurrentSessionCompleted) {
+                                isCurrentSessionCompleted = true
+                                serviceScope.launch {
+                                    try {
+                                        repository.onTimerSessionCompleted()
+                                    } catch (e: Exception) {
+                                        Log.e("WorkoutTimerService", "Error logging completed timer session count", e)
+                                    }
+                                }
+                            }
+                        }
                         if (finalSpeakText != null) {
                             ttsHelper.speak(finalSpeakText)
                         }
@@ -574,6 +590,7 @@ class WorkoutTimerService : Service() {
         shutdownJob = null
         timerJob?.cancel()
         sessionStartTime = 0L
+        isCurrentSessionCompleted = false
 
         val isRoutineActiveBeforeReset = TimerRepository.timerSnapshot.value.isRoutineActive
         val originalPreset = repository.getTimerPresetType()

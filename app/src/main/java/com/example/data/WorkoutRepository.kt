@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.R
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class WorkoutRepository(
     private val workoutDao: WorkoutDao,
@@ -266,15 +269,61 @@ class WorkoutRepository(
         }
     }
 
+    private val reviewLock = Any()
+    private val _reviewEventFlow = MutableSharedFlow<Unit>(
+        replay = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
+    )
+
+    val reviewEventFlow: SharedFlow<Unit> = _reviewEventFlow.asSharedFlow()
+
     fun getCompletedWorkoutCount(): Int {
         return sharedPreferences.getInt("completed_workout_count", 0)
     }
 
+    @Deprecated("Use getCompletedTimerSessionCount instead. Manual workout records should not count towards review eligibility.")
     fun incrementCompletedWorkoutCount(): Int {
         val current = getCompletedWorkoutCount()
         val next = current + 1
         sharedPreferences.edit { putInt("completed_workout_count", next) }
         return next
+    }
+
+    fun getCompletedTimerSessionCount(): Int {
+        return sharedPreferences.getInt("completed_timer_session_count", 0)
+    }
+
+    fun incrementCompletedTimerSessionCount(): Int {
+        synchronized(reviewLock) {
+            val current = getCompletedTimerSessionCount()
+            val next = current + 1
+            sharedPreferences.edit { putInt("completed_timer_session_count", next) }
+            return next
+        }
+    }
+
+    fun onTimerSessionCompleted(): Int {
+        synchronized(reviewLock) {
+            val nextCount = incrementCompletedTimerSessionCount()
+            checkAndClaimInAppReviewLocked(nextCount)
+            return nextCount
+        }
+    }
+
+    fun checkAndClaimInAppReview(): Boolean {
+        synchronized(reviewLock) {
+            val count = getCompletedTimerSessionCount()
+            return checkAndClaimInAppReviewLocked(count)
+        }
+    }
+
+    private fun checkAndClaimInAppReviewLocked(count: Int): Boolean {
+        if (count >= 3 && !hasRequestedReview()) {
+            setHasRequestedReview(true)
+            _reviewEventFlow.tryEmit(Unit)
+            return true
+        }
+        return false
     }
 
     fun hasRequestedReview(): Boolean {

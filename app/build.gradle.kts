@@ -14,8 +14,8 @@ android {
     applicationId = "com.aistudio.workoutrhythm.rnfjpa"
     minSdk = 24
     targetSdk = 36
-    versionCode = 7
-    versionName = "3.2"
+    versionCode = 8
+    versionName = "8.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     manifestPlaceholders["ADMOB_APP_ID"] = "ca-app-pub-3940256099942544~3347511713"
