@@ -33,6 +33,7 @@ class WorkoutTimerService : Service() {
     private var shutdownJob: Job? = null
     private var sessionStartTime: Long = 0L
     private var isCurrentSessionCompleted: Boolean = false
+    private var currentSessionId: String? = null
 
     private lateinit var soundHelper: SoundHelper
     private lateinit var ttsHelper: TtsHelper
@@ -122,8 +123,9 @@ class WorkoutTimerService : Service() {
         }
 
         val isFreshStart = (elapsed == 0)
-        if (isFreshStart) {
+        if (isFreshStart || currentSessionId == null) {
             isCurrentSessionCompleted = false
+            currentSessionId = java.util.UUID.randomUUID().toString()
         }
 
         if (sessionStartTime == 0L) {
@@ -208,6 +210,7 @@ class WorkoutTimerService : Service() {
                         var logWorkout = false
                         var logRoutineHistoryJson: String? = null
                         var logRoutineName: String? = null
+                        var sessionCompleted = false
 
                         serviceControl.updateRuntimeState { current ->
                             if (!current.isRunning) return@updateRuntimeState current
@@ -269,6 +272,7 @@ class WorkoutTimerService : Service() {
                                             newRunning = false
                                             newIsRoutineActive = false
                                             newShowDialog = true
+                                            sessionCompleted = true
                                             ttsWord = getString(R.string.tts_routine_completed_congratulations)
                                             logRoutineHistoryJson = newRoutineHistoryJson
                                             logRoutineName = lockedConfig.routineName
@@ -408,6 +412,7 @@ class WorkoutTimerService : Service() {
                                                         newRunning = false
                                                         newIsRoutineActive = false
                                                         newShowDialog = true
+                                                        sessionCompleted = true
                                                         ttsWord = getString(R.string.tts_routine_finished_congratulations)
                                                         logRoutineHistoryJson = newRoutineHistoryJson
                                                         logRoutineName = lockedConfig.routineName
@@ -444,6 +449,7 @@ class WorkoutTimerService : Service() {
                                                 }
 
                                                 logWorkout = true
+                                                sessionCompleted = true
                                                 newShowDialog = true
                                             }
                                         }
@@ -519,8 +525,10 @@ class WorkoutTimerService : Service() {
                         val finalLogWorkout = logWorkout
                         val finalLogRoutineHistoryJson = logRoutineHistoryJson
                         val finalLogRoutineName = logRoutineName
+                        val finalSessionCompleted = sessionCompleted
                         val finalSpeakText = speakText
                         val finalExtraSpeakText = extraSpeakText
+                        val activeSessionId = currentSessionId ?: java.util.UUID.randomUUID().toString()
 
                         if (finalResetStartTime) {
                             startTime = System.currentTimeMillis()
@@ -540,12 +548,12 @@ class WorkoutTimerService : Service() {
                         if (finalLogRoutineHistoryJson != null && finalLogRoutineName != null) {
                             logCustomRoutineSummary(finalLogRoutineHistoryJson, finalLogRoutineName)
                         }
-                        if (finalLogWorkout || (finalLogRoutineHistoryJson != null && finalLogRoutineName != null)) {
+                        if (finalSessionCompleted) {
                             if (!isCurrentSessionCompleted) {
                                 isCurrentSessionCompleted = true
                                 serviceScope.launch {
                                     try {
-                                        repository.onTimerSessionCompleted()
+                                        repository.onTimerSessionCompleted(activeSessionId)
                                     } catch (e: Exception) {
                                         Log.e("WorkoutTimerService", "Error logging completed timer session count", e)
                                     }
@@ -591,6 +599,7 @@ class WorkoutTimerService : Service() {
         timerJob?.cancel()
         sessionStartTime = 0L
         isCurrentSessionCompleted = false
+        currentSessionId = null
 
         val isRoutineActiveBeforeReset = TimerRepository.timerSnapshot.value.isRoutineActive
         val originalPreset = repository.getTimerPresetType()

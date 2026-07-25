@@ -270,12 +270,40 @@ class WorkoutRepository(
     }
 
     private val reviewLock = Any()
+    private val completedSessionIds = mutableSetOf<String>()
+
     private val _reviewEventFlow = MutableSharedFlow<Unit>(
-        replay = 1,
+        replay = 0,
+        extraBufferCapacity = 1,
         onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
     )
 
     val reviewEventFlow: SharedFlow<Unit> = _reviewEventFlow.asSharedFlow()
+
+    private fun isSessionCompletedLocked(sessionId: String): Boolean {
+        if (sessionId.isBlank()) return false
+        if (completedSessionIds.contains(sessionId)) return true
+        val savedSet = sharedPreferences.getStringSet("completed_session_ids", emptySet()) ?: emptySet()
+        if (savedSet.contains(sessionId)) {
+            completedSessionIds.add(sessionId)
+            return true
+        }
+        return false
+    }
+
+    private fun markSessionCompletedLocked(sessionId: String) {
+        if (sessionId.isBlank()) return
+        completedSessionIds.add(sessionId)
+        val savedSet = sharedPreferences.getStringSet("completed_session_ids", emptySet()) ?: emptySet()
+        val newSet = savedSet.toMutableSet()
+        newSet.add(sessionId)
+        if (newSet.size > 100) {
+            val trimmed = newSet.toList().takeLast(100).toSet()
+            sharedPreferences.edit { putStringSet("completed_session_ids", trimmed) }
+        } else {
+            sharedPreferences.edit { putStringSet("completed_session_ids", newSet) }
+        }
+    }
 
     fun getCompletedWorkoutCount(): Int {
         return sharedPreferences.getInt("completed_workout_count", 0)
@@ -302,8 +330,12 @@ class WorkoutRepository(
         }
     }
 
-    fun onTimerSessionCompleted(): Int {
+    fun onTimerSessionCompleted(sessionId: String = java.util.UUID.randomUUID().toString()): Int {
         synchronized(reviewLock) {
+            if (isSessionCompletedLocked(sessionId)) {
+                return getCompletedTimerSessionCount()
+            }
+            markSessionCompletedLocked(sessionId)
             val nextCount = incrementCompletedTimerSessionCount()
             checkAndClaimInAppReviewLocked(nextCount)
             return nextCount

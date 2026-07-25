@@ -19,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -38,7 +39,8 @@ class InAppReviewTest {
     }
 
     @Test
-    fun test1_firstTimerSessionCompleted_countOne_noReviewEvent() = runBlocking {
+    fun test1_sessionACompleted_countOne() = runBlocking {
+        val sessionIdA = UUID.randomUUID().toString()
         var reviewEventTriggered = false
         val job = launch(Dispatchers.Unconfined) {
             repository.reviewEventFlow.collect {
@@ -46,7 +48,7 @@ class InAppReviewTest {
             }
         }
 
-        repository.onTimerSessionCompleted()
+        repository.onTimerSessionCompleted(sessionIdA)
 
         assertEquals(1, repository.getCompletedTimerSessionCount())
         assertFalse(repository.hasRequestedReview())
@@ -55,63 +57,75 @@ class InAppReviewTest {
     }
 
     @Test
-    fun test2_secondTimerSessionCompleted_countTwo_noReviewEvent() = runBlocking {
-        var reviewEventTriggered = false
-        val job = launch(Dispatchers.Unconfined) {
-            repository.reviewEventFlow.collect {
-                reviewEventTriggered = true
-            }
-        }
+    fun test2_sessionASameCompletionEventResent_noCountIncrease() = runBlocking {
+        val sessionIdA = UUID.randomUUID().toString()
 
-        repository.onTimerSessionCompleted()
-        repository.onTimerSessionCompleted()
+        repository.onTimerSessionCompleted(sessionIdA)
+        assertEquals(1, repository.getCompletedTimerSessionCount())
+
+        // Re-send same completion event
+        repository.onTimerSessionCompleted(sessionIdA)
+        assertEquals(1, repository.getCompletedTimerSessionCount())
+    }
+
+    @Test
+    fun test3_sessionACompletionCalledTwiceConsecutively_countOneOnly() = runBlocking {
+        val sessionIdA = UUID.randomUUID().toString()
+
+        val count1 = repository.onTimerSessionCompleted(sessionIdA)
+        val count2 = repository.onTimerSessionCompleted(sessionIdA)
+
+        assertEquals(1, count1)
+        assertEquals(1, count2)
+        assertEquals(1, repository.getCompletedTimerSessionCount())
+    }
+
+    @Test
+    fun test4_sessionACompletedThenSessionBCompleted_countTwo() = runBlocking {
+        val sessionIdA = UUID.randomUUID().toString()
+        val sessionIdB = UUID.randomUUID().toString()
+
+        repository.onTimerSessionCompleted(sessionIdA)
+        repository.onTimerSessionCompleted(sessionIdB)
 
         assertEquals(2, repository.getCompletedTimerSessionCount())
         assertFalse(repository.hasRequestedReview())
-        assertFalse(reviewEventTriggered)
-        job.cancel()
     }
 
     @Test
-    fun test3_thirdTimerSessionCompleted_countThree_triggersReviewEventOnce() = runBlocking {
-        var reviewEventCount = 0
-        val job = launch(Dispatchers.Unconfined) {
-            repository.reviewEventFlow.collect {
-                reviewEventCount++
-            }
-        }
+    fun test5_sessionACompleted_repoRecreated_sameSessionACompletionReprocessed_noCountIncrease() = runBlocking {
+        val sessionIdA = UUID.randomUUID().toString()
+        repository.onTimerSessionCompleted(sessionIdA)
+        assertEquals(1, repository.getCompletedTimerSessionCount())
 
-        repository.onTimerSessionCompleted()
-        repository.onTimerSessionCompleted()
-        repository.onTimerSessionCompleted()
+        val prefs = context.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
+        val newRepo = WorkoutRepository(AppDatabase.getDatabase(context).workoutDao(), prefs, context)
 
-        assertEquals(3, repository.getCompletedTimerSessionCount())
-        assertTrue(repository.hasRequestedReview())
-        assertEquals(1, reviewEventCount)
-        job.cancel()
+        // Re-process same Session A completion on new Repository instance
+        newRepo.onTimerSessionCompleted(sessionIdA)
+        assertEquals(1, newRepo.getCompletedTimerSessionCount())
     }
 
     @Test
-    fun test4_fourthTimerSessionCompleted_countFour_noAdditionalReviewEvent() = runBlocking {
-        var reviewEventCount = 0
-        val job = launch(Dispatchers.Unconfined) {
-            repository.reviewEventFlow.collect {
-                reviewEventCount++
-            }
-        }
+    fun test6_sessionAPauseResumeComplete_countOne() = runBlocking {
+        // Pausing does not complete session, completion happens at the end with same session ID
+        val sessionIdA = UUID.randomUUID().toString()
 
-        repeat(4) {
-            repository.onTimerSessionCompleted()
-        }
+        // Simulate pause/resume by maintaining same session ID until completion
+        repository.onTimerSessionCompleted(sessionIdA)
 
-        assertEquals(4, repository.getCompletedTimerSessionCount())
-        assertTrue(repository.hasRequestedReview())
-        assertEquals(1, reviewEventCount)
-        job.cancel()
+        assertEquals(1, repository.getCompletedTimerSessionCount())
     }
 
     @Test
-    fun test5_manualWorkoutRecordSaves_doesNotIncreaseSessionCount_noReviewEvent() = runBlocking {
+    fun test7_sessionACancel_noCountChange() = runBlocking {
+        // Cancellation resets session ID and does not invoke onTimerSessionCompleted
+        assertEquals(0, repository.getCompletedTimerSessionCount())
+        assertFalse(repository.hasRequestedReview())
+    }
+
+    @Test
+    fun test8_manualWorkoutRecordSaved3Times_noSessionCountChange_noReviewEvent() = runBlocking {
         var reviewEventTriggered = false
         val job = launch(Dispatchers.Unconfined) {
             repository.reviewEventFlow.collect {
@@ -141,123 +155,136 @@ class InAppReviewTest {
     }
 
     @Test
-    fun test6_timerStartedThenReset_sessionCountDoesNotIncrease() {
-        assertEquals(0, repository.getCompletedTimerSessionCount())
-        assertFalse(repository.hasRequestedReview())
-    }
-
-    @Test
-    fun test7_timerStartedThenPaused_sessionCountDoesNotIncrease() {
-        assertEquals(0, repository.getCompletedTimerSessionCount())
-        assertFalse(repository.hasRequestedReview())
-    }
-
-    @Test
-    fun test8_duplicateCompletionEvent_incrementsSessionCountOnlyOnce() = runBlocking {
-        var isCompleted = false
-        fun handleSessionCompletion() {
-            if (!isCompleted) {
-                isCompleted = true
-                repository.onTimerSessionCompleted()
-            }
-        }
-
-        handleSessionCompletion()
-        handleSessionCompletion()
-        handleSessionCompletion()
-
-        assertEquals(1, repository.getCompletedTimerSessionCount())
-    }
-
-    @Test
-    fun test9_countPersistsAcrossAppRestart_thirdSessionTriggersReview() = runBlocking {
-        val prefs = context.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putInt("completed_timer_session_count", 2).commit()
-
-        val newRepo = WorkoutRepository(AppDatabase.getDatabase(context).workoutDao(), prefs, context)
-
-        var reviewEventTriggered = false
-        val job = launch(Dispatchers.Unconfined) {
-            newRepo.reviewEventFlow.collect {
-                reviewEventTriggered = true
-            }
-        }
-
-        newRepo.onTimerSessionCompleted()
-
-        assertEquals(3, newRepo.getCompletedTimerSessionCount())
-        assertTrue(newRepo.hasRequestedReview())
-        assertTrue(reviewEventTriggered)
-        job.cancel()
-    }
-
-    @Test
-    fun test10_alreadyRequestedReview_newSessionDoesNotTriggerReview() = runBlocking {
-        val prefs = context.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putInt("completed_timer_session_count", 3).putBoolean("has_requested_review", true).commit()
-
-        val newRepo = WorkoutRepository(AppDatabase.getDatabase(context).workoutDao(), prefs, context)
-
-        var reviewEventTriggered = false
-        val job = launch(Dispatchers.Unconfined) {
-            newRepo.reviewEventFlow.collect {
-                reviewEventTriggered = true
-            }
-        }
-
-        newRepo.onTimerSessionCompleted()
-
-        assertEquals(4, newRepo.getCompletedTimerSessionCount())
-        assertTrue(newRepo.hasRequestedReview())
-        assertFalse(reviewEventTriggered)
-        job.cancel()
-    }
-
-    @Test
-    fun test11_countFourOrMoreAndHasNotRequestedReview_newSessionTriggersReview() = runBlocking {
-        val prefs = context.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putInt("completed_timer_session_count", 4).putBoolean("has_requested_review", false).commit()
-
-        val newRepo = WorkoutRepository(AppDatabase.getDatabase(context).workoutDao(), prefs, context)
-
-        var reviewEventTriggered = false
-        val job = launch(Dispatchers.Unconfined) {
-            newRepo.reviewEventFlow.collect {
-                reviewEventTriggered = true
-            }
-        }
-
-        newRepo.onTimerSessionCompleted()
-
-        assertEquals(5, newRepo.getCompletedTimerSessionCount())
-        assertTrue(newRepo.hasRequestedReview())
-        assertTrue(reviewEventTriggered)
-        job.cancel()
-    }
-
-    @Test
-    fun test12_concurrentSessionCompletionEvents_emitsAtMostOneReviewEvent() = runBlocking {
-        val prefs = context.getSharedPreferences("workout_rhythm_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putInt("completed_timer_session_count", 2).putBoolean("has_requested_review", false).commit()
-
-        val repo = WorkoutRepository(AppDatabase.getDatabase(context).workoutDao(), prefs, context)
-
+    fun test9_sessionABCCompleted_countThree_triggersReviewEventOnce() = runBlocking {
         var reviewEventCount = 0
         val job = launch(Dispatchers.Unconfined) {
-            repo.reviewEventFlow.collect {
+            repository.reviewEventFlow.collect {
+                reviewEventCount++
+            }
+        }
+
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+
+        assertEquals(3, repository.getCompletedTimerSessionCount())
+        assertTrue(repository.hasRequestedReview())
+        assertEquals(1, reviewEventCount)
+        job.cancel()
+    }
+
+    @Test
+    fun test10_sessionABCCompletedThenSessionDCompleted_countFour_noAdditionalReviewEvent() = runBlocking {
+        var reviewEventCount = 0
+        val job = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
+                reviewEventCount++
+            }
+        }
+
+        repeat(4) {
+            repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        }
+
+        assertEquals(4, repository.getCompletedTimerSessionCount())
+        assertTrue(repository.hasRequestedReview())
+        assertEquals(1, reviewEventCount)
+        job.cancel()
+    }
+
+    @Test
+    fun test11_reviewEventTriggered_viewModelRecreated_noReplay() = runBlocking {
+        // Trigger review event with 3 sessions
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+
+        assertTrue(repository.hasRequestedReview())
+
+        // Late collector subscribing after event was emitted
+        var lateEventTriggered = false
+        val job = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
+                lateEventTriggered = true
+            }
+        }
+
+        // Since replay = 0, late collector should NOT receive the past event
+        assertFalse(lateEventTriggered)
+        job.cancel()
+    }
+
+    @Test
+    fun test12_reviewEventTriggered_newCollectorRegistered_doesNotReceivePastEvent() = runBlocking {
+        var initialEventCount = 0
+        val job1 = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
+                initialEventCount++
+            }
+        }
+
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+        repository.onTimerSessionCompleted(UUID.randomUUID().toString())
+
+        assertEquals(1, initialEventCount)
+        job1.cancel()
+
+        // Register new collector later
+        var newCollectorEventCount = 0
+        val job2 = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
+                newCollectorEventCount++
+            }
+        }
+
+        assertEquals(0, newCollectorEventCount)
+        job2.cancel()
+    }
+
+    @Test
+    fun test13_concurrentDifferentSessionsABCCompletion_countThree() = runBlocking {
+        var reviewEventCount = 0
+        val job = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
+                reviewEventCount++
+            }
+        }
+
+        val sessionIds = List(3) { UUID.randomUUID().toString() }
+        val deferreds = sessionIds.map { id ->
+            async(Dispatchers.Default) {
+                repository.onTimerSessionCompleted(id)
+            }
+        }
+        deferreds.awaitAll()
+
+        assertEquals(3, repository.getCompletedTimerSessionCount())
+        assertTrue(repository.hasRequestedReview())
+        assertEquals(1, reviewEventCount)
+        job.cancel()
+    }
+
+    @Test
+    fun test14_concurrentSameSessionACompletion_countOneOnly_reviewEventAtMostOne() = runBlocking {
+        val sameSessionId = UUID.randomUUID().toString()
+        var reviewEventCount = 0
+        val job = launch(Dispatchers.Unconfined) {
+            repository.reviewEventFlow.collect {
                 reviewEventCount++
             }
         }
 
         val deferreds = List(10) {
             async(Dispatchers.Default) {
-                repo.onTimerSessionCompleted()
+                repository.onTimerSessionCompleted(sameSessionId)
             }
         }
         deferreds.awaitAll()
 
-        assertEquals(1, reviewEventCount)
-        assertTrue(repo.hasRequestedReview())
+        assertEquals(1, repository.getCompletedTimerSessionCount())
+        assertFalse(repository.hasRequestedReview())
+        assertEquals(0, reviewEventCount)
         job.cancel()
     }
 }
