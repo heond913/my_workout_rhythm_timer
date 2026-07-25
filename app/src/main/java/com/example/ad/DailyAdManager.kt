@@ -37,6 +37,11 @@ interface WorkoutAdManager {
      * Guarantees that the critical callback [onCompleteAction] is executed under all circumstances.
      */
     fun showDailyWorkoutAd(activity: Activity, onCompleteAction: () -> Unit)
+
+    /**
+     * Checks if the Interstitial Ad is currently loaded and ready to present.
+     */
+    fun isInterstitialReady(): Boolean
 }
 
 /**
@@ -238,6 +243,12 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
         return sdf.format(Date())
     }
 
+    override fun isInterstitialReady(): Boolean {
+        return synchronized(adLock) {
+            interstitialAd != null
+        }
+    }
+
     /**
      * Triggers presentation of the interstitial ad.
      * Checks are processed asynchronously; main thread operations are restricted strictly 
@@ -248,6 +259,12 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
      */
     override fun showDailyWorkoutAd(activity: Activity, onCompleteAction: () -> Unit) {
         val activityRef = WeakReference(activity)
+        val callbackExecuted = java.util.concurrent.atomic.AtomicBoolean(false)
+        val safeOnCompleteAction = {
+            if (callbackExecuted.compareAndSet(false, true)) {
+                onCompleteAction()
+            }
+        }
 
         // Launch task asynchronously
         coroutineScope.launch {
@@ -259,7 +276,7 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
             if (alreadyShown) {
                 Log.d(TAG, "Workout ad daily limit reached or clock spoofed. Skipping presentation.")
                 withContext(Dispatchers.Main) {
-                    onCompleteAction()
+                    safeOnCompleteAction()
                 }
                 return@launch
             }
@@ -276,22 +293,26 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                 val hostActivity = activityRef.get()
                 if (hostActivity == null || hostActivity.isFinishing || hostActivity.isDestroyed) {
                     Log.e(TAG, "Host Activity state invalid. Executing completion callback directly.")
-                    onCompleteAction()
+                    safeOnCompleteAction()
                     return@withContext
                 }
 
                 if (adToShow != null) {
                     Log.d(TAG, "Ad loaded and ready. Rendering.")
+                    var adShowSucceeded = false
+
                     adToShow.fullScreenContentCallback = object : FullScreenContentCallback() {
                         override fun onAdDismissedFullScreenContent() {
                             Log.d(TAG, "Ad dismissed by user. Writing state and preloading tomorrow's ad.")
                             analyticsRepository?.logAdDismiss("interstitial")
                             coroutineScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    saveAdShownToday()
+                                if (adShowSucceeded) {
+                                    withContext(Dispatchers.IO) {
+                                        saveAdShownToday()
+                                    }
                                 }
                                 withContext(Dispatchers.Main) {
-                                    onCompleteAction()
+                                    safeOnCompleteAction()
                                 }
                                 preloadAd()
                             }
@@ -300,11 +321,12 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                             Log.e(TAG, "Ad failed to present: ${adError.message}. Proceeding instantly.")
                             analyticsRepository?.logAdShowFailed("interstitial", adError.code, adError.domain)
-                            onCompleteAction()
+                            safeOnCompleteAction()
                             preloadAd()
                         }
 
                         override fun onAdShowedFullScreenContent() {
+                            adShowSucceeded = true
                             analyticsRepository?.logAdShow("interstitial", "workout_finish")
                             Log.i(TAG, "Ad successfully displayed.")
                         }
@@ -319,7 +341,7 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
                 } else {
                     // Option C: Ad is null, failed loading or is currently in-transit
                     Log.d(TAG, "Ad reference is null or not loaded yet. Discharging completion callback seamlessly.")
-                    onCompleteAction()
+                    safeOnCompleteAction()
                     preloadAd()
                 }
             }

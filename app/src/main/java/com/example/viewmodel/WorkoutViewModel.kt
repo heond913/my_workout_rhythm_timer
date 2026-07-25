@@ -582,6 +582,7 @@ class WorkoutViewModel @JvmOverloads constructor(
         )
 
         val context = getApplication<Application>().applicationContext
+        com.example.ad.DailyAdManager.getInstance(context).preloadAd()
         val stateStore = com.example.data.RetentionStateStore(context)
         stateStore.recordWorkoutStarted()
         val pendingDay = stateStore.getAndClearValidPendingRetentionClickDay()
