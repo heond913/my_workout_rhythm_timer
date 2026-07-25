@@ -111,9 +111,14 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
      */
     override fun preloadAd() {
         coroutineScope.launch {
-            // First check fast lock states
+            // Atomically check if ad is already loaded or loading and mark as loading immediately
             val shouldSkip = synchronized(adLock) {
-                interstitialAd != null || isAdLoading
+                if (interstitialAd != null || isAdLoading) {
+                    true
+                } else {
+                    isAdLoading = true
+                    false
+                }
             }
             if (shouldSkip) {
                 Log.d(TAG, "Ad already loaded or loading in progress. Skipping load.")
@@ -127,11 +132,10 @@ class DailyAdManager private constructor(context: Context) : WorkoutAdManager {
             
             if (alreadyShownToday) {
                 Log.d(TAG, "Ad already shown today. Skipping preloading to optimize resources.")
+                synchronized(adLock) {
+                    isAdLoading = false
+                }
                 return@launch
-            }
-
-            synchronized(adLock) {
-                isAdLoading = true
             }
 
             // Move back to Main Thread since Google AdMob SDK expects loading calls strictly on Main Thread
